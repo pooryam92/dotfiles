@@ -1,0 +1,14 @@
+(defcfg
+  ;; Process keys not listed in defsrc unchanged.
+  process-unmapped-keys yes)
+
+;; Only map Caps; everything else passes through.
+(defsrc
+  caps)
+
+(defalias
+  ;; tap=Esc, hold=LeftCtrl (timings in ms: tap-window, hold-delay)
+  cap (tap-hold 200 200 esc lctl))
+
+(deflayer base
+  @cap)
