@@ -1,0 +1,96 @@
+{
+    "$schema": "https://raw.githubusercontent.com/LGUG2Z/komorebi/v0.1.31/schema.bar.json",
+    "monitor": {
+        "index": 0,
+        "work_area_offset": {
+            "left": 0,
+            "top": 40,
+            "right": 0,
+            "bottom": 40
+        }
+    },
+    "font_family": "Cascadia Code ExtraLight",
+    "theme": {
+        "palette": "Base16",
+        "name": "Caroline",
+        "accent": "Base08"
+    },
+    "grouping": {
+        "kind": "Alignment",
+        "rounding": [5, 5, 5, 5]
+    },
+    "center_widgets": [
+        {
+            "Komorebi": {
+                "workspaces": {
+                    "enable": true,
+                    "hide_empty_workspaces": true,
+                    "display": "IconAndText"
+                },
+                "layout": {
+                    "enable": true,
+                    "display": "Icon"
+                },
+                "focused_window": {
+                    "enable": false,
+                    "show_icon": false
+                }
+            }
+        }
+    ],
+    "right_widgets": [
+        {
+            "Time": {
+                "enable": true,
+                "format": "TwentyFourHour"
+            }
+        },
+        {
+            "Date": {
+                "enable": true,
+                "format": {
+                    "Custom": "%a, %b %d"
+                }
+            }
+        }
+    ],
+    "left_widgets": [
+
+        {
+            "Media": {
+                "enable": false
+            }
+        },
+        {
+            "Storage": {
+                "enable": false
+            }
+        },
+        {
+            "Memory": {
+                "enable": false
+            }
+        },
+        {
+            "Cpu": {
+                "enable": false
+            }
+        },
+        {
+            "Network": {
+                "enable": true,
+                "show_total_data_transmitted": false,
+                "show_network_activity": true,
+                "show_default_interface": false,
+                "label_prefix":"IconAndText",
+                "data_refresh_interval": 1
+            }
+        },
+        {
+            "Battery": {
+                "enable": true,
+                "hide_on_full_charge": true
+            }
+        }
+    ]
+}
