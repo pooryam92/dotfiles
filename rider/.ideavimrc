@@ -72,6 +72,8 @@ nmap s <Plug>(easymotion-s)
 xmap s <Plug>(easymotion-s)
 omap s <Plug>(easymotion-s)
 
+" nerd tree
+set NERDTree
 
 " Which-Key plugin
 set which-key
@@ -450,7 +452,7 @@ let g:WhichKeyDesc_buffer_explorer = "<leader>be Buffer Explorer"
 nmap <leader>be <Action>(ActivateProjectToolWindow)
 
 let g:WhichKeyDesc_explorer = "<leader>e Explorer NeoTree (Root Dir)"
-nmap <leader>e <Action>(FileStructurePopup)
+map <leader>e :NERDTree<cr> 
 
 let g:WhichKeyDesc_explorer_cwd = "<leader>E Explorer NeoTree (cwd)"
 nmap <leader>E <Action>(SelectInProjectView)
@@ -496,7 +498,7 @@ let g:WhichKeyDesc_find_buffers = "<leader>fb Buffers"
 nmap <leader>fb <Action>(Switcher)
 
 let g:WhichKeyDesc_find_config = "<leader>fc Find Config File"
-nmap <leader>fc <Action>(GotoFile)
+nmap <leader>fc :e ~/.ideavimrc<CR>
 
 let g:WhichKeyDesc_find_files_alt = "<leader>ff Find Files (Root Dir)"
 nmap <leader>ff <Action>(GotoFile)
