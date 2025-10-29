@@ -70,6 +70,11 @@ Komorebic(cmd) {
 !+7::Komorebic("move-to-workspace 6")
 !+8::Komorebic("move-to-workspace 7")
 
+; Apps 
+!b::Run("C:\Program Files\Google\Chrome\Application\chrome.exe")
+!Enter::Run("wt.exe")
+
+
 *CapsLock::
 {
     Send "{LControl down}"
