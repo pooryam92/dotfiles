@@ -13,14 +13,14 @@
 let mapleader=" "
 let maplocalleader="\\"
 
-set relativenumber
 set scrolloff=4
+set nowrap
+set relativenumber
+set smartcase
 set shiftround
 set ignorecase
-set smartcase
-set nowrap
 set backspace=indent,eol,start
-set timeoutlen=400
+set timeoutlen=1000
 set clipboard+=unnamedplus
 
 set NERDTree
@@ -41,14 +41,17 @@ nmap <leader>\|      <C-w>v
 nmap <leader><space> <Action>(GotoFile)
 nmap <leader>/       <Action>(FindInPath)       
 
-nmap <leader>fr      <Action>(RecentFiles)
-nmap <leader>fn      <Action>(NewElementSamePlace)
+noremap  <leader>fr      :action RecentFiles<CR>
+nnoremap <leader>fn      :action NewElementSamePlace<CR>
+nnoremap <leader>fc      :e ~/.ideavimrc<CR>
 
 nnoremap <leader>e  :NERDTreeToggle<CR>
 nnoremap <leader>ep :action ActivateProjectToolWindow<CR>
 
 nmap <leader>so <Action>(ShowSettings)
-nmap <leader>sv <Action>(IdeaVim.ReloadVimRc.reload)
+nnoremap <leader>sr :action deaVim.ReloadVimRc.reload<CR>
+
+nnoremap <leader>t :action ActivateTerminalToolWindow<CR>
 
 " =========================================================
 " Code Intelligence
