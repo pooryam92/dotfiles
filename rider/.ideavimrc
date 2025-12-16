@@ -56,10 +56,11 @@ nnoremap <leader>t :action ActivateTerminalToolWindow<CR>
 " =========================================================
 " Code Intelligence
 " =========================================================
-nmap gd     <Action>(GotoDeclaration)
-nmap gy     <Action>(GotoTypeDeclaration)
-nnoremap gi :action GotoImplementation<CR>
-nmap gr     <Action>(FindUsages)
+nmap gd <Action>(GotoDeclaration)
+nmap gD <Action>(GotoSuperMethod)
+nmap gi <Action>(GotoImplementation)
+nmap gy <Action>(GotoTypeDeclaration)
+nmap gr <Action>(FindUsages)
 
 nmap <leader>a :action AIAssistant.Editor.AskAiAssistantInEditor<CR>
 
