@@ -9,6 +9,7 @@ end to end.
 | Multiplexer  | [Zellij](https://zellij.dev)                      |
 | Shell        | zsh (+ autosuggestions, syntax-highlighting)      |
 | Prompt       | [Starship](https://starship.rs)                   |
+| Editor       | [Neovim](https://neovim.io) (kickstart-based, + Markdown rendering) |
 | IDE editing  | [IdeaVim](https://github.com/JetBrains/ideavim) — Vim plugin for JetBrains IDEs (`.ideavimrc`) |
 
 ## Learn it
@@ -20,6 +21,7 @@ in the actual config in this repo:
 - [Zellij](docs/zellij.md) — the multiplexer: panes, tabs, sessions, modes
 - [zsh](docs/zsh.md) — the shell: history, completion, plugins, aliases
 - [Starship](docs/starship.md) — the prompt: modules, format, styling
+- [Neovim](docs/nvim.md) — kickstart-based config: plugins, markdown rendering, keymaps
 - [IdeaVim](docs/ideavim.md) — Vim in JetBrains IDEs: leader maps, IDE actions
 
 ## Quick start
@@ -40,7 +42,8 @@ shows the Starship prompt.
 2. Installs **Ghostty** from the
    [ghostty-ubuntu](https://github.com/mkasberg/ghostty-ubuntu) `.deb` matching
    your Ubuntu version + architecture.
-3. Installs **Zellij** and **Starship** as user binaries in `~/.local/bin`.
+3. Installs **Zellij**, **Starship**, and **Neovim** as user binaries in
+   `~/.local/bin` (Neovim's latest stable — apt's is too old for the config).
 4. Installs the **JetBrainsMono Nerd Font** (for prompt/multiplexer glyphs).
 5. Symlinks the configs (see [Layout](#layout)).
 6. Sets **zsh** as the default login shell (`chsh`).
@@ -49,7 +52,8 @@ It is **idempotent** — safe to re-run. Anything already at a target path is
 backed up to `<file>.bak.<timestamp>` before linking. Steps 1 and 6 use `sudo`
 and will prompt for your password.
 
-> Requires Ubuntu/Pop with `apt` and an `x86_64` (`amd64`) architecture.
+> Requires Ubuntu/Pop with `apt`. Tested on `x86_64` (`amd64`); the binary
+> installs also handle `arm64`.
 
 ## Layout
 
@@ -62,6 +66,7 @@ zellij/config.kdl        ->  ~/.config/zellij/config.kdl
 starship/starship.toml   ->  ~/.config/starship.toml
 zsh/.zshrc               ->  ~/.zshrc
 intellij/.ideavimrc      ->  ~/.ideavimrc
+nvim/                    ->  ~/.config/nvim
 ```
 
 After editing:
@@ -70,6 +75,7 @@ After editing:
 - **zsh** – `exec zsh` (or open a new shell).
 - **Zellij** – restart the session, or `Ctrl+o` → `w` to switch.
 - **Starship** – picked up on the next prompt.
+- **Neovim** – restart `nvim` (plugins via `:lua vim.pack.update()`).
 
 ## Keybindings
 

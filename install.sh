@@ -81,6 +81,55 @@ else
 fi
 
 # ---------------------------------------------------------------------------
+info "Installing Neovim…"
+# apt ships an old Neovim (0.9.x); the nvim config needs 0.12+ (vim.pack), so
+# install the latest stable release as a user binary in ~/.local/nvim.
+if [ -x "$BIN/nvim" ] && "$BIN/nvim" --version | head -1 | grep -qE 'v0\.(1[2-9]|[2-9][0-9])'; then
+  info "neovim already installed ($("$BIN/nvim" --version | head -1))"
+else
+  case "$ARCH" in
+    amd64) NVIM_ARCH=x86_64 ;;
+    arm64) NVIM_ARCH=arm64 ;;
+    *)     NVIM_ARCH="" ;;
+  esac
+  if [ -z "$NVIM_ARCH" ]; then
+    warn "No Neovim build for arch '$ARCH'; skipping (see https://github.com/neovim/neovim/releases)"
+  else
+    curl -fL "https://github.com/neovim/neovim/releases/latest/download/nvim-linux-${NVIM_ARCH}.tar.gz" \
+      -o /tmp/nvim.tar.gz
+    rm -rf "$HOME/.local/nvim"
+    mkdir -p "$HOME/.local/nvim"
+    tar -xzf /tmp/nvim.tar.gz -C "$HOME/.local/nvim" --strip-components=1
+    ln -sf "$HOME/.local/nvim/bin/nvim" "$BIN/nvim"
+    rm -f /tmp/nvim.tar.gz
+  fi
+fi
+
+# ---------------------------------------------------------------------------
+info "Installing tree-sitter CLI…"
+# nvim-treesitter (main branch, used by the nvim config) compiles parsers with
+# the tree-sitter CLI + a C compiler. cc/gcc come from build-essential on most
+# systems; the CLI we install as a user binary.
+if [ -x "$BIN/tree-sitter" ]; then
+  info "tree-sitter already installed ($("$BIN/tree-sitter" --version))"
+else
+  case "$ARCH" in
+    amd64) TS_ARCH=x64 ;;
+    arm64) TS_ARCH=arm64 ;;
+    *)     TS_ARCH="" ;;
+  esac
+  if [ -z "$TS_ARCH" ]; then
+    warn "No tree-sitter CLI build for arch '$ARCH'; Neovim treesitter parsers won't compile"
+  else
+    curl -fL "https://github.com/tree-sitter/tree-sitter/releases/latest/download/tree-sitter-linux-${TS_ARCH}.gz" \
+      -o /tmp/tree-sitter.gz
+    gunzip -f /tmp/tree-sitter.gz
+    install -m 0755 /tmp/tree-sitter "$BIN/tree-sitter"
+    rm -f /tmp/tree-sitter
+  fi
+fi
+
+# ---------------------------------------------------------------------------
 info "Installing JetBrainsMono Nerd Font…"
 FONT_DIR="$HOME/.local/share/fonts/JetBrainsMono"
 if [ -d "$FONT_DIR" ] && ls "$FONT_DIR"/*.ttf >/dev/null 2>&1; then
@@ -101,6 +150,7 @@ link "$DOTFILES/zellij/config.kdl"     "$HOME/.config/zellij/config.kdl"
 link "$DOTFILES/starship/starship.toml" "$HOME/.config/starship.toml"
 link "$DOTFILES/zsh/.zshrc"            "$HOME/.zshrc"
 link "$DOTFILES/intellij/.ideavimrc"   "$HOME/.ideavimrc"
+link "$DOTFILES/nvim"                  "$HOME/.config/nvim"
 
 # ---------------------------------------------------------------------------
 ZSH_PATH="$(command -v zsh)"
