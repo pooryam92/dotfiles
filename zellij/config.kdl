@@ -1,0 +1,20 @@
+// Zellij configuration
+// Docs: https://zellij.dev/documentation/
+
+theme "catppuccin-mocha"
+default_shell "zsh"
+default_layout "compact"
+
+pane_frames true
+mouse_mode true
+copy_on_select true
+copy_command "wl-copy"      // Wayland (Pop!_OS COSMIC); use "xclip -selection clipboard" on X11
+show_startup_tips false
+scrollback_editor "vi"
+
+ui {
+    pane_frames {
+        rounded_corners true
+        hide_session_name false
+    }
+}

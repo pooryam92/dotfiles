@@ -1,0 +1,130 @@
+" ~/.ideavimrc — Vim emulation for JetBrains IDEs
+" Discover action IDs:  enable "IdeaVim: track action Ids"  (:action VimFindActionIdAction)
+" Reload after editing:  <leader>sr
+"
+" Leader namespace (<leader> = Space)
+"   e  Explorer / Project        m  Make / Run / Debug
+"   f  Files                     t  Tests / Terminal
+"   g  Goto / Git                s  Settings / Search / Symbols
+"   c  Code / Refactor           a  AI
+"   v  Vim Coach
+
+let mapleader=" "
+let maplocalleader="\\"
+
+" =========================================================
+" Options
+" =========================================================
+set scrolloff=4
+set nowrap
+set relativenumber
+set number
+set ignorecase
+set smartcase
+set shiftround
+set incsearch
+set hlsearch
+set backspace=indent,eol,start
+set timeoutlen=1000
+set clipboard+=unnamedplus
+
+" =========================================================
+" Emulated plugins
+" =========================================================
+set NERDTree
+set surround                 " cs"' , ds( , ysiw)
+set commentary               " gcc line, gc in visual
+set highlightedyank          " flash yanked text
+" set easymotion             " <leader><leader> motions (needs AceJump plugin)
+" set multiple-cursors       " <A-n> select next occurrence
+
+" =========================================================
+" Navigation & windows
+" =========================================================
+nmap <C-h> <C-w>h
+nmap <C-j> <C-w>j
+nmap <C-k> <C-w>k
+nmap <C-l> <C-w>l
+
+nmap <A-k> <Action>(MoveLineUp)
+nmap <A-j> <Action>(MoveLineDown)
+
+nmap <leader>-       <C-w>s
+nmap <leader>\|      <C-w>v
+nmap <leader><space> <Action>(GotoFile)
+nmap <leader>/       <Action>(FindInPath)
+nnoremap <leader>nh  :nohlsearch<CR>
+
+" =========================================================
+" e — Explorer / Project
+" =========================================================
+nnoremap <leader>e  :NERDTreeToggle<CR>
+nmap     <leader>ep <Action>(ActivateProjectToolWindow)
+
+" =========================================================
+" f — Files
+" =========================================================
+nmap     <leader>fr <Action>(RecentFiles)
+nmap     <leader>fn <Action>(NewElementSamePlace)
+nnoremap <leader>fc :e ~/.ideavimrc<CR>
+
+" =========================================================
+" g — Goto (bare g) + Git (<leader>g)
+" =========================================================
+nmap gd <Action>(GotoDeclaration)
+nmap gD <Action>(GotoSuperMethod)
+nmap gi <Action>(GotoImplementation)
+nmap gy <Action>(GotoTypeDeclaration)
+nmap gr <Action>(FindUsages)
+
+nmap <leader>gs <Action>(ActivateVersionControlToolWindow)
+nmap <leader>gb <Action>(Git.Branches)
+nmap <leader>gc <Action>(CheckinProject)
+nmap <leader>gB <Action>(Annotate)
+nmap <leader>gh <Action>(Vcs.ShowTabbedFileHistory)
+nmap <leader>gp <Action>(Vcs.UpdateProject)
+nmap <leader>gP <Action>(Vcs.Push)
+
+" =========================================================
+" c — Code / Refactor
+" =========================================================
+nmap <leader>cr <Action>(RenameElement)
+nmap <leader>ca <Action>(ShowIntentionActions)
+nmap <leader>cf <Action>(ReformatCode)
+nmap <leader>co <Action>(OptimizeImports)
+
+" =========================================================
+" m — Make / Run / Debug
+" =========================================================
+nmap <leader>mr <Action>(Run)
+nmap <leader>md <Action>(Debug)
+nmap <leader>ms <Action>(Stop)
+nmap <leader>mb <Action>(ToggleLineBreakpoint)
+nmap <leader>mc <Action>(ChooseRunConfiguration)
+
+" =========================================================
+" t — Tests + Terminal
+" =========================================================
+nmap <leader>tr <Action>(RunClass)
+nmap <leader>tf <Action>(RerunFailedTests)
+nmap <leader>tl <Action>(Rerun)
+nmap <leader>tt <Action>(ActivateTerminalToolWindow)
+
+" =========================================================
+" s — Settings / Search / Symbols
+" =========================================================
+nmap <leader>so <Action>(ShowSettings)
+nmap <leader>sa <Action>(GotoAction)
+nmap <leader>ss <Action>(GotoSymbol)
+nmap <leader>sc <Action>(GotoClass)
+nmap <leader>sr <Action>(IdeaVim.ReloadVimRc.reload)
+
+" =========================================================
+" a — AI
+" =========================================================
+nmap <leader>a <Action>(AIAssistant.Editor.AskAiAssistantInEditor)
+
+" =========================================================
+" v — Vim Coach (install the "Vim Coach" plugin from JetBrains Marketplace)
+" =========================================================
+nmap <leader>vt <Action>(com.github.pooryam92.vimcoach.actions.ShowVimTipAction)

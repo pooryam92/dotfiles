@@ -1,0 +1,37 @@
+# Ghostty configuration
+# Docs: https://ghostty.org/docs/config
+# Reload in-app with ctrl+shift+r
+
+# ---- Font (Nerd Font for Starship / Zellij glyphs) ----
+font-family = "JetBrainsMono Nerd Font"
+font-size = 12
+
+# ---- Theme ----
+theme = Catppuccin Mocha
+background-opacity = 0.95
+background-blur = true
+
+# ---- Window ----
+window-padding-x = 10
+window-padding-y = 10
+window-padding-balance = true
+window-theme = ghostty
+
+# ---- Cursor ----
+cursor-style = bar
+cursor-style-blink = true
+mouse-hide-while-typing = true
+
+# ---- Behavior ----
+scrollback-limit = 100000
+copy-on-select = clipboard
+confirm-close-surface = false
+shell-integration = zsh
+# Force zsh regardless of the desktop session's $SHELL (which only refreshes on re-login)
+command = /usr/bin/zsh
+
+# ---- Keybinds ----
+keybind = ctrl+shift+r=reload_config
+keybind = ctrl+equal=increase_font_size:1
+keybind = ctrl+minus=decrease_font_size:1
+keybind = ctrl+zero=reset_font_size
