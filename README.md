@@ -126,13 +126,3 @@ Aliases in zsh: `zj` → `zellij`, `ll`/`la`, `..`/`...`.
   [ghostty.org/docs/install](https://ghostty.org/docs/install); the rest of the
   setup is unaffected.
 - **Shell didn't change to zsh** — run `chsh -s "$(command -v zsh)"` and log out/in.
-
-## Other configs in this repo
-
-This repo also holds non-terminal configs not covered above (Neovim, Windows
-tiling/keyboard tooling, etc.): `nvim/`, `komorebi/`, `whim/`, `kanata/`,
-`rider/`, and the Windows setup scripts.
-
-## Links
-
-- [LazyVim Ambitious Devs course](https://lazyvim-ambitious-devs.phillips.codes/course/chapter-1/)
