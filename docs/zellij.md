@@ -73,7 +73,7 @@ pane_frames true
 mouse_mode true
 copy_on_select true
 copy_command "wl-copy"
-show_startup_tips false
+show_startup_tips true
 scrollback_editor "vi"
 ```
 
@@ -83,6 +83,8 @@ scrollback_editor "vi"
 - `copy_on_select` — selecting text copies it automatically.
 - `copy_command "wl-copy"` — **Wayland** clipboard tool (Pop!_OS COSMIC is
   Wayland). On X11 change this to `xclip -selection clipboard`.
+- `show_startup_tips true` — show the tip screen when a new session starts. Set
+  to `false` to skip it.
 - `scrollback_editor "vi"` — in Scroll mode you can hit a key to open the whole
   scrollback in this editor for searching/copying.
 

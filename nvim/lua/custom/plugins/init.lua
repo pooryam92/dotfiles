@@ -4,13 +4,13 @@
 
 -- render-markdown.nvim — pretty in-buffer rendering of Markdown.
 -- Renders headings, code blocks, lists, tables, checkboxes, callouts, etc.
--- directly in the buffer (no browser), and degrades to plain text while editing
--- the line your cursor is on. Uses the markdown / markdown_inline treesitter
--- parsers (already installed by kickstart) and mini.icons (from mini.nvim).
+-- directly in the buffer (no browser), and degrades to plain text on the line
+-- under the cursor while editing. Uses the markdown / markdown_inline treesitter
+-- parsers (installed in Section 9 of init.lua) and mini.icons (from mini.nvim).
 vim.pack.add { 'https://github.com/MeanderingProgrammer/render-markdown.nvim' }
 require('render-markdown').setup {
   file_types = { 'markdown' },
 }
 
--- Toggle rendering on/off (handy when you want raw markdown).
+-- Toggle rendering on/off, e.g. to view the raw markdown source.
 vim.keymap.set('n', '<leader>tm', '<cmd>RenderMarkdown toggle<CR>', { desc = '[T]oggle [M]arkdown render' })
