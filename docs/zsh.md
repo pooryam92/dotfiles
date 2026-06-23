@@ -136,7 +136,7 @@ Hands prompt rendering over to Starship if it's installed. See
 ### Zellij auto-start
 
 ```sh
-if [[ -z "$ZELLIJ" && -n "$GHOSTTY_RESOURCES_DIR" && $- == *i* ]]; then
+if [[ -z "$ZELLIJ" && -n "$WEZTERM_PANE" && $- == *i* ]]; then
   if command -v zellij >/dev/null; then
     export ZELLIJ_AUTO_ATTACH=true
     export ZELLIJ_AUTO_EXIT=true
@@ -147,15 +147,18 @@ fi
 
 Auto-starts Zellij **only** when all three are true:
 - `-z "$ZELLIJ"` — we're not already inside a Zellij session (no nesting).
-- `-n "$GHOSTTY_RESOURCES_DIR"` — we're running inside Ghostty (this var is set
-  by Ghostty). So SSH, other terminals, and IDE shells stay plain.
+- `-n "$WEZTERM_PANE"` — we're running inside WezTerm (this var is set by
+  WezTerm). So SSH, other terminals, and IDE shells stay plain.
 - `$- == *i*` — this is an interactive shell.
 
 Then:
 - `ZELLIJ_AUTO_ATTACH=true` — reattach an existing session instead of making a
   new one.
 - `ZELLIJ_AUTO_EXIT=true` — when you exit Zellij, exit the shell too (so the
-  Ghostty window closes instead of dropping to a bare prompt).
+  WezTerm window closes instead of dropping to a bare prompt).
+
+> On Windows the same guard lives in `pwsh/profile.ps1` (keyed on
+> `$env:WEZTERM_PANE`); see [windows.md](windows.md).
 
 ---
 

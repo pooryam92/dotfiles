@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-# Dotfiles installer for Pop!_OS / Ubuntu (Ghostty + Zellij + zsh + Starship)
+# Dotfiles installer for Pop!_OS / Ubuntu (WezTerm + Zellij + zsh + Starship)
 # Idempotent: safe to re-run. Existing files are backed up before linking.
+# Windows uses install.ps1 instead; both share the wezterm/zellij/starship/nvim configs.
 set -euo pipefail
 
 DOTFILES="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -33,21 +34,19 @@ sudo apt-get install -y \
   zsh-autosuggestions zsh-syntax-highlighting
 
 # ---------------------------------------------------------------------------
-info "Installing Ghostty…"
-if command -v ghostty >/dev/null; then
-  info "ghostty already installed ($(ghostty --version 2>/dev/null | head -1))"
+info "Installing WezTerm…"
+if command -v wezterm >/dev/null; then
+  info "wezterm already installed ($(wezterm --version))"
 else
-  DEB_URL="$(curl -fsSL https://api.github.com/repos/mkasberg/ghostty-ubuntu/releases/latest \
-    | grep -oP '"browser_download_url":\s*"\K[^"]*' \
-    | grep "_${ARCH}_${VERSION_ID}\.deb$" | head -1 || true)"
-  if [ -n "${DEB_URL:-}" ]; then
-    tmp="$(mktemp --suffix=.deb)"
-    curl -fL "$DEB_URL" -o "$tmp"
-    sudo apt-get install -y "$tmp"
-    rm -f "$tmp"
-  else
-    warn "No prebuilt Ghostty .deb for ${ID} ${VERSION_ID}/${ARCH}; see https://ghostty.org/docs/install"
-  fi
+  # Official Fury APT repo (handles future updates via apt; amd64 + arm64).
+  # See https://wezfurlong.org/wezterm/install/linux.html
+  curl -fsSL https://apt.fury.io/wez/gpg.key \
+    | sudo gpg --yes --dearmor -o /usr/share/keyrings/wezterm-fury.gpg
+  sudo chmod 644 /usr/share/keyrings/wezterm-fury.gpg
+  echo 'deb [signed-by=/usr/share/keyrings/wezterm-fury.gpg] https://apt.fury.io/wez/ * *' \
+    | sudo tee /etc/apt/sources.list.d/wezterm.list >/dev/null
+  sudo apt-get update -y
+  sudo apt-get install -y wezterm
 fi
 
 # ---------------------------------------------------------------------------
@@ -145,7 +144,7 @@ fi
 
 # ---------------------------------------------------------------------------
 info "Linking config files…"
-link "$DOTFILES/ghostty/config"        "$HOME/.config/ghostty/config"
+link "$DOTFILES/wezterm/wezterm.lua"    "$HOME/.config/wezterm/wezterm.lua"
 link "$DOTFILES/zellij/config.kdl"     "$HOME/.config/zellij/config.kdl"
 link "$DOTFILES/starship/starship.toml" "$HOME/.config/starship.toml"
 link "$DOTFILES/zsh/.zshrc"            "$HOME/.zshrc"
@@ -161,4 +160,4 @@ if [ "$CURRENT_SHELL" != "$ZSH_PATH" ]; then
   chsh -s "$ZSH_PATH" || warn "chsh failed; run: chsh -s $ZSH_PATH"
 fi
 
-info "Done. Open Ghostty (or run 'exec zsh') to start using the new setup."
+info "Done. Open WezTerm (or run 'exec zsh') to start using the new setup."

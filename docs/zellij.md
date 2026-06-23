@@ -1,15 +1,18 @@
 # Zellij
 
 [Zellij](https://zellij.dev) is a **terminal multiplexer** (like tmux): it runs
-*inside* one Ghostty window and lets you split it into panes, manage multiple
+*inside* one WezTerm window and lets you split it into panes, manage multiple
 tabs, and — crucially — keep sessions alive in the background so you can detach
-and reattach later without losing your work.
+and reattach later without losing your work. Since v0.44 it runs natively on
+Windows too (via ConPTY).
 
-In this setup zsh auto-starts Zellij **only inside Ghostty** (see
-[zsh.md](zsh.md)), so every Ghostty window drops you straight into a session.
+In this setup the shell auto-starts Zellij **only inside WezTerm** (see
+[zsh.md](zsh.md) / [windows.md](windows.md)), so every WezTerm window drops you
+straight into a session.
 
 - Docs: <https://zellij.dev/documentation>
-- Your config: `zellij/config.kdl` → symlinked to `~/.config/zellij/config.kdl`
+- Your config: `zellij/config.kdl` → `~/.config/zellij/config.kdl` (Linux) /
+  `%APPDATA%\zellij\config.kdl` (Windows)
 
 ---
 
@@ -25,7 +28,7 @@ Session  ──┬── Tab 1 ──┬── Pane
 - **Tab** — a full screen of panes; switch between tabs like browser tabs.
 - **Session** — the whole thing. It lives in a background server, so you can
   **detach** (leave it running) and **reattach** later — even after closing
-  Ghostty.
+  WezTerm.
 
 ### Modes (the most important idea)
 
@@ -123,12 +126,12 @@ A typical flow (remember: enter a mode, then press the letter):
 
 **Detach and reattach (the killer feature):**
 - `Ctrl+o` then `d` → detach. Your session keeps running in the background; close
-  Ghostty if you want.
+  WezTerm if you want.
 - From any shell: `zellij list-sessions` (alias `zj ls` won't work — `zj` is just
   `zellij`, so `zj list-sessions`) to see them.
 - `zellij attach <name>` → reattach exactly where you left off.
 
-Because of `ZELLIJ_AUTO_ATTACH=true` in your `.zshrc`, opening a new Ghostty
+Because of `ZELLIJ_AUTO_ATTACH=true` in your shell config, opening a new WezTerm
 window will **reattach** an existing session rather than spawning a fresh one.
 
 ---

@@ -51,7 +51,7 @@ nvim/
 ```lua
 vim.pack.add { gh 'catppuccin/nvim' }
 require('catppuccin').setup {
-  flavour = 'mocha', -- matches Ghostty / Zellij / Starship
+  flavour = 'mocha', -- matches WezTerm / Zellij / Starship
   styles = { comments = {} },
 }
 vim.cmd.colorscheme 'catppuccin-mocha'
@@ -129,7 +129,7 @@ under `[[ Setting options ]]` and `[[ Basic Keymaps ]]`.
   make sure `~/.local/bin` is ahead of `/usr/bin` on `PATH` (it is, via
   `zsh/.zshrc`).
 - **Markdown shows raw with icon boxes (□)** — Nerd Font not active in the
-  terminal; see the Ghostty guide.
+  terminal; see the WezTerm guide.
 - **A plugin won't load** — `:checkhealth` is your friend; for treesitter parser
   issues, `:checkhealth nvim-treesitter`.
 - **Want a clean slate** — plugin data lives in `~/.local/share/nvim` and

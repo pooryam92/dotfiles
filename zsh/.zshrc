@@ -44,8 +44,8 @@ done
 # ---- Starship prompt ----
 command -v starship >/dev/null && eval "$(starship init zsh)"
 
-# ---- Zellij auto-start (only inside Ghostty, interactive, not nested) ----
-if [[ -z "$ZELLIJ" && -n "$GHOSTTY_RESOURCES_DIR" && $- == *i* ]]; then
+# ---- Zellij auto-start (only inside WezTerm, interactive, not nested) ----
+if [[ -z "$ZELLIJ" && -n "$WEZTERM_PANE" && $- == *i* ]]; then
   if command -v zellij >/dev/null; then
     export ZELLIJ_AUTO_ATTACH=true
     export ZELLIJ_AUTO_EXIT=true

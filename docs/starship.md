@@ -12,7 +12,7 @@ zsh hands the prompt to Starship via `eval "$(starship init zsh)"` (see
 - All modules: <https://starship.rs/config/#prompt>
 - Your config: `starship/starship.toml` → symlinked to `~/.config/starship.toml`
 
-> Starship uses **Nerd Font glyphs** for its icons. They render because Ghostty
+> Starship uses **Nerd Font glyphs** for its icons. They render because WezTerm
 > uses JetBrainsMono Nerd Font — without a Nerd Font you'd see boxes.
 
 ---

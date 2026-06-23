@@ -43,7 +43,7 @@ do
 
   -- Set to true when a Nerd Font is installed and selected in the
   -- terminal; enables icon glyphs in plugins that support them.
-  -- install.sh installs JetBrainsMono Nerd Font and Ghostty uses it.
+  -- The installers install JetBrainsMono Nerd Font and WezTerm uses it.
   vim.g.have_nerd_font = true
 
   -- [[ Editor options ]]
@@ -298,7 +298,7 @@ do
   }
 
   -- [[ Colorscheme ]]
-  -- catppuccin/nvim — Mocha flavour, to match Ghostty / Zellij / Starship.
+  -- catppuccin/nvim — Mocha flavour, to match WezTerm / Zellij / Starship.
   -- To switch themes, change the plugin below and the `colorscheme` command.
   -- Installed colorschemes can be browsed with `:Telescope colorscheme`.
   vim.pack.add { gh 'catppuccin/nvim' }

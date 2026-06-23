@@ -2,15 +2,20 @@
 // Docs: https://zellij.dev/documentation/
 
 theme "catppuccin-mocha"
-default_shell "zsh"
+// default_shell is intentionally unset: Zellij inherits the shell WezTerm
+// launched via `default_prog` (zsh on Linux, pwsh on Windows), so this one
+// config works on both platforms.
 default_layout "compact"
 
 pane_frames true
 mouse_mode true
 copy_on_select true
-copy_command "wl-copy"      // Wayland (Pop!_OS COSMIC); use "xclip -selection clipboard" on X11
+// copy_command is intentionally unset: copy goes through the terminal's OSC52
+// clipboard (WezTerm supports it on Linux and Windows). If a corner case fails,
+// set a per-OS fallback: "wl-copy" (Wayland), "xclip -selection clipboard" (X11),
+// or "clip" (Windows).
 show_startup_tips true
-scrollback_editor "vi"
+scrollback_editor "nvim"
 
 ui {
     pane_frames {
