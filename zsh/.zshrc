@@ -19,8 +19,11 @@ autoload -Uz compinit && compinit -d "$HOME/.cache/zcompdump"
 zstyle ':completion:*' menu select
 zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'
 
-# ---- Keybindings (emacs) ----
-bindkey -e
+# ---- Keybindings (vi) ----
+# `bindkey -v` makes the main keymap vi-insert; Esc -> normal mode. Mode shows in
+# the prompt via starship's vimcmd_symbol. The arrow bindings below run after -v so
+# they bind in the (now vi-insert) keymap and keep working in insert mode.
+bindkey -v
 bindkey '^[[A' history-search-backward
 bindkey '^[[B' history-search-forward
 

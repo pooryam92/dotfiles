@@ -15,13 +15,21 @@ $env:EDITOR = 'nvim'
 # ---- PSReadLine: history, prediction, syntax highlighting, keybindings ----
 Import-Module PSReadLine -ErrorAction SilentlyContinue
 if (Get-Module PSReadLine) {
-  Set-PSReadLineOption -EditMode Emacs
-  Set-PSReadLineOption -HistoryNoDuplicates
-  Set-PSReadLineOption -MaximumHistoryCount 50000
-  Set-PSReadLineOption -HistorySearchCursorMovesToEnd
-  # Inline suggestion from history (== zsh-autosuggestions ghost text).
-  Set-PSReadLineOption -PredictionSource History
-  Set-PSReadLineOption -PredictionViewStyle InlineView
+  # One splat instead of six separate Set-PSReadLineOption calls. NOTE: splatting
+  # needs a $variable + the @ operator (`@psrlOpts`); a bare `@{...}` literal is
+  # passed as a positional arg and errors.
+  #   PredictionSource/ViewStyle == zsh-autosuggestions inline ghost text.
+  $psrlOpts = @{
+    EditMode                      = 'Vi'   # modal editing (Esc -> normal mode); matches zsh `bindkey -v`.
+                                           # Mode is shown in the prompt via starship's vimcmd_symbol;
+                                           # don't set -ViModeIndicator here, starship's init overrides it.
+    HistoryNoDuplicates           = $true
+    MaximumHistoryCount           = 50000
+    HistorySearchCursorMovesToEnd = $true
+    PredictionSource              = 'History'
+    PredictionViewStyle           = 'InlineView'
+  }
+  Set-PSReadLineOption @psrlOpts
 
   # Up/Down do prefix history search (matches the .zshrc bindkeys).
   Set-PSReadLineKeyHandler -Key UpArrow   -Function HistorySearchBackward
@@ -52,19 +60,38 @@ function ... { Set-Location ../.. }
 # launch (starship alone is ~180ms). Cache it to disk and dot-source the cache;
 # only re-run when the binary is newer than the cache (i.e. after an upgrade).
 function Initialize-Cached {
-  param([Parameter(Mandatory)] [string] $Name, [string[]] $InitArgs = @('init', 'powershell'))
+  param(
+    [Parameter(Mandatory)] [string] $Name,
+    [string[]] $InitArgs = @('init', 'powershell'),
+    [switch] $Force   # regenerate even if the cache exists (after a binary upgrade)
+  )
+  $cache = Join-Path ([IO.Path]::GetTempPath()) "${Name}_init.ps1"
+  # Warm path: cache already exists -> dot-source it straight away. We deliberately
+  # skip the old `Get-Command` + LastWriteTime freshness check here: that PATH scan
+  # cost ~25ms *every* launch just to detect the rare case of a tool upgrade. Instead
+  # the cache is treated as durable; refresh it explicitly with `Update-ShellCache`
+  # (or per-tool `Initialize-Cached <name> -Force ...`) after upgrading starship/zoxide.
+  if ((Test-Path $cache) -and -not $Force) { . $cache; return }
+  # Cold/forced path: resolve the binary and (re)generate the cache.
   $exe = (Get-Command $Name -ErrorAction SilentlyContinue)?.Source
   if (-not $exe) { return }
-  $cache = Join-Path ([IO.Path]::GetTempPath()) "${Name}_init.ps1"
-  if (-not (Test-Path $cache) -or
-      (Get-Item $exe).LastWriteTime -gt (Get-Item $cache).LastWriteTime) {
-    & $exe @InitArgs | Out-File -Encoding utf8 $cache
-  }
+  & $exe @InitArgs | Out-File -Encoding utf8 $cache
   . $cache
 }
 
-# Starship prompt.
-Initialize-Cached starship
+# Force-refresh every cached tool init. Run this once after upgrading starship/zoxide
+# (e.g. via scoop/winget) so the cached prompt code picks up the new binary's output.
+function Update-ShellCache {
+  Initialize-Cached starship -Force -InitArgs 'init','powershell','--print-full-init'
+  Initialize-Cached zoxide   -Force
+  Write-Host 'Shell init caches refreshed.' -ForegroundColor Green
+}
+
+# Starship prompt. Use --print-full-init: plain `init powershell` only emits a
+# stub that re-spawns starship.exe at load time, so caching it caches nothing
+# (the binary still runs every tab, ~340ms). --print-full-init emits the real
+# prompt code, which dot-sources from disk in ~85ms with no subprocess.
+Initialize-Cached starship -InitArgs 'init','powershell','--print-full-init'
 # zoxide — smarter cd. `z <dir>` jumps to the most "frecent" match, `zi` picks
 # interactively (needs fzf, which the installer provides). Init AFTER starship so
 # zoxide's prompt hook wraps starship's prompt rather than being overwritten by it.
