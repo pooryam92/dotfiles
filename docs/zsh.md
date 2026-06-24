@@ -133,6 +133,16 @@ command -v starship >/dev/null && eval "$(starship init zsh)"
 Hands prompt rendering over to Starship if it's installed. See
 [starship.md](starship.md).
 
+### zoxide (smarter cd)
+
+```sh
+command -v zoxide >/dev/null && eval "$(zoxide init zsh)"
+```
+
+Adds the `z` command — `z dot` jumps to the most "frecent" directory matching
+`dot`. Initialised after Starship so its prompt hook chains rather than clobbers.
+See [zoxide.md](zoxide.md).
+
 ### Zellij auto-start
 
 ```sh
@@ -190,11 +200,12 @@ mkcd() { mkdir -p "$1" && cd "$1"; }
 
 **Disable Zellij auto-start** — delete the last `if` block in `zsh/.zshrc`.
 
-**Add a tool that needs shell init** (e.g. zoxide, fzf, nvm) — add its init
-line near the Starship line, e.g.:
+**Add a tool that needs shell init** (e.g. fzf, nvm) — add its init line near the
+Starship line, e.g.:
 ```sh
-command -v zoxide >/dev/null && eval "$(zoxide init zsh)"
+command -v fzf >/dev/null && source <(fzf --zsh)
 ```
+(zoxide is already wired in this way — see [zoxide.md](zoxide.md).)
 
 ---
 

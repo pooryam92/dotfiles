@@ -52,7 +52,7 @@ Developer Mode to upgrade copies to links. (The `nvim/` directory uses a
 2. Bootstraps **scoop** if missing; adds the `extras` and `nerd-fonts` buckets.
 3. Installs: `pwsh`, `neovim`, `starship`, `wezterm`, `zig` (treesitter
    compiler), `ripgrep`, `fd`, `fzf`, `win32yank` (nvim clipboard), `zellij`,
-   and the **JetBrainsMono Nerd Font**.
+   `zoxide` (smarter `cd`), and the **JetBrainsMono Nerd Font**.
 4. Links the configs to their Windows paths (see below).
 
 ### Config paths on Windows
@@ -86,7 +86,8 @@ pwsh/profile.ps1       ->  $PROFILE.CurrentUserAllHosts         (resolved from p
 | emacs keybindings        | `-EditMode Emacs`                                     |
 | `menu select` completion | `Tab` → `MenuComplete`                               |
 | aliases (`zj`,`ll`,`..`) | `Set-Alias` + functions                              |
-| starship                 | `Invoke-Expression (&starship init powershell)`      |
+| starship                 | `Initialize-Cached starship` (cached `init`)         |
+| zoxide (`z`/`zi`)        | `Initialize-Cached zoxide` — see [zoxide.md](zoxide.md) |
 
 **Zellij auto-start** is guarded the same way as on Linux — it only fires inside
 WezTerm (`$env:WEZTERM_PANE`) and when not already inside Zellij. PowerShell

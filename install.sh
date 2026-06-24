@@ -80,6 +80,17 @@ else
 fi
 
 # ---------------------------------------------------------------------------
+info "Installing zoxide…"
+# Smarter cd: `z <dir>` jumps to frecent dirs. apt's zoxide is often stale, so
+# use the official installer as a user binary in ~/.local/bin.
+if command -v zoxide >/dev/null; then
+  info "zoxide already installed ($(zoxide --version))"
+else
+  curl -fsSL https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh \
+    | sh -s -- --bin-dir "$BIN"
+fi
+
+# ---------------------------------------------------------------------------
 info "Installing Neovim…"
 # apt ships an old Neovim (0.9.x); the nvim config needs 0.12+ (vim.pack), so
 # install the latest stable release as a user binary in ~/.local/nvim.

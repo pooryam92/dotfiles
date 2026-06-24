@@ -47,19 +47,28 @@ function la { Get-ChildItem -Force @args }
 function .. { Set-Location .. }
 function ... { Set-Location ../.. }
 
-# ---- Starship prompt (cached init) ----
-# `starship init` spawns the binary and regenerates the same script every launch
-# (~180ms). Cache it to disk and dot-source the cache; only re-run when the
-# starship binary is newer than the cache (i.e. after an upgrade).
-$starshipExe = (Get-Command starship -ErrorAction SilentlyContinue)?.Source
-if ($starshipExe) {
-  $starshipCache = Join-Path ([IO.Path]::GetTempPath()) 'starship_init.ps1'
-  if (-not (Test-Path $starshipCache) -or
-      (Get-Item $starshipExe).LastWriteTime -gt (Get-Item $starshipCache).LastWriteTime) {
-    &$starshipExe init powershell | Out-File -Encoding utf8 $starshipCache
+# ---- Cached tool init (starship, zoxide) ----
+# `<tool> init powershell` spawns the binary and regenerates the same script every
+# launch (starship alone is ~180ms). Cache it to disk and dot-source the cache;
+# only re-run when the binary is newer than the cache (i.e. after an upgrade).
+function Initialize-Cached {
+  param([Parameter(Mandatory)] [string] $Name, [string[]] $InitArgs = @('init', 'powershell'))
+  $exe = (Get-Command $Name -ErrorAction SilentlyContinue)?.Source
+  if (-not $exe) { return }
+  $cache = Join-Path ([IO.Path]::GetTempPath()) "${Name}_init.ps1"
+  if (-not (Test-Path $cache) -or
+      (Get-Item $exe).LastWriteTime -gt (Get-Item $cache).LastWriteTime) {
+    & $exe @InitArgs | Out-File -Encoding utf8 $cache
   }
-  . $starshipCache
+  . $cache
 }
+
+# Starship prompt.
+Initialize-Cached starship
+# zoxide — smarter cd. `z <dir>` jumps to the most "frecent" match, `zi` picks
+# interactively (needs fzf, which the installer provides). Init AFTER starship so
+# zoxide's prompt hook wraps starship's prompt rather than being overwritten by it.
+Initialize-Cached zoxide
 
 # ---- Zellij auto-start (only inside WezTerm, interactive, not nested) ----
 # Mirrors the .zshrc guard. PowerShell isn't a supported target for

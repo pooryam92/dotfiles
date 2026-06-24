@@ -77,10 +77,11 @@ foreach ($b in 'extras', 'nerd-fonts') { scoop bucket add $b 2>$null }
 # win32yank   — Neovim clipboard provider (auto-detected for clipboard=unnamedplus)
 # zellij      — scoop ships the native Windows (ConPTY) build; avoids the winget
 #               version-numbering bug. Fallback: github.com/zellij-org/zellij/releases
+# zoxide      — smarter cd (`z`/`zi`); `zi` uses fzf (also installed above)
 # JetBrainsMono-NF — Nerd Font for prompt/multiplexer glyphs
 Info "Installing packages via scoop…"
 $pkgs = @('pwsh', 'neovim', 'starship', 'wezterm', 'zig', 'ripgrep', 'fd', 'fzf',
-          'win32yank', 'zellij', 'JetBrainsMono-NF')
+          'win32yank', 'zellij', 'zoxide', 'JetBrainsMono-NF')
 scoop install @pkgs
 
 # ---------------------------------------------------------------------------

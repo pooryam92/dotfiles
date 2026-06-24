@@ -1,7 +1,7 @@
 # dotfiles
 
 A clean terminal environment for **Linux** (Pop!_OS / Ubuntu) **and Windows**,
-themed Catppuccin Mocha end to end. One repo, two platforms — the same configs
+themed Tokyo Night end to end. One repo, two platforms — the same configs
 are shared across both; only the shell differs (zsh on Linux, PowerShell on
 Windows).
 
@@ -11,6 +11,7 @@ Windows).
 | Multiplexer  | [Zellij](https://zellij.dev) — native Windows support since v0.44 |
 | Shell        | zsh (Linux) / [PowerShell 7](https://learn.microsoft.com/powershell/) (Windows) |
 | Prompt       | [Starship](https://starship.rs)                   |
+| Navigation   | [zoxide](https://github.com/ajeetdsouza/zoxide) — smarter `cd` (`z`/`zi`) |
 | Editor       | [Neovim](https://neovim.io) (kickstart-based, + Markdown rendering) |
 | IDE editing  | [IdeaVim](https://github.com/JetBrains/ideavim) — Vim plugin for JetBrains IDEs (`.ideavimrc`) |
 
@@ -27,6 +28,7 @@ in the actual config in this repo:
 - [Zellij](docs/zellij.md) — the multiplexer: panes, tabs, sessions, modes
 - [zsh](docs/zsh.md) — the shell: history, completion, plugins, aliases
 - [Starship](docs/starship.md) — the prompt: modules, format, styling
+- [zoxide](docs/zoxide.md) — smarter `cd`: jump to frecent dirs with `z`/`zi`
 - [Neovim](docs/nvim.md) — kickstart-based config: plugins, markdown rendering, keymaps
 - [IdeaVim](docs/ideavim.md) — Vim in JetBrains IDEs: leader maps, IDE actions
 - [Windows](docs/windows.md) — **native Windows setup**: scoop, PowerShell profile, paths
@@ -63,15 +65,15 @@ Both are **idempotent** — safe to re-run. Anything already at a target path is
 backed up to `<file>.bak.<timestamp>` before linking.
 
 **`install.sh` (Linux)** installs apt packages (`zsh`, `git`, plugins, etc.),
-**WezTerm** (official Fury apt repo), and **Zellij**, **Starship**, **Neovim**,
-and the **tree-sitter CLI** as user binaries in `~/.local/bin`. It installs the
-**JetBrainsMono Nerd Font**, symlinks the configs, and sets **zsh** as the login
-shell (`chsh`). Steps using `sudo` will prompt for your password.
+**WezTerm** (official Fury apt repo), and **Zellij**, **Starship**, **zoxide**,
+**Neovim**, and the **tree-sitter CLI** as user binaries in `~/.local/bin`. It
+installs the **JetBrainsMono Nerd Font**, symlinks the configs, and sets **zsh**
+as the login shell (`chsh`). Steps using `sudo` will prompt for your password.
 
 **`install.ps1` (Windows)** uses [scoop](https://scoop.sh) (user-scope, no admin)
-to install **PowerShell 7**, **WezTerm**, **Zellij**, **Starship**, **Neovim**,
-plus `zig` / `ripgrep` / `fd` / `fzf` / `win32yank` (Neovim's deps) and the Nerd
-Font, then links the configs. See [docs/windows.md](docs/windows.md).
+to install **PowerShell 7**, **WezTerm**, **Zellij**, **Starship**, **zoxide**,
+**Neovim**, plus `zig` / `ripgrep` / `fd` / `fzf` / `win32yank` (Neovim's deps)
+and the Nerd Font, then links the configs. See [docs/windows.md](docs/windows.md).
 
 ## Layout
 
@@ -119,7 +121,8 @@ After editing:
 | `Ctrl+q`  | Quit                   |
 
 Shell aliases: `zj` → `zellij`, `ll`/`la`, `..`/`...` (defined in both
-`zsh/.zshrc` and `pwsh/profile.ps1`).
+`zsh/.zshrc` and `pwsh/profile.ps1`). Directory jumping: `z <dir>` / `zi <dir>`
+via [zoxide](docs/zoxide.md).
 
 ## How it fits together
 
@@ -130,8 +133,9 @@ Shell aliases: `zj` → `zellij`, `ll`/`la`, `..`/`...` (defined in both
 - The shell auto-starts Zellij **only inside WezTerm** (guarded by
   `$WEZTERM_PANE`), so SSH sessions, other terminals, and IDE shells stay plain.
   This guard lives at the bottom of `zsh/.zshrc` and `pwsh/profile.ps1`.
-- Catppuccin Mocha is configured natively in WezTerm (built-in scheme), Zellij,
-  and Starship — no theme files to install.
+- Tokyo Night is configured natively in WezTerm (built-in scheme) and Zellij
+  (`tokyo-night-dark`); Neovim uses `folke/tokyonight.nvim` and Starship uses
+  ANSI named colors that follow the terminal palette — no theme files to install.
 - Zellij's `config.kdl` is OS-agnostic: it omits `default_shell` (inherits the
   shell WezTerm launched) and `copy_command` (uses the terminal's OSC52
   clipboard), so one file works on both platforms.

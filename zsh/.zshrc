@@ -44,6 +44,11 @@ done
 # ---- Starship prompt ----
 command -v starship >/dev/null && eval "$(starship init zsh)"
 
+# ---- zoxide (smarter cd) ----
+# `z <dir>` jumps to the most "frecent" matching directory; `zi` picks one
+# interactively (needs fzf). Must init after starship so its prompt hook chains.
+command -v zoxide >/dev/null && eval "$(zoxide init zsh)"
+
 # ---- Zellij auto-start (only inside WezTerm, interactive, not nested) ----
 if [[ -z "$ZELLIJ" && -n "$WEZTERM_PANE" && $- == *i* ]]; then
   if command -v zellij >/dev/null; then
