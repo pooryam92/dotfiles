@@ -50,17 +50,18 @@ Starship and Zellij render (otherwise you get tofu boxes □). The installers
 ### Theme
 
 ```lua
-config.color_scheme = 'Catppuccin Mocha'
-config.window_background_opacity = 0.95
+config.color_scheme = 'Tokyo Night'
+config.window_background_opacity = 1.0
 ```
 
 WezTerm ships **hundreds of built-in color schemes** — no files to install.
-Catppuccin Mocha is one of them. Browse the gallery at
+Tokyo Night is one of them. Browse the gallery at
 <https://wezfurlong.org/wezterm/colorschemes/> and just change this string.
-`window_background_opacity` is `0.0`–`1.0` (`0.95` = slightly see-through).
+`window_background_opacity` is `0.0`–`1.0` (`1.0` = fully opaque). Lower it
+(e.g. `0.95`) if you ever want the window slightly see-through.
 
-> Ghostty's `background-blur` has no reliable cross-platform equivalent, so it
-> was dropped. The opacity remains.
+> Ghostty's `background-blur` had no reliable cross-platform equivalent, so it
+> was dropped along with the see-through background.
 
 ### Window & cursor
 
@@ -124,13 +125,13 @@ config.window_background_opacity = 1.0
 
 **Switch theme:**
 ```lua
-config.color_scheme = 'Catppuccin Frappe'
+config.color_scheme = 'Tokyo Night Storm'
 ```
 
 **Light/dark by system appearance:**
 ```lua
 local function scheme_for(appearance)
-  if appearance:find 'Dark' then return 'Catppuccin Mocha' else return 'Catppuccin Latte' end
+  if appearance:find 'Dark' then return 'Tokyo Night' else return 'Tokyo Night Day' end
 end
 config.color_scheme = scheme_for(wezterm.gui.get_appearance())
 ```

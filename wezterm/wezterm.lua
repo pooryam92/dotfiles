@@ -15,15 +15,20 @@ local is_windows = wezterm.target_triple:find 'windows' ~= nil
 config.font = wezterm.font 'JetBrainsMono Nerd Font'
 config.font_size = 12.0
 
--- ---- Theme (Catppuccin Mocha ships built-in with WezTerm) ----
-config.color_scheme = 'Catppuccin Mocha'
-config.window_background_opacity = 0.95
+-- ---- Theme (Tokyo Night ships built-in with WezTerm) ----
+config.color_scheme = 'Tokyo Night'
+config.window_background_opacity = 1.0
 
 -- ---- Window ----
 config.window_padding = { left = 10, right = 10, top = 10, bottom = 10 }
 config.window_close_confirmation = 'NeverPrompt' -- == Ghostty confirm-close-surface = false
 config.adjust_window_size_when_changing_font_size = false
 config.window_decorations = 'TITLE | RESIZE'
+
+-- Zellij manages tabs/panes, so WezTerm's own tab bar is redundant. Hide it
+-- when only one WezTerm tab is open (the normal case), reclaiming that row.
+config.hide_tab_bar_if_only_one_tab = true
+config.use_fancy_tab_bar = true
 
 -- ---- Cursor ----
 config.default_cursor_style = 'BlinkingBar' -- == Ghostty cursor-style = bar + blink

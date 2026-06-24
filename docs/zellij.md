@@ -60,12 +60,12 @@ The config is [KDL](https://kdl.dev) — `key "value"` lines and `{ }` blocks.
 `//` starts a comment.
 
 ```kdl
-theme "catppuccin-mocha"
+theme "tokyo-night-dark"
 default_shell "zsh"
 default_layout "compact"
 ```
 
-- `theme` — Catppuccin Mocha, built in (no file to install).
+- `theme` — Tokyo Night, built in (no file to install).
 - `default_shell` — new panes open zsh.
 - `default_layout "compact"` — uses the slim single-line status bar instead of
   the default two-row bar (more screen for your work). Other built-ins:
@@ -140,7 +140,7 @@ window will **reattach** an existing session rather than spawning a fresh one.
 
 **Switch theme:**
 ```kdl
-theme "catppuccin-macchiato"
+theme "nord"
 ```
 
 **Use the full two-row status bar instead of compact:**

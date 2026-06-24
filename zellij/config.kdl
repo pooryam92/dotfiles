@@ -1,7 +1,7 @@
 // Zellij configuration
 // Docs: https://zellij.dev/documentation/
 
-theme "catppuccin-mocha"
+theme "tokyo-night-dark"
 // default_shell is intentionally unset: Zellij inherits the shell WezTerm
 // launched via `default_prog` (zsh on Linux, pwsh on Windows), so this one
 // config works on both platforms.

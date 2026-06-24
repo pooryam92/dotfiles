@@ -298,20 +298,20 @@ do
   }
 
   -- [[ Colorscheme ]]
-  -- catppuccin/nvim — Mocha flavour, to match WezTerm / Zellij / Starship.
+  -- folke/tokyonight.nvim — Night style, to match WezTerm / Zellij / Starship.
   -- To switch themes, change the plugin below and the `colorscheme` command.
   -- Installed colorschemes can be browsed with `:Telescope colorscheme`.
-  vim.pack.add { gh 'catppuccin/nvim' }
-  require('catppuccin').setup {
-    flavour = 'mocha',
+  vim.pack.add { gh 'folke/tokyonight.nvim' }
+  require('tokyonight').setup {
+    style = 'night',
     styles = {
-      comments = {}, -- non-italic comments
+      comments = { italic = false }, -- non-italic comments
     },
   }
 
-  -- Load the colorscheme. Variants include 'catppuccin-latte',
-  -- 'catppuccin-frappe', and 'catppuccin-macchiato'.
-  vim.cmd.colorscheme 'catppuccin-mocha'
+  -- Load the colorscheme. Variants include 'tokyonight-storm',
+  -- 'tokyonight-moon', and 'tokyonight-day'.
+  vim.cmd.colorscheme 'tokyonight-night'
 
   -- todo-comments.nvim: highlight TODO/NOTE/FIX style comment keywords.
   vim.pack.add { gh 'folke/todo-comments.nvim' }

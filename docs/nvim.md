@@ -3,7 +3,7 @@
 [Neovim](https://neovim.io) is the **editor**. This config is based on
 [kickstart.nvim](https://github.com/nvim-lua/kickstart.nvim) — a single,
 heavily-commented `init.lua` meant as a *starting point you own*, not a framework
-that hides things. On top of stock kickstart we add **Catppuccin Mocha** (to
+that hides things. On top of stock kickstart we add **Tokyo Night** (to
 match the rest of the setup) and **in-buffer Markdown rendering**.
 
 - Kickstart upstream: <https://github.com/nvim-lua/kickstart.nvim>
@@ -46,17 +46,17 @@ nvim/
 
 ## What we changed from stock kickstart
 
-### 1. Colorscheme → Catppuccin Mocha (`init.lua`, "Colorscheme" section)
+### 1. Colorscheme → Tokyo Night (`init.lua`, "Colorscheme" section)
 
 ```lua
-vim.pack.add { gh 'catppuccin/nvim' }
-require('catppuccin').setup {
-  flavour = 'mocha', -- matches WezTerm / Zellij / Starship
-  styles = { comments = {} },
+vim.pack.add { gh 'folke/tokyonight.nvim' }
+require('tokyonight').setup {
+  style = 'night', -- matches WezTerm / Zellij / Starship
+  styles = { comments = { italic = false } },
 }
-vim.cmd.colorscheme 'catppuccin-mocha'
+vim.cmd.colorscheme 'tokyonight-night'
 ```
-Other flavours: `catppuccin-latte`, `catppuccin-frappe`, `catppuccin-macchiato`.
+Other styles: `tokyonight-storm`, `tokyonight-moon`, `tokyonight-day`.
 
 ### 2. Markdown rendering (`lua/custom/plugins/init.lua`)
 
