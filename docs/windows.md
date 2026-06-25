@@ -94,9 +94,13 @@ pwsh/profile.ps1       ->  $PROFILE.CurrentUserAllHosts         (resolved from p
 **Zellij auto-start** is guarded the same way as on Linux — it only fires inside
 WezTerm (`$env:WEZTERM_PANE`) and when not already inside Zellij. PowerShell
 isn't a supported target for `zellij setup --generate-auto-start`, so the profile
-attaches manually (`zellij attach --create main`) and exits pwsh **only on a
-clean detach** — if Zellij fails to launch it falls through to a normal prompt
-instead of trapping the window in an open-then-close loop.
+starts Zellij manually (plain `zellij`, a **fresh session each time**) and exits
+pwsh **only on a clean detach** — if Zellij fails to launch it falls through to a
+normal prompt instead of trapping the window in an open-then-close loop.
+
+> We deliberately don't `attach --create main` here: on Windows Zellij's session
+> resurrection is flaky (dead/EXITED panes, broken layout on reattach), so a fresh
+> session is cleaner. Detach/reattach by name still works manually inside a session.
 
 ---
 

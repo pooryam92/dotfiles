@@ -128,7 +128,11 @@ if ($Host.Name -eq 'ConsoleHost' -and
   # it falls back to the OS default (cmd.exe). Point it at pwsh via $SHELL, which
   # Zellij reads for its default shell. (Linux already has $SHELL = zsh.)
   $env:SHELL = (Get-Command pwsh).Source
-  zellij attach --create main   # attach-or-create the "main" session (named: documented form)
+  # Start a fresh session every time instead of `attach --create main`: on Windows
+  # Zellij's session resurrection (restoring a serialized "main") is flaky — it
+  # reattaches dead/EXITED panes and a half-broken layout. A new session sidesteps
+  # all of it. You can still detach/reattach by name manually within a session.
+  zellij
   # Only close the shell if Zellij exited cleanly (you detached/quit on purpose).
   # On any failure, fall through to an interactive prompt instead of trapping the
   # window in an open-then-immediately-close loop.
