@@ -14,6 +14,7 @@ Windows).
 | Navigation   | [zoxide](https://github.com/ajeetdsouza/zoxide) — smarter `cd` (`z`/`zi`) |
 | Editor       | [Neovim](https://neovim.io) (kickstart-based, + Markdown rendering) |
 | IDE editing  | [IdeaVim](https://github.com/JetBrains/ideavim) — Vim plugin for JetBrains IDEs (`.ideavimrc`) |
+| AI coding    | [Claude Code](https://docs.claude.com/en/docs/claude-code) — themed status line + synced settings |
 
 > **Why WezTerm instead of Ghostty?** Ghostty has no official Windows build, so
 > the terminal layer would fork across machines. WezTerm is cross-platform and
@@ -31,6 +32,7 @@ in the actual config in this repo:
 - [zoxide](docs/zoxide.md) — smarter `cd`: jump to frecent dirs with `z`/`zi`
 - [Neovim](docs/nvim.md) — kickstart-based config: plugins, markdown rendering, keymaps
 - [IdeaVim](docs/ideavim.md) — Vim in JetBrains IDEs: leader maps, IDE actions
+- [Claude Code](docs/claude.md) — the AI agent: themed status line, synced settings
 - [Windows](docs/windows.md) — **native Windows setup**: scoop, PowerShell profile, paths
 
 ## Quick start
@@ -89,6 +91,8 @@ edits here take effect immediately. Only the shell config differs.
 | `intellij/.ideavimrc`    | `~/.ideavimrc`                | `%USERPROFILE%\.ideavimrc`              |
 | `zsh/.zshrc`             | `~/.zshrc`                    | —                                       |
 | `pwsh/profile.ps1`       | —                             | `$PROFILE.CurrentUserAllHosts`          |
+| `claude/statusline.js`   | `~/.claude/statusline.js`     | `%USERPROFILE%\.claude\statusline.js`   |
+| `claude/settings.json`   | `~/.claude/settings.json`     | `%USERPROFILE%\.claude\settings.json`   |
 
 After editing:
 
@@ -147,6 +151,7 @@ via [zoxide](docs/zoxide.md).
 | Change font / size / opacity | `wezterm/wezterm.lua`                               |
 | Disable Zellij auto-start    | remove the last block in `zsh/.zshrc` / `pwsh/profile.ps1` |
 | Change the prompt            | `starship/starship.toml` (see starship.rs/config)   |
+| Change the Claude status line| `claude/statusline.js` (see [docs/claude.md](docs/claude.md)) |
 | Add aliases / env            | `zsh/.zshrc` (Linux) / `pwsh/profile.ps1` (Windows) |
 | Switch theme                 | `color_scheme` in WezTerm + `theme` in Zellij + palette in Starship |
 

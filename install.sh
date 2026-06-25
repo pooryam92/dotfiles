@@ -161,6 +161,10 @@ link "$DOTFILES/starship/starship.toml" "$HOME/.config/starship.toml"
 link "$DOTFILES/zsh/.zshrc"            "$HOME/.zshrc"
 link "$DOTFILES/intellij/.ideavimrc"   "$HOME/.ideavimrc"
 link "$DOTFILES/nvim"                  "$HOME/.config/nvim"
+# Claude Code — settings.json carries the status-line pointer; statusline.js is
+# the actual config. Linking settings.json means /config edits land in the repo.
+link "$DOTFILES/claude/statusline.js"  "$HOME/.claude/statusline.js"
+link "$DOTFILES/claude/settings.json"  "$HOME/.claude/settings.json"
 
 # ---------------------------------------------------------------------------
 ZSH_PATH="$(command -v zsh)"

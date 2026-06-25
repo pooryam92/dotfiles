@@ -107,6 +107,11 @@ Link-Config (Join-Path $DOT 'intellij\.ideavimrc')    (Join-Path $env:USERPROFIL
 # Neovim on Windows reads %LOCALAPPDATA%\nvim.
 Link-Config (Join-Path $DOT 'nvim')                   (Join-Path $env:LOCALAPPDATA 'nvim') -Directory
 Link-Config (Join-Path $DOT 'pwsh\profile.ps1')       $profilePath
+# Claude Code — settings.json carries the status-line pointer; statusline.js is
+# the actual config. Linking settings.json means /config edits land in the repo.
+$claude = Join-Path $env:USERPROFILE '.claude'
+Link-Config (Join-Path $DOT 'claude\statusline.js')   (Join-Path $claude 'statusline.js')
+Link-Config (Join-Path $DOT 'claude\settings.json')   (Join-Path $claude 'settings.json')
 
 # ---------------------------------------------------------------------------
 Info "Done. Open WezTerm to start using the new setup."
