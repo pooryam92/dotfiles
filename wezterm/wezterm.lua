@@ -13,7 +13,7 @@ local is_windows = wezterm.target_triple:find 'windows' ~= nil
 
 -- ---- Font (Nerd Font for Starship / Zellij glyphs) ----
 config.font = wezterm.font 'JetBrainsMono Nerd Font'
-config.font_size = 12.0
+config.font_size = 11.0
 
 -- ---- Theme (Tokyo Night ships built-in with WezTerm) ----
 config.color_scheme = 'Tokyo Night'

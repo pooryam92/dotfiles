@@ -40,7 +40,7 @@ WezTerm **auto-reloads** the file the moment you save it — no restart needed.
 
 ```lua
 config.font = wezterm.font 'JetBrainsMono Nerd Font'
-config.font_size = 12.0
+config.font_size = 11.0
 ```
 
 A [Nerd Font](https://www.nerdfonts.com) is required so the glyphs/icons in
