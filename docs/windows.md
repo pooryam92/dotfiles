@@ -61,7 +61,7 @@ Developer Mode to upgrade copies to links. (The `nvim/` directory uses a
 ```
 wezterm/wezterm.lua    ->  %USERPROFILE%\.config\wezterm\wezterm.lua
 starship/starship.toml ->  %USERPROFILE%\.config\starship.toml
-zellij/config.kdl      ->  %APPDATA%\zellij\config.kdl          (Roaming, not ~/.config)
+zellij/config.kdl      ->  %APPDATA%\Zellij\config\config.kdl   (Roaming; note nested config\)
 intellij/.ideavimrc    ->  %USERPROFILE%\.ideavimrc
 nvim/                  ->  %LOCALAPPDATA%\nvim                  (junction)
 pwsh/profile.ps1       ->  $PROFILE.CurrentUserAllHosts         (resolved from pwsh)
@@ -102,20 +102,19 @@ instead of trapping the window in an open-then-close loop.
 
 ## Neovim on Windows
 
-The Neovim config (`nvim/init.lua`) is **unchanged** — it already guards
-Windows-specific build steps. Windows just needs the dependencies the installer
-provides:
+The Neovim config (`nvim/init.lua`) is a minimal base — just options, keymaps,
+and a colorscheme — so it has no build steps. The only dependency it actually
+needs on Windows is clipboard support:
 
-- **zig** — the C compiler nvim-treesitter uses to build parsers.
-- **ripgrep + fd** — power Telescope (`<leader>sf`, live grep).
 - **win32yank** — Neovim auto-detects it for `clipboard=unnamedplus`.
 
-After install, run `:checkhealth` and confirm the **Clipboard** and
-**Treesitter** sections are green.
+After install, run `:checkhealth` and confirm the **Clipboard** section is green.
 
-> If treesitter parser compilation hangs (a known zig-on-Windows issue), install
-> Visual Studio Build Tools (or LLVM/clang) so nvim-treesitter uses MSVC/clang
-> instead, or use prebuilt parsers.
+> The installer also provides **zig**, **ripgrep**, **fd**, and **fzf**. The bare
+> config doesn't use these yet — they're the deps treesitter and a fuzzy finder
+> (Telescope) need, kept ready for when you grow the config back. If treesitter
+> parser compilation ever hangs (a known zig-on-Windows issue), install Visual
+> Studio Build Tools or LLVM/clang so it uses MSVC/clang instead.
 
 ---
 

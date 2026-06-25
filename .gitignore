@@ -1,1 +1,4 @@
 .idea
+
+# vim.pack writes this; it's auto-generated from init.lua, so don't track it.
+nvim/nvim-pack-lock.json

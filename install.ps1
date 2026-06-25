@@ -130,8 +130,11 @@ Info "Linking config files…"
 $cfg = Join-Path $env:USERPROFILE '.config'
 Link-Config (Join-Path $DOT 'wezterm\wezterm.lua')    (Join-Path $cfg 'wezterm\wezterm.lua')
 Link-Config (Join-Path $DOT 'starship\starship.toml') (Join-Path $cfg 'starship.toml')
-# Zellij on Windows reads %APPDATA%\zellij (Roaming), not ~/.config/zellij.
-Link-Config (Join-Path $DOT 'zellij\config.kdl')      (Join-Path $env:APPDATA 'zellij\config.kdl')
+# Zellij on Windows reads %APPDATA%\Zellij\config\config.kdl (Roaming, note the
+# nested `config` dir) — NOT %APPDATA%\zellij\config.kdl. Linking the wrong path
+# leaves Zellij silently on its built-in default theme. `zellij setup --check`
+# prints the real path under [CONFIG DIR] if this ever changes again.
+Link-Config (Join-Path $DOT 'zellij\config.kdl')      (Join-Path $env:APPDATA 'Zellij\config\config.kdl')
 Link-Config (Join-Path $DOT 'intellij\.ideavimrc')    (Join-Path $env:USERPROFILE '.ideavimrc')
 # Neovim on Windows reads %LOCALAPPDATA%\nvim.
 Link-Config (Join-Path $DOT 'nvim')                   (Join-Path $env:LOCALAPPDATA 'nvim') -Directory

@@ -1,8 +1,9 @@
 # Zed
 
 [Zed](https://zed.dev) is a fast, GPU-accelerated GUI code editor. In this repo
-it's the **graphical** counterpart to the terminal Neovim setup: same theme
-(Catppuccin Mocha), same modal Vim editing, same font — so reaching for a mouse-driven
+it's the **graphical** counterpart to the terminal Neovim setup: it keeps
+Catppuccin Mocha (the one exception to the repo's Tokyo Night theme), same modal
+Vim editing, same font — so reaching for a mouse-driven
 editor doesn't mean leaving the keyboard-first workflow behind (goal #1, goal #3).
 
 It's configured with plain JSON (JSONC, so `//` comments and trailing commas are
@@ -54,9 +55,10 @@ A few things worth knowing:
   fetches the [`catppuccin`](https://github.com/zed-industries/extensions)
   extension on first launch. Unlike the terminal tools (which follow the
   terminal's palette via named colors), Zed is a GUI app with its own theme
-  engine, so it names the theme outright — exactly as Neovim does with
-  `catppuccin/nvim`. Other flavours the extension provides: `"Catppuccin Latte"`
-  (light), `"Catppuccin Frappé"`, `"Catppuccin Macchiato"`.
+  engine, so it names the theme outright. Zed is the one tool that doesn't use
+  the repo's Tokyo Night theme — it keeps Catppuccin Mocha. Other flavours the
+  extension provides: `"Catppuccin Latte"` (light), `"Catppuccin Frappé"`,
+  `"Catppuccin Macchiato"`.
 - **Vim mode.** Toggle it at runtime from the command palette
   (`Ctrl-Shift-P` → "workspace: toggle vim mode") without editing the file.
   Vim-specific options live under a `"vim"` block — see
@@ -96,7 +98,7 @@ navigation is identical across all three editors:
 | Want to…                  | Edit                                                       |
 | ------------------------- | ---------------------------------------------------------- |
 | Change font / size        | `buffer_font_family` / `buffer_font_size`                  |
-| Switch Catppuccin flavour | `"theme"` → `"Catppuccin Macchiato"` / `"Catppuccin Latte"` |
+| Switch theme              | `"theme"` → any installed theme name (add it to `auto_install_extensions`) |
 | Format on every save      | `"format_on_save": "on"` (add `formatter` per language)    |
 | Add a keybinding          | a new block in `keymap.json` (find action names in palette)|
 | Turn Vim off              | `"vim_mode": false`, or toggle from the command palette    |

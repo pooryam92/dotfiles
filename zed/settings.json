@@ -18,19 +18,6 @@
   "cli_default_open_behavior": "existing_window",
   "vim_mode": true,
 
-  // ---- Theme: Catppuccin Mocha ----
-  // Matches WezTerm, Zellij, Neovim, and Starship. The terminal tools follow
-  // the terminal's palette via named colors; Zed is a GUI app with its own
-  // theme engine, so — like Neovim's catppuccin/nvim — it names the theme
-  // outright. "Catppuccin Mocha" is the dark variant (others in the extension:
-  // "Catppuccin Latte" /light, "Catppuccin Frappé", "Catppuccin Macchiato").
-  "theme": "Catppuccin Mocha",
-  // Zed ships no Catppuccin theme built-in, so pull in the extension on first
-  // launch. (A `false` value would instead pin an extension as never-install.)
-  "auto_install_extensions": {
-    "catppuccin": true
-  },
-
   // ---- Font: the JetBrainsMono Nerd Font the installers install ----
   // Nerd Font so ligatures/glyphs match the terminal stack.
   "buffer_font_family": "JetBrainsMono Nerd Font",

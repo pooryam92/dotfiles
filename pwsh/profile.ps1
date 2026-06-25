@@ -45,9 +45,10 @@ if (Get-Module PSReadLine) {
 }
 
 # ---- File-listing colors (Get-ChildItem) ----
-# PowerShell 7's default $PSStyle.FileInfo.Directory is a blue *background*
-# (ESC[44;1m), which renders as ugly solid bars behind folder names. Switch
-# directories, symlinks, and executables to plain Tokyo Night foreground colors.
+# No custom file-listing colors. We clear the styles to plain text rather than
+# leaving them unset, because PowerShell 7's default $PSStyle.FileInfo.Directory
+# is a blue *background* (ESC[44;1m) that renders as ugly solid bars behind
+# folder names. Empty string == no formatting, so listings are uncolored.
 if ($PSStyle) {
   $PSStyle.FileInfo.Directory    = $PSStyle.Bold + $PSStyle.Foreground.FromRgb(0x7aa2f7)  # blue
   $PSStyle.FileInfo.SymbolicLink = $PSStyle.Foreground.FromRgb(0x7dcfff)                   # cyan

@@ -1,8 +1,7 @@
 # dotfiles
 
 A clean terminal environment for **Linux** (Pop!_OS / Ubuntu) **and Windows**,
-themed Tokyo Night end to end (Zed is the exception — it keeps Catppuccin Mocha).
-One repo, two platforms — the same configs
+themed Tokyo Night end to end. One repo, two platforms — the same configs
 are shared across both; only the shell differs (zsh on Linux, PowerShell on
 Windows).
 
@@ -13,8 +12,8 @@ Windows).
 | Shell        | zsh (Linux) / [PowerShell 7](https://learn.microsoft.com/powershell/) (Windows) |
 | Prompt       | [Starship](https://starship.rs)                   |
 | Navigation   | [zoxide](https://github.com/ajeetdsouza/zoxide) — smarter `cd` (`z`/`zi`) |
-| Editor       | [Neovim](https://neovim.io) — lean single-file config (treesitter + Telescope) |
-| GUI editor   | [Zed](https://zed.dev) — fast GPU editor, Vim mode + Catppuccin Mocha (shared `settings.json`/`keymap.json`) |
+| Editor       | [Neovim](https://neovim.io) (kickstart-based, + Markdown rendering) |
+| GUI editor   | [Zed](https://zed.dev) — fast GPU editor, Vim mode + Tokyo Night (shared `settings.json`/`keymap.json`) |
 | IDE editing  | [IdeaVim](https://github.com/JetBrains/ideavim) — Vim plugin for JetBrains IDEs (`.ideavimrc`) |
 | AI coding    | [Claude Code](https://docs.claude.com/en/docs/claude-code) — themed status line + synced settings |
 
@@ -22,7 +21,7 @@ Windows).
 > the terminal layer would fork across machines. WezTerm is cross-platform and
 > Lua-configured, so a single `wezterm.lua` serves every OS.
 
-## Learn it
+ # Learn it
 
 In-depth, beginner-friendly guides to using and configuring each tool — grounded
 in the actual config in this repo:
@@ -32,8 +31,8 @@ in the actual config in this repo:
 - [zsh](docs/zsh.md) — the shell: history, completion, plugins, aliases
 - [Starship](docs/starship.md) — the prompt: modules, format, styling
 - [zoxide](docs/zoxide.md) — smarter `cd`: jump to frecent dirs with `z`/`zi`
-- [Neovim](docs/nvim.md) — lean single-file config: options, treesitter, Telescope, keymaps
-- [Zed](docs/zed.md) — the GUI editor: Vim mode, Catppuccin Mocha, fonts, keymap
+- [Neovim](docs/nvim.md) — kickstart-based config: plugins, markdown rendering, keymaps
+- [Zed](docs/zed.md) — the GUI editor: Vim mode, Tokyo Night, fonts, keymap
 - [IdeaVim](docs/ideavim.md) — Vim in JetBrains IDEs: leader maps, IDE actions
 - [Claude Code](docs/claude.md) — the AI agent: themed status line, synced settings
 - [Windows](docs/windows.md) — **native Windows setup**: scoop, PowerShell profile, paths
@@ -145,9 +144,8 @@ via [zoxide](docs/zoxide.md).
   `$WEZTERM_PANE`), so SSH sessions, other terminals, and IDE shells stay plain.
   This guard lives at the bottom of `zsh/.zshrc` and `pwsh/profile.ps1`.
 - Tokyo Night is configured natively in WezTerm (built-in scheme) and Zellij
-  (a custom `tokyo-night-frames` theme); Neovim uses `folke/tokyonight.nvim` and
-  Starship uses ANSI named colors that follow the terminal palette — no theme
-  files to install. (Zed is the exception — it ships its own Catppuccin Mocha.)
+  (`tokyo-night-dark`); Neovim uses `folke/tokyonight.nvim` and Starship uses
+  ANSI named colors that follow the terminal palette — no theme files to install.
 - Zellij's `config.kdl` is OS-agnostic: it omits `default_shell` (inherits the
   shell WezTerm launched) and `copy_command` (uses the terminal's OSC52
   clipboard), so one file works on both platforms.
