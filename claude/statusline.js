@@ -88,10 +88,13 @@ function render(input) {
 
   // Model — just the version number to save space, e.g. "Opus 4.8" -> "4.8".
   // The family is dropped: it's almost always Opus, and a bare initial only
-  // confuses (capital "O" reads as 0). Falls back to the full name if there's
-  // no parseable version.
+  // confuses (capital "O" reads as 0). Version-agnostic on purpose — nothing
+  // here is pinned to 4.x, so a future "Opus 5" or "Opus 4.10" just shows "5"
+  // / "4.10" automatically. The pattern matches a whole dotted version
+  // (digits and interior dots, no trailing dot); if a release ever ships a
+  // name with no parseable version we fall back to showing it in full.
   const name = (input.model && input.model.display_name) || 'Claude';
-  const m = name.match(/[\d][\d.]*/);
+  const m = name.match(/\d+(?:\.\d+)*/);
   segments.push(blue(m ? m[0] : name));
 
   // Directory — project-relative, cyan (matches starship [directory]).
