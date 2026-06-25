@@ -5,10 +5,13 @@ terminal coding agent. This repo configures one piece of it: the **status line**
 — the single line shown under the prompt while Claude is working.
 
 ```
-Opus 4.8   dotfiles    main *   ctx 84k/200k   5h 24%   wk 81%
-└ model    └ dir       └ git    └ context       └ 5-hour └ 7-day plan usage
-                                  tokens / window
+O4.8   dotfiles    main *   ctx 84k/200k   5h 24%   wk 81%
+└ model └ dir       └ git    └ context       └ 5-hour └ 7-day plan usage
+                              tokens / window
 ```
+
+The model is abbreviated to family-initial + version to save room (`Opus 4.8`
+→ `O4.8`, `Sonnet 4.6` → `S4.6`).
 
 The last two segments (`5h`/`wk`) are your subscription limits — they only show
 for Claude.ai Pro/Max accounts, and only after the first API response in a

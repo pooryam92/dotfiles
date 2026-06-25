@@ -66,7 +66,7 @@ function gitInfo(cwd) {
       cwd,
       encoding: 'utf8',
       stdio: ['ignore', 'pipe', 'ignore'],
-      timeout: 500,
+      timeout: 1000, // mirror starship.toml command_timeout so both bars agree on slow repos
     });
     const lines = out.split('\n');
     const head = lines[0] || '';
@@ -86,9 +86,12 @@ function render(input) {
   const cwd = ws.current_dir || input.cwd || home;
   const segments = [];
 
-  // Model — e.g. "Opus 4.8".
-  const model = (input.model && input.model.display_name) || 'Claude';
-  segments.push(blue(model));
+  // Model — abbreviated to save space: family initial + version, e.g.
+  // "Opus 4.8" -> "O4.8". The version stays because it's the thing worth
+  // glancing at (am I on 4.8/1M, or downgraded?); the family is one letter.
+  const name = (input.model && input.model.display_name) || 'Claude';
+  const m = name.match(/^([A-Za-z])\S*\s+([\d.]+)/);
+  segments.push(blue(m ? m[1].toUpperCase() + m[2] : name));
 
   // Directory — project-relative, cyan (matches starship [directory]).
   segments.push(cyan(dirSegment(cwd, ws.project_dir, home)));
