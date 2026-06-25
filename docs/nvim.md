@@ -39,13 +39,13 @@ variables stay contained:
 | 1 Options    | numbers, clipboard, search, splits, undo            |
 | 2 Keymaps    | window navigation, `<Esc>` clears search, yank flash |
 | 3 Plugins    | `vim.pack` intro + the post-install build hook      |
-| 4 Colorscheme| Catppuccin (Mocha)                                  |
+| 4 Colorscheme| Tokyo Night (Night)                                 |
 | 5 Treesitter | syntax highlighting + auto-installed parsers        |
 | 6 Telescope  | fuzzy find files / grep / buffers                   |
 
 ### Plugin management with `vim.pack`
 
-Only five plugins are installed: `catppuccin/nvim`, `nvim-treesitter`,
+Only five plugins are installed: `folke/tokyonight.nvim`, `nvim-treesitter`,
 `telescope.nvim` + `plenary.nvim`, and (when `make` is present)
 `telescope-fzf-native.nvim`.
 

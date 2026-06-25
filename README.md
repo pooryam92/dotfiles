@@ -1,7 +1,8 @@
 # dotfiles
 
 A clean terminal environment for **Linux** (Pop!_OS / Ubuntu) **and Windows**,
-themed Tokyo Night end to end. One repo, two platforms — the same configs
+themed Tokyo Night end to end (Zed is the exception — it keeps Catppuccin Mocha).
+One repo, two platforms — the same configs
 are shared across both; only the shell differs (zsh on Linux, PowerShell on
 Windows).
 
@@ -12,7 +13,8 @@ Windows).
 | Shell        | zsh (Linux) / [PowerShell 7](https://learn.microsoft.com/powershell/) (Windows) |
 | Prompt       | [Starship](https://starship.rs)                   |
 | Navigation   | [zoxide](https://github.com/ajeetdsouza/zoxide) — smarter `cd` (`z`/`zi`) |
-| Editor       | [Neovim](https://neovim.io) (kickstart-based, + Markdown rendering) |
+| Editor       | [Neovim](https://neovim.io) — lean single-file config (treesitter + Telescope) |
+| GUI editor   | [Zed](https://zed.dev) — fast GPU editor, Vim mode + Catppuccin Mocha (shared `settings.json`/`keymap.json`) |
 | IDE editing  | [IdeaVim](https://github.com/JetBrains/ideavim) — Vim plugin for JetBrains IDEs (`.ideavimrc`) |
 | AI coding    | [Claude Code](https://docs.claude.com/en/docs/claude-code) — themed status line + synced settings |
 
@@ -30,7 +32,8 @@ in the actual config in this repo:
 - [zsh](docs/zsh.md) — the shell: history, completion, plugins, aliases
 - [Starship](docs/starship.md) — the prompt: modules, format, styling
 - [zoxide](docs/zoxide.md) — smarter `cd`: jump to frecent dirs with `z`/`zi`
-- [Neovim](docs/nvim.md) — kickstart-based config: plugins, markdown rendering, keymaps
+- [Neovim](docs/nvim.md) — lean single-file config: options, treesitter, Telescope, keymaps
+- [Zed](docs/zed.md) — the GUI editor: Vim mode, Catppuccin Mocha, fonts, keymap
 - [IdeaVim](docs/ideavim.md) — Vim in JetBrains IDEs: leader maps, IDE actions
 - [Claude Code](docs/claude.md) — the AI agent: themed status line, synced settings
 - [Windows](docs/windows.md) — **native Windows setup**: scoop, PowerShell profile, paths
@@ -68,14 +71,15 @@ backed up to `<file>.bak.<timestamp>` before linking.
 
 **`install.sh` (Linux)** installs apt packages (`zsh`, `git`, plugins, etc.),
 **WezTerm** (official Fury apt repo), and **Zellij**, **Starship**, **zoxide**,
-**Neovim**, and the **tree-sitter CLI** as user binaries in `~/.local/bin`. It
-installs the **JetBrainsMono Nerd Font**, symlinks the configs, and sets **zsh**
-as the login shell (`chsh`). Steps using `sudo` will prompt for your password.
+**Neovim**, **Zed** (official installer), and the **tree-sitter CLI** as user
+binaries in `~/.local/bin`. It installs the **JetBrainsMono Nerd Font**, symlinks
+the configs, and sets **zsh** as the login shell (`chsh`). Steps using `sudo` will
+prompt for your password.
 
 **`install.ps1` (Windows)** uses [scoop](https://scoop.sh) (user-scope, no admin)
 to install **PowerShell 7**, **WezTerm**, **Zellij**, **Starship**, **zoxide**,
-**Neovim**, plus `zig` / `ripgrep` / `fd` / `fzf` / `win32yank` (Neovim's deps)
-and the Nerd Font, then links the configs. See [docs/windows.md](docs/windows.md).
+**Neovim**, **Zed**, plus `zig` / `ripgrep` / `fd` / `fzf` / `win32yank` (Neovim's
+deps) and the Nerd Font, then links the configs. See [docs/windows.md](docs/windows.md).
 
 ## Layout
 
@@ -88,6 +92,8 @@ edits here take effect immediately. Only the shell config differs.
 | `zellij/config.kdl`      | `~/.config/zellij/config.kdl` | `%APPDATA%\zellij\config.kdl`           |
 | `starship/starship.toml` | `~/.config/starship.toml`     | `%USERPROFILE%\.config\starship.toml`   |
 | `nvim/`                  | `~/.config/nvim`              | `%LOCALAPPDATA%\nvim` (junction)        |
+| `zed/settings.json`      | `~/.config/zed/settings.json` | `%APPDATA%\Zed\settings.json`           |
+| `zed/keymap.json`        | `~/.config/zed/keymap.json`   | `%APPDATA%\Zed\keymap.json`             |
 | `intellij/.ideavimrc`    | `~/.ideavimrc`                | `%USERPROFILE%\.ideavimrc`              |
 | `zsh/.zshrc`             | `~/.zshrc`                    | —                                       |
 | `pwsh/profile.ps1`       | —                             | `$PROFILE.CurrentUserAllHosts`          |
@@ -101,6 +107,7 @@ After editing:
 - **Zellij** – restart the session, or `Ctrl+o` → `w` to switch.
 - **Starship** – picked up on the next prompt.
 - **Neovim** – restart `nvim` (plugins via `:lua vim.pack.update()`).
+- **Zed** – applies settings/keymap edits on save; no reload.
 
 ## Keybindings
 
@@ -138,8 +145,9 @@ via [zoxide](docs/zoxide.md).
   `$WEZTERM_PANE`), so SSH sessions, other terminals, and IDE shells stay plain.
   This guard lives at the bottom of `zsh/.zshrc` and `pwsh/profile.ps1`.
 - Tokyo Night is configured natively in WezTerm (built-in scheme) and Zellij
-  (`tokyo-night-dark`); Neovim uses `folke/tokyonight.nvim` and Starship uses
-  ANSI named colors that follow the terminal palette — no theme files to install.
+  (a custom `tokyo-night-frames` theme); Neovim uses `folke/tokyonight.nvim` and
+  Starship uses ANSI named colors that follow the terminal palette — no theme
+  files to install. (Zed is the exception — it ships its own Catppuccin Mocha.)
 - Zellij's `config.kdl` is OS-agnostic: it omits `default_shell` (inherits the
   shell WezTerm launched) and `copy_command` (uses the terminal's OSC52
   clipboard), so one file works on both platforms.

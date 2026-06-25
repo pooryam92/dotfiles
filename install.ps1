@@ -76,16 +76,20 @@ foreach ($b in 'extras', 'nerd-fonts') { scoop bucket add $b 2>$null }
 #               config — the post-install check below warns if that's the case.
 # starship/wezterm — core stack
 # zig         — C compiler nvim-treesitter uses to build parsers on Windows
+# tree-sitter — CLI the nvim-treesitter main branch drives to compile parsers
+#               (`tree-sitter build`); without it parser installs fail with
+#               ENOENT 'tree-sitter'. install.sh fetches the same CLI on Linux.
 # ripgrep/fd  — power Telescope (live grep / find files)
 # fzf         — fuzzy finder
 # win32yank   — Neovim clipboard provider (auto-detected for clipboard=unnamedplus)
 # zellij      — scoop ships the native Windows (ConPTY) build; avoids the winget
 #               version-numbering bug. Fallback: github.com/zellij-org/zellij/releases
 # zoxide      — smarter cd (`z`/`zi`); `zi` uses fzf (also installed above)
+# zed         — GUI editor counterpart to Neovim (extras bucket); self-updates
 # JetBrainsMono-NF — Nerd Font for prompt/multiplexer glyphs
 Info "Installing packages via scoop…"
-$pkgs = @('pwsh', 'neovim', 'starship', 'wezterm', 'zig', 'ripgrep', 'fd', 'fzf',
-          'win32yank', 'zellij', 'zoxide', 'JetBrainsMono-NF')
+$pkgs = @('pwsh', 'neovim', 'starship', 'wezterm', 'zig', 'tree-sitter', 'ripgrep',
+          'fd', 'fzf', 'win32yank', 'zellij', 'zoxide', 'zed', 'JetBrainsMono-NF')
 scoop install @pkgs
 
 # ---------------------------------------------------------------------------
@@ -131,6 +135,9 @@ Link-Config (Join-Path $DOT 'zellij\config.kdl')      (Join-Path $env:APPDATA 'z
 Link-Config (Join-Path $DOT 'intellij\.ideavimrc')    (Join-Path $env:USERPROFILE '.ideavimrc')
 # Neovim on Windows reads %LOCALAPPDATA%\nvim.
 Link-Config (Join-Path $DOT 'nvim')                   (Join-Path $env:LOCALAPPDATA 'nvim') -Directory
+# Zed on Windows reads %APPDATA%\Zed (Roaming), not ~/.config/zed.
+Link-Config (Join-Path $DOT 'zed\settings.json')      (Join-Path $env:APPDATA 'Zed\settings.json')
+Link-Config (Join-Path $DOT 'zed\keymap.json')        (Join-Path $env:APPDATA 'Zed\keymap.json')
 Link-Config (Join-Path $DOT 'pwsh\profile.ps1')       $profilePath
 # Claude Code — settings.json carries the status-line pointer; statusline.js is
 # the actual config. Linking settings.json means /config edits land in the repo.

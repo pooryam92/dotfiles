@@ -1,0 +1,49 @@
+// Zed editor configuration — shared across Linux and Windows.
+// Docs: https://zed.dev/docs/configuring-zed
+// Full key list: https://zed.dev/docs/reference/all-settings
+//
+// Zed watches this file and applies changes the moment you save — no reload.
+// The installers link it to:
+//   Linux:    ~/.config/zed/settings.json
+//   Windows:  %APPDATA%\Zed\settings.json
+//
+// Format is JSONC: // comments and trailing commas are allowed. Map-type
+// settings (like auto_install_extensions) merge over Zed's defaults rather
+// than replacing them, so you only list what you want to change.
+{
+  // ---- Editing model: Vim ----
+  // Modal, keyboard-first editing on every tool in this repo (goal #1) — the
+  // same muscle memory as the Neovim and IdeaVim configs. Toggle at runtime
+  // from the command palette: "workspace: toggle vim mode".
+  "cli_default_open_behavior": "existing_window",
+  "vim_mode": true,
+
+  // ---- Theme: Catppuccin Mocha ----
+  // Matches WezTerm, Zellij, Neovim, and Starship. The terminal tools follow
+  // the terminal's palette via named colors; Zed is a GUI app with its own
+  // theme engine, so — like Neovim's catppuccin/nvim — it names the theme
+  // outright. "Catppuccin Mocha" is the dark variant (others in the extension:
+  // "Catppuccin Latte" /light, "Catppuccin Frappé", "Catppuccin Macchiato").
+  "theme": "Catppuccin Mocha",
+  // Zed ships no Catppuccin theme built-in, so pull in the extension on first
+  // launch. (A `false` value would instead pin an extension as never-install.)
+  "auto_install_extensions": {
+    "catppuccin": true
+  },
+
+  // ---- Font: the JetBrainsMono Nerd Font the installers install ----
+  // Nerd Font so ligatures/glyphs match the terminal stack.
+  "buffer_font_family": "JetBrainsMono Nerd Font",
+  "buffer_font_size": 14,
+
+  // ---- Line numbers ----
+  // Hybrid: absolute on the cursor line, relative on the rest — makes vertical
+  // motions (5j, 3k) trivial. Mirrors `.ideavimrc` (number + relativenumber).
+  "relative_line_numbers": true,
+
+  // ---- Format on save ----
+  // Off, matching the Neovim config (there, conform.nvim's format-on-save is
+  // opt-in per filetype). Flip to "on" for every save, or set per-language
+  // formatters under a "languages" block.
+  "format_on_save": "off"
+}

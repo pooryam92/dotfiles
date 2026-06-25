@@ -13,7 +13,7 @@ the section that uses them:
   Section 1 — Options:      core editor settings + leader keys
   Section 2 — Keymaps:      global mappings + autocmds
   Section 3 — Plugins:      vim.pack intro + build hook
-  Section 4 — Colorscheme:  catppuccin (matches WezTerm / Zellij)
+  Section 4 — Colorscheme:  tokyonight (matches WezTerm / Zellij)
   Section 5 — Treesitter:   syntax highlighting
   Section 6 — Telescope:    fuzzy find files / grep / buffers
 
@@ -159,14 +159,14 @@ end
 -- SECTION 4: COLORSCHEME
 -- ============================================================
 do
-  -- catppuccin/nvim — Mocha flavour, matching WezTerm / Zellij / Starship.
-  -- Variants: catppuccin-latte (light), catppuccin-frappe, catppuccin-macchiato.
-  vim.pack.add { gh 'catppuccin/nvim' }
-  require('catppuccin').setup {
-    flavour = 'mocha',
-    styles = { comments = {} }, -- no italic comments (matches the old config)
+  -- folke/tokyonight.nvim — Night style, matching WezTerm / Zellij / Starship.
+  -- Variants: tokyonight-storm, tokyonight-moon, tokyonight-day (light).
+  vim.pack.add { gh 'folke/tokyonight.nvim' }
+  require('tokyonight').setup {
+    style = 'night',
+    styles = { comments = { italic = false } }, -- non-italic comments
   }
-  vim.cmd.colorscheme 'catppuccin-mocha'
+  vim.cmd.colorscheme 'tokyonight-night'
 end
 
 -- ============================================================

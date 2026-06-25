@@ -1,0 +1,24 @@
+// Zed keymap — shared across Linux and Windows.
+// Docs: https://zed.dev/docs/key-bindings
+// Defaults for reference: https://github.com/zed-industries/zed/tree/main/assets/keymaps
+//
+// Linked to:  Linux ~/.config/zed/keymap.json  ·  Windows %APPDATA%\Zed\keymap.json
+//
+// This file only ADDS to Zed's built-in bindings; it doesn't replace them. Zed
+// already maps Vim's `Ctrl-w h/j/k/l` for split navigation — the block below
+// adds the bare `Ctrl-h/j/k/l` form used by the Neovim and IdeaVim configs in
+// this repo, so moving between splits feels identical across all three editors
+// (goal #1 keyboard-first, goal #3 one experience on both OSes).
+[
+  {
+    // VimControl = any Vim mode that isn't insert (normal, visual, …).
+    // `!menu` yields the keys to a completion/popup menu while one is open.
+    "context": "VimControl && !menu",
+    "bindings": {
+      "ctrl-h": "workspace::ActivatePaneLeft",
+      "ctrl-l": "workspace::ActivatePaneRight",
+      "ctrl-j": "workspace::ActivatePaneDown",
+      "ctrl-k": "workspace::ActivatePaneUp"
+    }
+  }
+]

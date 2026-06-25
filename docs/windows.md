@@ -51,8 +51,9 @@ Developer Mode to upgrade copies to links. (The `nvim/` directory uses a
    loads on future launches).
 2. Bootstraps **scoop** if missing; adds the `extras` and `nerd-fonts` buckets.
 3. Installs: `pwsh`, `neovim`, `starship`, `wezterm`, `zig` (treesitter
-   compiler), `ripgrep`, `fd`, `fzf`, `win32yank` (nvim clipboard), `zellij`,
-   `zoxide` (smarter `cd`), and the **JetBrainsMono Nerd Font**.
+   compiler), `tree-sitter` (parser-build CLI), `ripgrep`, `fd`, `fzf`,
+   `win32yank` (nvim clipboard), `zellij`, `zoxide` (smarter `cd`), and the
+   **JetBrainsMono Nerd Font**.
 4. Links the configs to their Windows paths (see below).
 
 ### Config paths on Windows

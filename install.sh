@@ -140,6 +140,17 @@ else
 fi
 
 # ---------------------------------------------------------------------------
+info "Installing Zed…"
+# Zed is the GUI editor counterpart to Neovim (Catppuccin Mocha + Vim mode, shared
+# settings/keymap). The official installer drops it under ~/.local; it self-
+# updates afterwards, so we only run it when Zed isn't already present.
+if command -v zed >/dev/null; then
+  info "zed already installed ($(zed --version 2>/dev/null | head -1))"
+else
+  curl -f https://zed.dev/install.sh | sh || warn "Zed install failed; see https://zed.dev/docs/linux"
+fi
+
+# ---------------------------------------------------------------------------
 info "Installing JetBrainsMono Nerd Font…"
 FONT_DIR="$HOME/.local/share/fonts/JetBrainsMono"
 if [ -d "$FONT_DIR" ] && ls "$FONT_DIR"/*.ttf >/dev/null 2>&1; then
@@ -161,6 +172,8 @@ link "$DOTFILES/starship/starship.toml" "$HOME/.config/starship.toml"
 link "$DOTFILES/zsh/.zshrc"            "$HOME/.zshrc"
 link "$DOTFILES/intellij/.ideavimrc"   "$HOME/.ideavimrc"
 link "$DOTFILES/nvim"                  "$HOME/.config/nvim"
+link "$DOTFILES/zed/settings.json"     "$HOME/.config/zed/settings.json"
+link "$DOTFILES/zed/keymap.json"       "$HOME/.config/zed/keymap.json"
 # Claude Code — settings.json carries the status-line pointer; statusline.js is
 # the actual config. Linking settings.json means /config edits land in the repo.
 link "$DOTFILES/claude/statusline.js"  "$HOME/.claude/statusline.js"
