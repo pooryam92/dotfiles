@@ -86,12 +86,13 @@ function render(input) {
   const cwd = ws.current_dir || input.cwd || home;
   const segments = [];
 
-  // Model — abbreviated to save space: family initial + version, e.g.
-  // "Opus 4.8" -> "O4.8". The version stays because it's the thing worth
-  // glancing at (am I on 4.8/1M, or downgraded?); the family is one letter.
+  // Model — just the version number to save space, e.g. "Opus 4.8" -> "4.8".
+  // The family is dropped: it's almost always Opus, and a bare initial only
+  // confuses (capital "O" reads as 0). Falls back to the full name if there's
+  // no parseable version.
   const name = (input.model && input.model.display_name) || 'Claude';
-  const m = name.match(/^([A-Za-z])\S*\s+([\d.]+)/);
-  segments.push(blue(m ? m[1].toUpperCase() + m[2] : name));
+  const m = name.match(/[\d][\d.]*/);
+  segments.push(blue(m ? m[0] : name));
 
   // Directory — project-relative, cyan (matches starship [directory]).
   segments.push(cyan(dirSegment(cwd, ws.project_dir, home)));
