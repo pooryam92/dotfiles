@@ -124,6 +124,23 @@ function render(input) {
     }
   }
 
+  // Plan usage — how much of the Pro/Max subscription limits is spent, so a
+  // cap is visible before we hit it. `rate_limits` only appears for subscribers
+  // after the first API response, and each window can be absent on its own, so
+  // probe defensively. Here % *is* the right unit (it's a hard quota): green
+  // normally, yellow past half, red once it's getting close.
+  const rl = input.rate_limits;
+  if (rl) {
+    const usageTone = (p) => (p >= 80 ? red : p >= 50 ? yellow : green);
+    const win = (w, label) => {
+      const p = w && w.used_percentage;
+      if (typeof p !== 'number') return;
+      segments.push(grey(label + ' ') + usageTone(p)(Math.round(p) + '%'));
+    };
+    win(rl.five_hour, '5h');
+    win(rl.seven_day, 'wk');
+  }
+
   return segments.join(grey('  '));
 }
 
