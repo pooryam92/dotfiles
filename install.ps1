@@ -70,7 +70,11 @@ foreach ($b in 'extras', 'nerd-fonts') { scoop bucket add $b 2>$null }
 
 # ---------------------------------------------------------------------------
 # pwsh        — PowerShell 7 (the target shell)
-# neovim/starship/wezterm — core stack
+# neovim      — needs 0.12+ (the nvim config uses vim.pack / PackChanged); scoop
+#               ships current stable. A separate winget/MSI Neovim in
+#               "C:\Program Files\Neovim" shadows scoop on PATH and breaks the
+#               config — the post-install check below warns if that's the case.
+# starship/wezterm — core stack
 # zig         — C compiler nvim-treesitter uses to build parsers on Windows
 # ripgrep/fd  — power Telescope (live grep / find files)
 # fzf         — fuzzy finder
@@ -83,6 +87,27 @@ Info "Installing packages via scoop…"
 $pkgs = @('pwsh', 'neovim', 'starship', 'wezterm', 'zig', 'ripgrep', 'fd', 'fzf',
           'win32yank', 'zellij', 'zoxide', 'JetBrainsMono-NF')
 scoop install @pkgs
+
+# ---------------------------------------------------------------------------
+# Guard: the nvim config requires 0.12+ (vim.pack / PackChanged). scoop installs
+# a current build, but a stale winget/MSI Neovim under "C:\Program Files\Neovim"
+# sits in the machine PATH ahead of scoop's user shims and wins `nvim`, aborting
+# startup with "Invalid 'event': 'PackChanged'". Detect and tell the user how to
+# remove it (needs an elevated shell — this user-scope installer can't elevate).
+$nvimCmd = Get-Command nvim -ErrorAction SilentlyContinue
+if ($nvimCmd) {
+  $ver = (& $nvimCmd.Source --version | Select-Object -First 1)
+  $shadowed = $nvimCmd.Source -notlike '*\scoop\*'
+  $tooOld   = $ver -match 'v0\.(\d+)\.' -and [int]$Matches[1] -lt 12
+  if ($shadowed -or $tooOld) {
+    Warn "Active nvim is '$($nvimCmd.Source)' ($ver) — not the scoop 0.12+ build."
+    Warn "The nvim config needs 0.12+. Remove the shadowing install in an ADMIN shell:"
+    Warn "    winget uninstall --id Neovim.Neovim"
+    Warn "Then restart your shell so scoop's nvim takes over."
+  } else {
+    Info "nvim OK: $($nvimCmd.Source) ($ver)"
+  }
+}
 
 # ---------------------------------------------------------------------------
 # Resolve the pwsh 7 profile path from pwsh itself — OneDrive-redirection-aware
