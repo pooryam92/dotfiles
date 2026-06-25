@@ -77,15 +77,22 @@ zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'
 ### Keybindings
 
 ```sh
-bindkey -e
+bindkey -v
 bindkey '^[[A' history-search-backward
 bindkey '^[[B' history-search-forward
+bindkey '^E' end-of-line
+bindkey '^F' forward-word
 ```
 
-- `bindkey -e` — emacs-style line editing (`Ctrl+a` start of line, `Ctrl+e` end,
-  `Ctrl+w` delete word, etc.).
+- `bindkey -v` — **vi-style modal editing**: you start in insert mode, `Esc` drops
+  to normal mode (the prompt's vi indicator changes via Starship). Matches
+  PowerShell's `EditMode Vi` so both shells edit the same way.
 - `↑`/`↓` do a **prefix history search**: type `git ` then `↑` to cycle only
   through past commands starting with `git`.
+- `Ctrl+E` / `Ctrl+F` — accept the autosuggestion without the arrow keys:
+  `Ctrl+E` (`end-of-line`) takes the **whole** suggestion, `Ctrl+F` (`forward-word`)
+  takes the **next word**. vi-insert doesn't bind these by default; we add them so
+  the keys are identical on Windows (see [windows.md](windows.md)).
 
 ### Aliases
 
@@ -118,7 +125,8 @@ done
 ```
 
 - **autosuggestions** — shows a greyed-out suggestion from history as you type;
-  press `→` (or `End`) to accept it.
+  press `→`, `End`, or `Ctrl+E` to accept the whole thing, or `Ctrl+F` for just
+  the next word.
 - **syntax-highlighting** — colors your command line as you type (valid commands
   green, unknown red, quotes/paths highlighted). **Must be sourced last**, which
   is why it's the second entry.
@@ -174,10 +182,11 @@ Then:
 
 ## Day-to-day usage
 
-- **Accept an autosuggestion:** `→` or `End`. Accept one word: `Alt+f`.
+- **Accept an autosuggestion:** `→`, `End`, or `Ctrl+E`. Accept one word: `Ctrl+F`.
 - **Search history fuzzily by prefix:** type a few chars, then `↑`/`↓`.
-- **Jump on the line:** `Ctrl+a` (start), `Ctrl+e` (end), `Ctrl+w` (delete word
-  back), `Ctrl+u` (delete to start), `Ctrl+k` (delete to end).
+- **Move on the line:** `Ctrl+E` jumps to the end; for the rest hit `Esc` for vi
+  normal mode and use motions (`0`/`^` start, `$` end, `w`/`b` word, `i`/`a` back
+  to insert).
 - **Don't record a command:** start it with a leading space.
 - **Edit a long command in `$EDITOR`:** `Ctrl+x Ctrl+e`.
 - **Reload config after editing:** `exec zsh`.
@@ -211,13 +220,12 @@ command -v fzf >/dev/null && source <(fzf --zsh)
 
 ## Cheatsheet
 
-| Key            | Action                          |
-| -------------- | ------------------------------- |
-| `→` / `End`    | Accept autosuggestion           |
-| `↑` / `↓`      | Prefix-search history           |
-| `Ctrl+a/e`     | Start / end of line             |
-| `Ctrl+w`       | Delete word backward            |
-| `Ctrl+u/k`     | Delete to start / end of line   |
-| `Ctrl+r`       | Reverse-search history          |
-| `Ctrl+x Ctrl+e`| Edit command in `$EDITOR`       |
-| `Tab`          | Completion menu (arrow to pick) |
+| Key            | Action                            |
+| -------------- | --------------------------------- |
+| `→` / `End` / `Ctrl+E` | Accept whole autosuggestion |
+| `Ctrl+F`       | Accept next word of suggestion    |
+| `↑` / `↓`      | Prefix-search history             |
+| `Esc`          | Enter vi normal mode (`0`/`$`/`w`/`b` to move) |
+| `Ctrl+W`       | Delete word backward              |
+| `Ctrl+R`       | Reverse-search history            |
+| `Tab`          | Completion menu (arrow to pick)   |

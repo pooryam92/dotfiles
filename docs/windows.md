@@ -80,10 +80,11 @@ pwsh/profile.ps1       ->  $PROFILE.CurrentUserAllHosts         (resolved from p
 | zsh feature              | PowerShell                                            |
 | ------------------------ | ---------------------------------------------------- |
 | autosuggestions          | `Set-PSReadLineOption -PredictionSource History` (inline ghost text) |
+| accept suggestion        | `Ctrl+E` (whole) / `Ctrl+F` (next word); `End` also works — matches zsh |
 | syntax highlighting      | PSReadLine inline command coloring (built in)        |
 | history dedup            | `-HistoryNoDuplicates -MaximumHistoryCount 50000`    |
 | Up/Down history search   | `HistorySearchBackward/Forward` key handlers         |
-| emacs keybindings        | `-EditMode Emacs`                                     |
+| vi keybindings           | `-EditMode Vi` (matches zsh `bindkey -v`)            |
 | `menu select` completion | `Tab` → `MenuComplete`                               |
 | aliases (`zj`,`ll`,`..`) | `Set-Alias` + functions                              |
 | starship                 | `Initialize-Cached starship` (cached `init`)         |

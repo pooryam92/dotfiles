@@ -26,6 +26,12 @@ zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'
 bindkey -v
 bindkey '^[[A' history-search-backward
 bindkey '^[[B' history-search-forward
+# Accept the autosuggestion without the arrow keys. end-of-line and forward-word
+# are zsh-autosuggestions' default accept / partial-accept widgets, so binding keys
+# to them is all that's needed: Ctrl+E takes the whole suggestion, Ctrl+F the next
+# word. (vi-insert doesn't bind ^E/^F by default.) Mirrors the PSReadLine keys.
+bindkey '^E' end-of-line
+bindkey '^F' forward-word
 
 # ---- Aliases ----
 alias ls='ls --color=auto'

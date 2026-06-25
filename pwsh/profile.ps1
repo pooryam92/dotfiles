@@ -36,6 +36,12 @@ if (Get-Module PSReadLine) {
   Set-PSReadLineKeyHandler -Key DownArrow -Function HistorySearchForward
   # Tab opens a completion menu (== zsh `menu select`).
   Set-PSReadLineKeyHandler -Key Tab       -Function MenuComplete
+  # Accept the inline prediction without the arrow keys (works in Vi insert mode,
+  # since these aren't vi-motion keys). `End` already accepts the whole suggestion
+  # by default; Ctrl+e is added so the key matches the zsh binding (end-of-line),
+  # and Ctrl+f accepts just the next word. Mirrors the bindkeys in .zshrc.
+  Set-PSReadLineKeyHandler -Key Ctrl+e    -Function AcceptSuggestion
+  Set-PSReadLineKeyHandler -Key Ctrl+f    -Function AcceptNextSuggestionWord
 }
 
 # ---- File-listing colors (Get-ChildItem) ----
