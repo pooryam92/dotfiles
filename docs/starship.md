@@ -56,10 +56,11 @@ $directory\
 $git_branch\
 $git_status\
 $git_state\
+$git_metrics\
 $nodejs$python$rust$golang$c$java$dotnet\
-$cmd_duration\
+$jobs\
 $line_break\
-$character"""
+$status$character"""
 ```
 
 This is the **order** modules render in. Reading it top to bottom:
@@ -67,15 +68,33 @@ This is the **order** modules render in. Reading it top to bottom:
 1. `$directory` — current path.
 2. `$git_branch` `$git_status` `$git_state` — branch name, dirty/ahead/behind
    markers, and in-progress states (rebase/merge).
-3. The language group — whichever of node/python/rust/go/c/java/dotnet is
+3. `$git_metrics` — `+added` / `−deleted` line counts for the working tree.
+4. The language group — whichever of node/python/rust/go/c/java/dotnet is
    relevant to the current project.
-4. `$cmd_duration` — how long the last command took (if slow).
-5. `$line_break` — drop to a new line…
-6. `$character` — …so the `❯` you actually type at sits on its own line.
+5. `$jobs` — count of background jobs, if any.
+6. `$line_break` — drop to a new line…
+7. `$status$character` — the last command's exit code (only on failure),
+   then the `❯` you actually type at, both on their own line.
 
 > The trailing `\` on each line is a **line continuation** — it joins the lines
 > so they render on one prompt line, *except* where `$line_break` forces a break.
 > The two-line result: info on top, a clean `❯` to type at below.
+
+### The right prompt
+
+```toml
+right_format = """$cmd_duration$time"""
+```
+
+Starship can also render a **right-aligned** prompt, pinned to the right edge of
+the same line as `$directory`. We use it for *transient/ambient* info that
+shouldn't crowd what you type:
+
+- `$cmd_duration` — how long the last command took (only if slow).
+- `$time` — a dim clock.
+
+Pushing these right keeps the left side tight and scannable. `right_format`
+works identically in zsh and PowerShell.
 
 ### Directory
 
@@ -84,12 +103,15 @@ This is the **order** modules render in. Reading it top to bottom:
 style = "bold cyan"
 truncation_length = 3
 truncate_to_repo = true
+truncation_symbol = "…/"
 read_only = " "
 ```
 
 - `truncation_length = 3` — show at most the last 3 path components.
 - `truncate_to_repo` — inside a git repo, show the path **relative to the repo
   root** instead of the full filesystem path.
+- `truncation_symbol = "…/"` — prefix shown when the path was shortened, so a
+  truncated path is visibly truncated (e.g. `…/src/app`).
 - `read_only` — glyph shown when the directory isn't writable.
 
 ### Git
@@ -104,12 +126,24 @@ style = "bold red"
 
 [git_state]
 style = "bold yellow"
+
+[git_metrics]
+disabled = false
+added_style = "bold green"
+deleted_style = "bold red"
 ```
 
 - `git_branch` — the branch name, with a branch glyph.
 - `git_status` — symbols for uncommitted changes, staged files, ahead/behind,
   stashes, etc. (red).
 - `git_state` — shows when a rebase/merge/cherry-pick is in progress (yellow).
+- `git_metrics` — `+N` green / `−N` red lines added/removed in the working tree.
+  Off by default, so we flip `disabled = false`.
+
+> **Speed note.** `git_metrics` is the one module that costs an **extra
+> `git diff` every prompt**. It's cheap in normal repos, but if the prompt ever
+> feels laggy (run `starship timings` to confirm), set `disabled = true` here to
+> drop it. This is the deliberate trade-off for showing line counts.
 
 ### Character (the prompt symbol)
 
@@ -122,23 +156,70 @@ vimcmd_symbol = "[❮](bold green)"
 
 - Green `❯` after a command **succeeds**, red `❯` after one **fails** (instant
   visual feedback on exit codes).
-- `vimcmd_symbol` — a green `❮` when you're in vi command mode (not used here
-  since zsh is in emacs mode, but harmless).
+- `vimcmd_symbol` — a **bold-yellow `❮`** when you're in vi *command/normal* mode
+  (after pressing `Esc`). Both shells run in vi mode (`bindkey -v` in zsh,
+  `EditMode = 'Vi'` in PSReadLine), so this is live. On PowerShell, starship's
+  init repaints the prompt on mode switch via a `ViModeChangeHandler`; in zsh the
+  `zle-keymap-select` hook does it. The yellow color (not just the flipped arrow)
+  is what makes the insert→normal switch obvious at a glance.
 
 > Note the `[text](style)` syntax — that's Starship's inline styling format used
 > throughout config strings.
+
+### Exit status
+
+```toml
+[status]
+disabled = false
+format = "[$symbol$status]($style) "
+symbol = "✘"
+style = "bold red"
+```
+
+Shows the **exit code** of the last command, but **only when it failed**, just
+before the `❯`. The red `❯` already tells you *something* failed; this adds the
+actual number — e.g. `✘130` (Ctrl-C), `✘127` (command not found). Off by
+default, hence `disabled = false`.
+
+### Background jobs
+
+```toml
+[jobs]
+symbol = " "
+style = "bold blue"
+number_threshold = 1
+```
+
+Shows a count of **background jobs** (e.g. after `sleep 5 &`). Hidden when there
+are none (`number_threshold = 1`).
 
 ### Command duration
 
 ```toml
 [cmd_duration]
 min_time = 500
-format = "[ $duration]($style) "
+format = "[ $duration]($style)"
 style = "yellow"
 ```
 
 - Only shows if the last command took **≥ 500 ms**, so quick commands don't clutter.
-- Renders like ` 1.2s` in yellow.
+- Renders like ` 1.2s` in yellow — on the **right** edge (it's in `right_format`).
+
+### Clock
+
+```toml
+[time]
+disabled = false
+format = "[ $time]($style)"
+time_format = "%H:%M"
+style = "dimmed white"
+```
+
+A dim 24-hour `HH:MM` clock on the **right** edge. Off by default, so we flip
+`disabled = false`. Change `time_format` (a [strftime] string) for seconds,
+12-hour, a date, etc.
+
+[strftime]: https://docs.rs/chrono/latest/chrono/format/strftime/index.html
 
 ### Language modules
 
@@ -170,24 +251,25 @@ You don't "run" Starship — it just renders every prompt. Useful commands:
 
 ## Common tweaks
 
-**Add a module to the prompt** — put its `$name` in `format` where you want it.
-E.g. add a clock at the end of the info line:
+**Add a module to the prompt** — put its `$name` in `format` (left prompt) or
+`right_format` (right edge) where you want it. E.g. add an AWS-profile badge to
+the left info line:
 ```toml
 format = """
 $directory\
 $git_branch$git_status$git_state\
+$aws\
 $nodejs$python$rust$golang$c$java$dotnet\
-$cmd_duration\
-$time\
 $line_break\
 $character"""
-
-[time]
-disabled = false
-format = "[ $time]($style) "
-style = "dimmed white"
 ```
-(`time` is disabled by default — you must set `disabled = false`.)
+Most modules only render when relevant, so adding one is safe — it stays hidden
+until it has something to show. (Some, like `time`/`status`/`git_metrics`, are
+disabled by default and need `disabled = false` in their table — see above.)
+
+**Move something between the left and right prompt** — cut its `$name` from one
+of `format` / `right_format` and paste it into the other. E.g. to put the clock
+back on the left, move `$time` out of `right_format` and into `format`.
 
 **Change a color** — edit the module's `style` (e.g. `style = "bold green"`).
 Styles accept colors, `bold`/`italic`/`underline`/`dimmed`, and `bg:` backgrounds.

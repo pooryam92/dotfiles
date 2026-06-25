@@ -30,11 +30,6 @@
   "buffer_font_family": "JetBrainsMono Nerd Font",
   "buffer_font_size": 14,
 
-  // ---- Line numbers ----
-  // Hybrid: absolute on the cursor line, relative on the rest — makes vertical
-  // motions (5j, 3k) trivial. Mirrors `.ideavimrc` (number + relativenumber).
-  "relative_line_numbers": true,
-
   // ---- Format on save ----
   // Off, matching the Neovim config (there, conform.nvim's format-on-save is
   // opt-in per filetype). Flip to "on" for every save, or set per-language

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# Dotfiles installer for Pop!_OS / Ubuntu (WezTerm + Zellij + zsh + Starship)
+# Dotfiles installer for Pop!_OS / Ubuntu (WezTerm + zsh + Starship)
 # Idempotent: safe to re-run. Existing files are backed up before linking.
-# Windows uses install.ps1 instead; both share the wezterm/zellij/starship/nvim configs.
+# Windows uses install.ps1 instead; both share the wezterm/starship/nvim configs.
 set -euo pipefail
 
 DOTFILES="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -47,28 +47,6 @@ else
     | sudo tee /etc/apt/sources.list.d/wezterm.list >/dev/null
   sudo apt-get update -y
   sudo apt-get install -y wezterm
-fi
-
-# ---------------------------------------------------------------------------
-info "Installing Zellij…"
-if command -v zellij >/dev/null; then
-  info "zellij already installed ($(zellij --version))"
-else
-  case "$ARCH" in
-    amd64) ZJ_ARCH=x86_64 ;;
-    arm64) ZJ_ARCH=aarch64 ;;
-    *)     ZJ_ARCH="" ;;
-  esac
-  if [ -z "$ZJ_ARCH" ]; then
-    warn "No Zellij build for arch '$ARCH'; skipping (see https://github.com/zellij-org/zellij/releases)"
-  else
-    ZJ_URL="$(curl -fsSL https://api.github.com/repos/zellij-org/zellij/releases/latest \
-      | grep -oP '"browser_download_url":\s*"\K[^"]*zellij-'"$ZJ_ARCH"'-unknown-linux-musl\.tar\.gz' | head -1)"
-    curl -fL "$ZJ_URL" -o /tmp/zellij.tar.gz
-    tar -xzf /tmp/zellij.tar.gz -C "$BIN" zellij
-    chmod +x "$BIN/zellij"
-    rm -f /tmp/zellij.tar.gz
-  fi
 fi
 
 # ---------------------------------------------------------------------------
@@ -167,7 +145,6 @@ fi
 # ---------------------------------------------------------------------------
 info "Linking config files…"
 link "$DOTFILES/wezterm/wezterm.lua"    "$HOME/.config/wezterm/wezterm.lua"
-link "$DOTFILES/zellij/config.kdl"     "$HOME/.config/zellij/config.kdl"
 link "$DOTFILES/starship/starship.toml" "$HOME/.config/starship.toml"
 link "$DOTFILES/zsh/.zshrc"            "$HOME/.zshrc"
 link "$DOTFILES/intellij/.ideavimrc"   "$HOME/.ideavimrc"

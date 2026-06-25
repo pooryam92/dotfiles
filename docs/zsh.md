@@ -2,7 +2,8 @@
 
 [zsh](https://www.zsh.org) is the **shell** — the program that reads what you
 type, runs commands, and manages history/completion/aliases. It's the glue of
-this setup: it loads the plugins, starts Starship, and auto-launches Zellij.
+this setup: it loads the plugins and starts Starship. (Panes/tabs are WezTerm's
+job now — see [wezterm.md](wezterm.md) — not the shell's.)
 
 This config is **plugin-manager-free** — it uses the two plugins packaged by
 apt and sources them directly, so there's nothing extra to update.
@@ -25,8 +26,8 @@ export PATH="$HOME/.local/bin:$PATH"
 export EDITOR="vi"
 ```
 
-- Puts `~/.local/bin` first on `PATH` — that's where `install.sh` puts Zellij and
-  Starship, so user binaries win over system ones.
+- Puts `~/.local/bin` first on `PATH` — that's where `install.sh` puts Starship,
+  Neovim, and zoxide, so user binaries win over system ones.
 - `EDITOR` is what tools open when they need you to edit something (git commit
   messages, `fc`, etc.).
 
@@ -103,7 +104,6 @@ alias la='ls -A'
 alias grep='grep --color=auto'
 alias ..='cd ..'
 alias ...='cd ../..'
-alias zj='zellij'
 ```
 
 | Alias    | Expands to             |
@@ -112,7 +112,6 @@ alias zj='zellij'
 | `la`     | `ls -A` (all but `.`/`..`) |
 | `..`     | `cd ..`                |
 | `...`    | `cd ../..`             |
-| `zj`     | `zellij`               |
 
 ### Plugins
 
@@ -151,32 +150,10 @@ Adds the `z` command — `z dot` jumps to the most "frecent" directory matching
 `dot`. Initialised after Starship so its prompt hook chains rather than clobbers.
 See [zoxide.md](zoxide.md).
 
-### Zellij auto-start
-
-```sh
-if [[ -z "$ZELLIJ" && -n "$WEZTERM_PANE" && $- == *i* ]]; then
-  if command -v zellij >/dev/null; then
-    export ZELLIJ_AUTO_ATTACH=true
-    export ZELLIJ_AUTO_EXIT=true
-    eval "$(zellij setup --generate-auto-start zsh)"
-  fi
-fi
-```
-
-Auto-starts Zellij **only** when all three are true:
-- `-z "$ZELLIJ"` — we're not already inside a Zellij session (no nesting).
-- `-n "$WEZTERM_PANE"` — we're running inside WezTerm (this var is set by
-  WezTerm). So SSH, other terminals, and IDE shells stay plain.
-- `$- == *i*` — this is an interactive shell.
-
-Then:
-- `ZELLIJ_AUTO_ATTACH=true` — reattach an existing session instead of making a
-  new one.
-- `ZELLIJ_AUTO_EXIT=true` — when you exit Zellij, exit the shell too (so the
-  WezTerm window closes instead of dropping to a bare prompt).
-
-> On Windows the same guard lives in `pwsh/profile.ps1` (keyed on
-> `$env:WEZTERM_PANE`); see [windows.md](windows.md).
+> **No multiplexer here.** Panes, tabs, and splits are handled by WezTerm itself
+> (Alt chords + `Ctrl+p`/`t`/`n`/`s` modes — see [wezterm.md](wezterm.md)), so the
+> shell doesn't launch Zellij or tmux. Opening a WezTerm window drops you straight
+> at the prompt.
 
 ---
 
@@ -206,8 +183,6 @@ export EDITOR="nvim"
 ```sh
 mkcd() { mkdir -p "$1" && cd "$1"; }
 ```
-
-**Disable Zellij auto-start** — delete the last `if` block in `zsh/.zshrc`.
 
 **Add a tool that needs shell init** (e.g. fzf, nvm) — add its init line near the
 Starship line, e.g.:

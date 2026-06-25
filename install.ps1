@@ -1,7 +1,7 @@
-# Dotfiles installer for Windows (WezTerm + Zellij + PowerShell 7 + Starship + Neovim).
+# Dotfiles installer for Windows (WezTerm + PowerShell 7 + Starship + Neovim).
 # Counterpart of install.sh. Idempotent: safe to re-run. Existing files are
-# backed up before linking. Shares the wezterm/zellij/starship/nvim/ideavim
-# configs with Linux; only the shell config differs (pwsh/profile.ps1).
+# backed up before linking. Shares the wezterm/starship/nvim/ideavim configs
+# with Linux; only the shell config differs (pwsh/profile.ps1).
 #
 # FIRST RUN (pwsh 7 isn't installed yet) — run under Windows PowerShell 5.1:
 #   powershell -ExecutionPolicy Bypass -File install.ps1
@@ -82,14 +82,12 @@ foreach ($b in 'extras', 'nerd-fonts') { scoop bucket add $b 2>$null }
 # ripgrep/fd  — power Telescope (live grep / find files)
 # fzf         — fuzzy finder
 # win32yank   — Neovim clipboard provider (auto-detected for clipboard=unnamedplus)
-# zellij      — scoop ships the native Windows (ConPTY) build; avoids the winget
-#               version-numbering bug. Fallback: github.com/zellij-org/zellij/releases
 # zoxide      — smarter cd (`z`/`zi`); `zi` uses fzf (also installed above)
 # zed         — GUI editor counterpart to Neovim (extras bucket); self-updates
-# JetBrainsMono-NF — Nerd Font for prompt/multiplexer glyphs
+# JetBrainsMono-NF — Nerd Font for prompt glyphs
 Info "Installing packages via scoop…"
 $pkgs = @('pwsh', 'neovim', 'starship', 'wezterm', 'zig', 'tree-sitter', 'ripgrep',
-          'fd', 'fzf', 'win32yank', 'zellij', 'zoxide', 'zed', 'JetBrainsMono-NF')
+          'fd', 'fzf', 'win32yank', 'zoxide', 'zed', 'JetBrainsMono-NF')
 scoop install @pkgs
 
 # ---------------------------------------------------------------------------
@@ -130,11 +128,6 @@ Info "Linking config files…"
 $cfg = Join-Path $env:USERPROFILE '.config'
 Link-Config (Join-Path $DOT 'wezterm\wezterm.lua')    (Join-Path $cfg 'wezterm\wezterm.lua')
 Link-Config (Join-Path $DOT 'starship\starship.toml') (Join-Path $cfg 'starship.toml')
-# Zellij on Windows reads %APPDATA%\Zellij\config\config.kdl (Roaming, note the
-# nested `config` dir) — NOT %APPDATA%\zellij\config.kdl. Linking the wrong path
-# leaves Zellij silently on its built-in default theme. `zellij setup --check`
-# prints the real path under [CONFIG DIR] if this ever changes again.
-Link-Config (Join-Path $DOT 'zellij\config.kdl')      (Join-Path $env:APPDATA 'Zellij\config\config.kdl')
 Link-Config (Join-Path $DOT 'intellij\.ideavimrc')    (Join-Path $env:USERPROFILE '.ideavimrc')
 # Neovim on Windows reads %LOCALAPPDATA%\nvim.
 Link-Config (Join-Path $DOT 'nvim')                   (Join-Path $env:LOCALAPPDATA 'nvim') -Directory
@@ -150,5 +143,5 @@ Link-Config (Join-Path $DOT 'claude\settings.json')   (Join-Path $claude 'settin
 
 # ---------------------------------------------------------------------------
 Info "Done. Open WezTerm to start using the new setup."
-Info "It launches pwsh, auto-starts Zellij, and shows the Starship prompt."
+Info "It launches pwsh with the Starship prompt; Alt+\\ splits, Ctrl+p = pane mode."
 Warn "If configs were COPIED (not linked), enable Developer Mode and re-run for live edits."

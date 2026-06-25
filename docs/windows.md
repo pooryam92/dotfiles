@@ -6,7 +6,7 @@ with two substitutions:
 | Layer        | Linux            | Windows                          |
 | ------------ | ---------------- | -------------------------------- |
 | Terminal     | WezTerm          | WezTerm *(same config)*          |
-| Multiplexer  | Zellij           | Zellij *(native, v0.44+ ConPTY)* |
+| Multiplexer  | WezTerm built-in | WezTerm built-in *(same config)* |
 | Shell        | zsh              | **PowerShell 7 (pwsh)**          |
 | Prompt       | Starship         | Starship *(same config)*         |
 | Editor       | Neovim           | Neovim *(same config)*           |
@@ -52,7 +52,7 @@ Developer Mode to upgrade copies to links. (The `nvim/` directory uses a
 2. Bootstraps **scoop** if missing; adds the `extras` and `nerd-fonts` buckets.
 3. Installs: `pwsh`, `neovim`, `starship`, `wezterm`, `zig` (treesitter
    compiler), `tree-sitter` (parser-build CLI), `ripgrep`, `fd`, `fzf`,
-   `win32yank` (nvim clipboard), `zellij`, `zoxide` (smarter `cd`), and the
+   `win32yank` (nvim clipboard), `zoxide` (smarter `cd`), and the
    **JetBrainsMono Nerd Font**.
 4. Links the configs to their Windows paths (see below).
 
@@ -61,7 +61,6 @@ Developer Mode to upgrade copies to links. (The `nvim/` directory uses a
 ```
 wezterm/wezterm.lua    ->  %USERPROFILE%\.config\wezterm\wezterm.lua
 starship/starship.toml ->  %USERPROFILE%\.config\starship.toml
-zellij/config.kdl      ->  %APPDATA%\Zellij\config\config.kdl   (Roaming; note nested config\)
 intellij/.ideavimrc    ->  %USERPROFILE%\.ideavimrc
 nvim/                  ->  %LOCALAPPDATA%\nvim                  (junction)
 pwsh/profile.ps1       ->  $PROFILE.CurrentUserAllHosts         (resolved from pwsh)
@@ -87,20 +86,16 @@ pwsh/profile.ps1       ->  $PROFILE.CurrentUserAllHosts         (resolved from p
 | Up/Down history search   | `HistorySearchBackward/Forward` key handlers         |
 | vi keybindings           | `-EditMode Vi` (matches zsh `bindkey -v`)            |
 | `menu select` completion | `Tab` → `MenuComplete`                               |
-| aliases (`zj`,`ll`,`..`) | `Set-Alias` + functions                              |
+| aliases (`ll`,`..`)      | `Set-Alias` + functions                              |
 | starship                 | `Initialize-Cached starship` (cached `init`)         |
 | zoxide (`z`/`zi`)        | `Initialize-Cached zoxide` — see [zoxide.md](zoxide.md) |
 
-**Zellij auto-start** is guarded the same way as on Linux — it only fires inside
-WezTerm (`$env:WEZTERM_PANE`) and when not already inside Zellij. PowerShell
-isn't a supported target for `zellij setup --generate-auto-start`, so the profile
-starts Zellij manually (plain `zellij`, a **fresh session each time**) and exits
-pwsh **only on a clean detach** — if Zellij fails to launch it falls through to a
-normal prompt instead of trapping the window in an open-then-close loop.
-
-> We deliberately don't `attach --create main` here: on Windows Zellij's session
-> resurrection is flaky (dead/EXITED panes, broken layout on reattach), so a fresh
-> session is cleaner. Detach/reattach by name still works manually inside a session.
+**No multiplexer auto-start.** Panes and tabs are WezTerm's job (Alt chords +
+`Ctrl+p`/`t`/`n`/`s` modes — see [wezterm.md](wezterm.md)), so the profile doesn't
+launch Zellij or anything else; opening a WezTerm window drops you straight at the
+pwsh prompt. The
+pane/tab keybinds are identical to Linux because they live in the shared
+`wezterm.lua`.
 
 ---
 
@@ -131,6 +126,7 @@ After install, run `:checkhealth` and confirm the **Clipboard** section is green
   linked there. OneDrive redirection is the usual culprit.
 - **Tofu boxes (□)** — set WezTerm's font to `JetBrainsMono Nerd Font` and
   confirm the font installed (`scoop list` should show `JetBrainsMono-NF`).
-- **Zellij behaves oddly (mouse/flicker)** — ensure you're on Zellij ≥ 0.44.1
-  (`zellij --version`); Windows ConPTY support is recent. `scoop update zellij`.
+- **Pane keys do nothing** (`Alt+\`, `Ctrl+p`, …) — WezTerm didn't pick up the
+  config. Reload with `ctrl+shift+r`, or check `wezterm.lua` is actually linked
+  (not a stale copy).
 - **Configs were copied, not linked** — enable Developer Mode and re-run.
