@@ -56,8 +56,8 @@ if ($PSStyle) {
 
 # ---- Aliases / functions ----
 Set-Alias -Name zj -Value zellij
-function ll { Get-ChildItem -Force @args }      # long listing incl. hidden
-function la { Get-ChildItem -Force @args }
+function ll { Get-ChildItem -Force @args }         # long listing incl. hidden (== zsh `ls -lah`)
+function la { Get-ChildItem -Force -Name @args }   # names only, incl. hidden (== zsh `ls -A`)
 function .. { Set-Location .. }
 function ... { Set-Location ../.. }
 
@@ -81,8 +81,20 @@ function Initialize-Cached {
   # Cold/forced path: resolve the binary and (re)generate the cache.
   $exe = (Get-Command $Name -ErrorAction SilentlyContinue)?.Source
   if (-not $exe) { return }
-  & $exe @InitArgs | Out-File -Encoding utf8 $cache
-  . $cache
+  # Generate to a temp file first, then promote it only if the binary succeeded and
+  # produced output. Writing straight to $cache would truncate it before the binary
+  # runs, so a failed/killed init would leave an empty or partial cache that the warm
+  # path then dot-sources on every future launch — silently breaking the prompt until
+  # a manual Update-ShellCache. The temp+move also avoids two parallel launches
+  # interleaving writes to the same cache file.
+  $tmp = "$cache.$PID.tmp"
+  & $exe @InitArgs | Out-File -Encoding utf8 $tmp
+  if ($LASTEXITCODE -eq 0 -and (Test-Path $tmp) -and (Get-Item $tmp).Length -gt 0) {
+    Move-Item -Force $tmp $cache
+    . $cache
+  } else {
+    Remove-Item $tmp -ErrorAction SilentlyContinue
+  }
 }
 
 # Force-refresh every cached tool init. Run this once after upgrading starship/zoxide

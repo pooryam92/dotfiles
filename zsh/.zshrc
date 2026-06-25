@@ -2,7 +2,7 @@
 
 # ---- PATH ----
 export PATH="$HOME/.local/bin:$PATH"
-export EDITOR="vi"
+export EDITOR="nvim"   # matches pwsh/profile.ps1; both installers provide nvim
 
 # ---- History ----
 HISTFILE="$HOME/.zsh_history"
