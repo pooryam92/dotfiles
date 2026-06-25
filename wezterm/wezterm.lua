@@ -122,8 +122,7 @@ end
 config.key_tables = {
   -- Ctrl+p — PANE mode (Zellij: Ctrl+p)
   pane = {
-    { key = 'n', action = split_and_exit(act.SplitHorizontal { domain = 'CurrentPaneDomain' }) }, -- new (right)
-    { key = 'r', action = split_and_exit(act.SplitHorizontal { domain = 'CurrentPaneDomain' }) }, -- split right
+    { key = 'n', action = split_and_exit(act.SplitHorizontal { domain = 'CurrentPaneDomain' }) }, -- new pane (right)
     { key = 'd', action = split_and_exit(act.SplitVertical   { domain = 'CurrentPaneDomain' }) }, -- split down
     { key = 'x', action = split_and_exit(act.CloseCurrentPane { confirm = false }) },             -- close
     { key = 'f', action = split_and_exit(act.TogglePaneZoomState) },                              -- fullscreen/zoom
@@ -181,10 +180,13 @@ for i = 1, 9 do
 end
 
 -- Show the active mode in the tab bar with its key hints — Zellij's mode line.
+-- copy_mode/search_mode aren't in config.key_tables above: they're WezTerm's
+-- built-in key tables (entered via Ctrl+s / search), so these two hints just
+-- describe their inherited default keys.
 local mode_hints = {
-  pane   = ' PANE  n/r split·d down·x close·f full·hjkl move·Esc ',
+  pane   = ' PANE  n new·d down·x close·f full·hjkl move·Esc ',
   tab    = ' TAB  n new·1-9 go·h/l move·r rename·x close·Esc ',
-  resize = ' RESIZE  hjkl/arrows·Esc ',
+  resize = ' RESIZE  hjkl/arrows·q/Esc ',
   copy_mode    = ' SCROLL/COPY  vim keys·/ search·y yank·Esc ',
   search_mode  = ' SEARCH  type·Enter·Esc ',
 }

@@ -30,7 +30,7 @@ link() {
 info "Installing apt packages (needs sudo)…"
 sudo apt-get update -y
 sudo apt-get install -y \
-  zsh git curl unzip ca-certificates fontconfig wl-clipboard \
+  zsh git curl unzip ca-certificates fontconfig wl-clipboard fzf \
   zsh-autosuggestions zsh-syntax-highlighting
 
 # ---------------------------------------------------------------------------
@@ -94,34 +94,15 @@ else
 fi
 
 # ---------------------------------------------------------------------------
-info "Installing tree-sitter CLI…"
-# nvim-treesitter (main branch, used by the nvim config) compiles parsers with
-# the tree-sitter CLI + a C compiler. cc/gcc come from build-essential on most
-# systems; the CLI we install as a user binary.
-if [ -x "$BIN/tree-sitter" ]; then
-  info "tree-sitter already installed ($("$BIN/tree-sitter" --version))"
-else
-  case "$ARCH" in
-    amd64) TS_ARCH=x64 ;;
-    arm64) TS_ARCH=arm64 ;;
-    *)     TS_ARCH="" ;;
-  esac
-  if [ -z "$TS_ARCH" ]; then
-    warn "No tree-sitter CLI build for arch '$ARCH'; Neovim treesitter parsers won't compile"
-  else
-    curl -fL "https://github.com/tree-sitter/tree-sitter/releases/latest/download/tree-sitter-linux-${TS_ARCH}.gz" \
-      -o /tmp/tree-sitter.gz
-    gunzip -f /tmp/tree-sitter.gz
-    install -m 0755 /tmp/tree-sitter "$BIN/tree-sitter"
-    rm -f /tmp/tree-sitter
-  fi
-fi
+# NOTE: the nvim config is colorscheme-only (no treesitter/Telescope), so the
+# tree-sitter CLI, ripgrep and fd are intentionally NOT installed — add them back
+# if you grow the nvim config (see docs/nvim.md). install.ps1 mirrors this.
 
 # ---------------------------------------------------------------------------
 info "Installing Zed…"
-# Zed is the GUI editor counterpart to Neovim (Catppuccin Mocha + Vim mode, shared
-# settings/keymap). The official installer drops it under ~/.local; it self-
-# updates afterwards, so we only run it when Zed isn't already present.
+# Zed is the GUI editor counterpart to Neovim (Vim mode, shared settings/keymap).
+# The official installer drops it under ~/.local; it self-updates afterwards, so
+# we only run it when Zed isn't already present.
 if command -v zed >/dev/null; then
   info "zed already installed ($(zed --version 2>/dev/null | head -1))"
 else

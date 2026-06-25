@@ -17,7 +17,6 @@ let maplocalleader="\\"
 " =========================================================
 set scrolloff=4
 set nowrap
-set relativenumber
 set number
 set ignorecase
 set smartcase

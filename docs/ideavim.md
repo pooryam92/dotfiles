@@ -43,8 +43,7 @@ themed prefix:
 ```vim
 set scrolloff=4        " keep 4 lines of context around the cursor
 set nowrap             " don't wrap long lines
-set relativenumber     " relative line numbers (easy 5j / 3k)
-set number             " ...with the absolute number on the current line
+set number             " absolute line numbers (matches Neovim and Zed)
 set ignorecase         " }
 set smartcase          " } case-insensitive search unless you type a capital
 set shiftround         " round indent to a multiple of shiftwidth

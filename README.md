@@ -11,7 +11,7 @@ Windows).
 | Shell        | zsh (Linux) / [PowerShell 7](https://learn.microsoft.com/powershell/) (Windows) |
 | Prompt       | [Starship](https://starship.rs)                   |
 | Navigation   | [zoxide](https://github.com/ajeetdsouza/zoxide) — smarter `cd` (`z`/`zi`) |
-| Editor       | [Neovim](https://neovim.io) (kickstart-based, + Markdown rendering) |
+| Editor       | [Neovim](https://neovim.io) — minimal single-file config (Tokyo Night) |
 | GUI editor   | [Zed](https://zed.dev) — fast GPU editor, Vim mode + JetBrains Islands Dark (shared `settings.json`/`keymap.json`) |
 | IDE editing  | [IdeaVim](https://github.com/JetBrains/ideavim) — Vim plugin for JetBrains IDEs (`.ideavimrc`) |
 | AI coding    | [Claude Code](https://docs.claude.com/en/docs/claude-code) — themed status line + synced settings |
@@ -29,7 +29,7 @@ in the actual config in this repo:
 - [zsh](docs/zsh.md) — the shell: history, completion, plugins, aliases
 - [Starship](docs/starship.md) — the prompt: modules, format, styling
 - [zoxide](docs/zoxide.md) — smarter `cd`: jump to frecent dirs with `z`/`zi`
-- [Neovim](docs/nvim.md) — kickstart-based config: plugins, markdown rendering, keymaps
+- [Neovim](docs/nvim.md) — minimal single-file config: sensible defaults, keymaps, Tokyo Night
 - [Zed](docs/zed.md) — the GUI editor: Vim mode, JetBrains Islands Dark theme, fonts, keymap
 - [IdeaVim](docs/ideavim.md) — Vim in JetBrains IDEs: leader maps, IDE actions
 - [Claude Code](docs/claude.md) — the AI agent: themed status line, synced settings
@@ -67,17 +67,18 @@ Zellij-style `Ctrl+p`/`Ctrl+t` modes (see below).
 Both are **idempotent** — safe to re-run. Anything already at a target path is
 backed up to `<file>.bak.<timestamp>` before linking.
 
-**`install.sh` (Linux)** installs apt packages (`zsh`, `git`, plugins, etc.),
-**WezTerm** (official Fury apt repo), and **Starship**, **zoxide**, **Neovim**,
-**Zed** (official installer), and the **tree-sitter CLI** as user binaries in
-`~/.local/bin`. It installs the **JetBrainsMono Nerd Font**, symlinks the configs,
-and sets **zsh** as the login shell (`chsh`). Steps using `sudo` will prompt for
-your password.
+**`install.sh` (Linux)** installs apt packages (`zsh`, `git`, `fzf`, plugins,
+etc.), **WezTerm** (official Fury apt repo), and **Starship**, **zoxide**,
+**Neovim**, and **Zed** (official installer) as user binaries in `~/.local/bin`.
+It installs the **JetBrainsMono Nerd Font**, symlinks the configs, and sets
+**zsh** as the login shell (`chsh`). Steps using `sudo` will prompt for your
+password.
 
 **`install.ps1` (Windows)** uses [scoop](https://scoop.sh) (user-scope, no admin)
 to install **PowerShell 7**, **WezTerm**, **Starship**, **zoxide**, **Neovim**,
-**Zed**, plus `zig` / `ripgrep` / `fd` / `fzf` / `win32yank` (Neovim's deps) and
-the Nerd Font, then links the configs. See [docs/windows.md](docs/windows.md).
+**Zed**, plus `fzf` (fuzzy finder) and `win32yank` (Neovim's clipboard), the Nerd
+Font, and the **PSFzf** module, then links the configs. See
+[docs/windows.md](docs/windows.md).
 
 ## Layout
 
@@ -139,9 +140,20 @@ press a letter, then `Esc` to leave. Mirrors Zellij's `Ctrl+p`/`Ctrl+t` scheme.
 | `Ctrl+n` **resize** | `h/j/k/l` or arrows to resize repeatedly · `Esc` |
 | `Ctrl+s` **scroll** | copy mode: vim motions · `/` search · `y` yank · `Esc` |
 
-Shell aliases: `ll`/`la`, `..`/`...` (defined in both `zsh/.zshrc` and
+### Built-in WezTerm keys (no config needed)
+
+| Key                | Action                                                              |
+| ------------------ | ------------------------------------------------------------------- |
+| `Ctrl+Shift+Space` | **QuickSelect** — label-jump to copy any path / URL / git hash, no mouse |
+| `Ctrl+Shift+P`     | **Command palette** — fuzzy-search every WezTerm action             |
+| `Ctrl+Shift+F`     | Search the scrollback                                               |
+
+### Shell
+
+Aliases: `ll`/`la`, `..`/`...` (defined in both `zsh/.zshrc` and
 `pwsh/profile.ps1`). Directory jumping: `z <dir>` / `zi <dir>` via
-[zoxide](docs/zoxide.md).
+[zoxide](docs/zoxide.md). Fuzzy keys on both shells: **`Ctrl+R`** history ·
+**`Ctrl+T`** file path · **`Alt+C`** cd (fzf / PSFzf).
 
 ## How it fits together
 
@@ -173,6 +185,6 @@ Shell aliases: `ll`/`la`, `..`/`...` (defined in both `zsh/.zshrc` and
 - **Boxes/missing icons in the prompt** — the Nerd Font isn't active. Re-run the
   installer and set WezTerm's font to *JetBrainsMono Nerd Font*.
 - **Windows-specific issues** — see [docs/windows.md](docs/windows.md)
-  (ExecutionPolicy, Developer Mode, OneDrive profile path, Neovim deps).
+  (ExecutionPolicy, Developer Mode, OneDrive profile path, Neovim clipboard).
 - **Shell didn't change to zsh (Linux)** — run `chsh -s "$(command -v zsh)"` and
   log out/in.

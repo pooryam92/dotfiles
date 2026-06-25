@@ -109,6 +109,13 @@ do
   vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower window' })
   vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
 
+  -- Create splits: <leader>- below, <leader>| right. Mirrors the IdeaVim maps so
+  -- split-create muscle memory matches across editors. Built-in :wincmd, no plugin.
+  -- (File-find / AI leader maps are intentionally deferred until this config grows
+  -- a fuzzy finder back — see docs/nvim.md.)
+  vim.keymap.set('n', '<leader>-', '<C-w>s', { desc = 'Split window below' })
+  vim.keymap.set('n', '<leader>|', '<C-w>v', { desc = 'Split window right' })
+
   -- Briefly highlight text after yanking it.
   vim.api.nvim_create_autocmd('TextYankPost', {
     desc = 'Highlight when yanking (copying) text',

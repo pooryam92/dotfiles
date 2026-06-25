@@ -151,7 +151,7 @@ deleted_style = "bold red"
 [character]
 success_symbol = "[❯](bold green)"
 error_symbol = "[❯](bold red)"
-vimcmd_symbol = "[❮](bold green)"
+vimcmd_symbol = "[❮](bold yellow)"
 ```
 
 - Green `❯` after a command **succeeds**, red `❯` after one **fails** (instant

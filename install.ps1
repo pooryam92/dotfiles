@@ -75,20 +75,33 @@ foreach ($b in 'extras', 'nerd-fonts') { scoop bucket add $b 2>$null }
 #               "C:\Program Files\Neovim" shadows scoop on PATH and breaks the
 #               config — the post-install check below warns if that's the case.
 # starship/wezterm — core stack
-# zig         — C compiler nvim-treesitter uses to build parsers on Windows
-# tree-sitter — CLI the nvim-treesitter main branch drives to compile parsers
-#               (`tree-sitter build`); without it parser installs fail with
-#               ENOENT 'tree-sitter'. install.sh fetches the same CLI on Linux.
-# ripgrep/fd  — power Telescope (live grep / find files)
-# fzf         — fuzzy finder
+# fzf         — fuzzy finder; powers zoxide's `zi` and the PSFzf keys (below)
 # win32yank   — Neovim clipboard provider (auto-detected for clipboard=unnamedplus)
 # zoxide      — smarter cd (`z`/`zi`); `zi` uses fzf (also installed above)
 # zed         — GUI editor counterpart to Neovim (extras bucket); self-updates
 # JetBrainsMono-NF — Nerd Font for prompt glyphs
+# NOTE: the nvim config is colorscheme-only (no treesitter/Telescope), so zig, the
+# tree-sitter CLI, ripgrep and fd are intentionally NOT installed — add them back
+# if you grow the nvim config (see docs/nvim.md). install.sh mirrors this.
 Info "Installing packages via scoop…"
-$pkgs = @('pwsh', 'neovim', 'starship', 'wezterm', 'zig', 'tree-sitter', 'ripgrep',
-          'fd', 'fzf', 'win32yank', 'zoxide', 'zed', 'JetBrainsMono-NF')
+$pkgs = @('pwsh', 'neovim', 'starship', 'wezterm', 'fzf', 'win32yank',
+          'zoxide', 'zed', 'JetBrainsMono-NF')
 scoop install @pkgs
+
+# ---------------------------------------------------------------------------
+# PSFzf — PowerShell module that wires fzf into PSReadLine (Ctrl+r/Ctrl+t/Alt+c),
+# matching zsh's fzf key-bindings. It's a PSGallery module, not a scoop app.
+Info "Installing PSFzf module (fzf key-bindings for PSReadLine)…"
+if (-not (Get-Module -ListAvailable PSFzf)) {
+  try {
+    if (-not (Get-PackageProvider -ListAvailable -Name NuGet -ErrorAction SilentlyContinue)) {
+      Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force -Scope CurrentUser | Out-Null
+    }
+    Install-Module PSFzf -Scope CurrentUser -Force -AllowClobber
+  } catch {
+    Warn "PSFzf install failed ($_). Fuzzy Ctrl+r/Ctrl+t/Alt+c stay off until: Install-Module PSFzf"
+  }
+}
 
 # ---------------------------------------------------------------------------
 # Guard: the nvim config requires 0.12+ (vim.pack / PackChanged). scoop installs

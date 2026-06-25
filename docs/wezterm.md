@@ -192,6 +192,20 @@ boundaries read as visible borders.
   move between panes, `Alt+g` for the 3-pane layout, `Ctrl+t` then `n` for a new
   tab. See the keybind tables above.
 
+### Built-in keys worth knowing (no config needed)
+
+These ship with WezTerm and aren't redefined here, so they work out of the box —
+the keyboard wins most people miss:
+
+| Key                | Action                                                                 |
+| ------------------ | ---------------------------------------------------------------------- |
+| `Ctrl+Shift+Space` | **QuickSelect** — labels every path, URL, and git hash on screen; type the label to copy it, no mouse. Perfect for yanking a file path out of a stack trace or a commit hash out of `git log`. |
+| `Ctrl+Shift+P`     | **Command palette** — fuzzy-search every WezTerm action by name.       |
+| `Ctrl+Shift+F`     | Search the scrollback (then `Enter`/`n`/`p` to walk matches).          |
+| `Ctrl+Shift+V`     | Paste from the clipboard.                                              |
+
+(`Ctrl+s` here also opens copy mode — the same scrollback/search vim-motion mode.)
+
 ---
 
 ## Common tweaks

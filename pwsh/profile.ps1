@@ -43,13 +43,24 @@ if (Get-Module PSReadLine) {
   # and Ctrl+f accepts just the next word. Mirrors the bindkeys in .zshrc.
   Set-PSReadLineKeyHandler -Key Ctrl+e    -Function AcceptSuggestion
   Set-PSReadLineKeyHandler -Key Ctrl+f    -Function AcceptNextSuggestionWord
+
+  # == zsh HIST_IGNORE_SPACE: a leading space keeps a command out of history.
+  # Chain (not replace) the existing default handler so PSReadLine's built-in
+  # sensitive-data filter (tokens/passwords -> never persisted) still runs.
+  $defaultAddToHistory = (Get-PSReadLineOption).AddToHistoryHandler
+  Set-PSReadLineOption -AddToHistoryHandler ({
+    param($line)
+    if ($line -and $line[0] -eq ' ') { return $false }
+    if ($defaultAddToHistory) { return $defaultAddToHistory.Invoke($line) }
+    return $true
+  }.GetNewClosure())
 }
 
 # ---- File-listing colors (Get-ChildItem) ----
-# No custom file-listing colors. We clear the styles to plain text rather than
-# leaving them unset, because PowerShell 7's default $PSStyle.FileInfo.Directory
-# is a blue *background* (ESC[44;1m) that renders as ugly solid bars behind
-# folder names. Empty string == no formatting, so listings are uncolored.
+# Tokyo Night file-listing colors — the pwsh counterpart to zsh's `ls --color=auto`
+# (blue dirs / cyan symlinks / green executables). This also overrides PowerShell
+# 7's default $PSStyle.FileInfo.Directory, which is a blue *background* (ESC[44;1m)
+# that renders as ugly solid bars behind folder names.
 if ($PSStyle) {
   $PSStyle.FileInfo.Directory    = $PSStyle.Bold + $PSStyle.Foreground.FromRgb(0x7aa2f7)  # blue
   $PSStyle.FileInfo.SymbolicLink = $PSStyle.Foreground.FromRgb(0x7dcfff)                   # cyan
@@ -115,3 +126,19 @@ Initialize-Cached starship -InitArgs 'init','powershell','--print-full-init'
 # interactively (needs fzf, which the installer provides). Init AFTER starship so
 # zoxide's prompt hook wraps starship's prompt rather than being overwritten by it.
 Initialize-Cached zoxide
+
+# ---- fzf key-bindings (PSFzf) ----
+# The pwsh counterpart to zsh's fzf bindings: Ctrl+R fuzzy history, Ctrl+T insert a
+# file/dir path, Alt+C fuzzy-cd — the same three keys on both shells. PSFzf is
+# installed by install.ps1 (Install-Module); guarded so the prompt still loads
+# (with PSReadLine's plain Ctrl+R) if it's missing.
+if (Get-Module -ListAvailable PSFzf) {
+  Import-Module PSFzf
+  Set-PsFzfOption -PSReadlineChordProvider 'Ctrl+t' -PSReadlineChordReverseHistory 'Ctrl+r'
+  # PSFzf has no built-in Alt+C chord; bind fuzzy-cd to match fzf's Alt-C, then
+  # redraw the prompt so the new directory shows immediately.
+  Set-PSReadLineKeyHandler -Key 'Alt+c' -ScriptBlock {
+    Invoke-FuzzySetLocation
+    [Microsoft.PowerShell.PSConsoleReadLine]::InvokePrompt()
+  }
+}

@@ -50,10 +50,9 @@ Developer Mode to upgrade copies to links. (The `nvim/` directory uses a
 1. Sets `ExecutionPolicy` for the current user to `RemoteSigned` (so the profile
    loads on future launches).
 2. Bootstraps **scoop** if missing; adds the `extras` and `nerd-fonts` buckets.
-3. Installs: `pwsh`, `neovim`, `starship`, `wezterm`, `zig` (treesitter
-   compiler), `tree-sitter` (parser-build CLI), `ripgrep`, `fd`, `fzf`,
-   `win32yank` (nvim clipboard), `zoxide` (smarter `cd`), and the
-   **JetBrainsMono Nerd Font**.
+3. Installs: `pwsh`, `neovim`, `starship`, `wezterm`, `fzf` (fuzzy finder —
+   powers `zi` and the PSFzf keys), `win32yank` (nvim clipboard), `zoxide`
+   (smarter `cd`), the **JetBrainsMono Nerd Font**, and the **PSFzf** module.
 4. Links the configs to their Windows paths (see below).
 
 ### Config paths on Windows
@@ -89,6 +88,7 @@ pwsh/profile.ps1       ->  $PROFILE.CurrentUserAllHosts         (resolved from p
 | aliases (`ll`,`..`)      | `Set-Alias` + functions                              |
 | starship                 | `Initialize-Cached starship` (cached `init`)         |
 | zoxide (`z`/`zi`)        | `Initialize-Cached zoxide` — see [zoxide.md](zoxide.md) |
+| fzf `Ctrl+R`/`T`, `Alt+C`| **PSFzf** module (Ctrl+R history, Ctrl+T path, Alt+C cd) |
 
 **No multiplexer auto-start.** Panes and tabs are WezTerm's job (Alt chords +
 `Ctrl+p`/`t`/`n`/`s` modes — see [wezterm.md](wezterm.md)), so the profile doesn't
@@ -109,11 +109,10 @@ needs on Windows is clipboard support:
 
 After install, run `:checkhealth` and confirm the **Clipboard** section is green.
 
-> The installer also provides **zig**, **ripgrep**, **fd**, and **fzf**. The bare
-> config doesn't use these yet — they're the deps treesitter and a fuzzy finder
-> (Telescope) need, kept ready for when you grow the config back. If treesitter
-> parser compilation ever hangs (a known zig-on-Windows issue), install Visual
-> Studio Build Tools or LLVM/clang so it uses MSVC/clang instead.
+> The bare config is colorscheme-only, so it needs no parser toolchain — `zig`,
+> the `tree-sitter` CLI, `ripgrep` and `fd` are deliberately **not** installed.
+> If you grow the nvim config back (treesitter + Telescope), add them then; see
+> [nvim.md](nvim.md).
 
 ---
 

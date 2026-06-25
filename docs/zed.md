@@ -45,7 +45,6 @@ there.
 "auto_install_extensions": { "jetbrains-themes": true },  // pull the theme on first launch
 "buffer_font_family": "JetBrainsMono Nerd Font",
 "buffer_font_size": 14,
-"relative_line_numbers": true,    // hybrid numbers — easy 5j / 3k
 "format_on_save": "off"           // matches the Neovim default
 ```
 

@@ -57,5 +57,19 @@ command -v starship >/dev/null && eval "$(starship init zsh)"
 # interactively (needs fzf). Must init after starship so its prompt hook chains.
 command -v zoxide >/dev/null && eval "$(zoxide init zsh)"
 
+# ---- fzf key-bindings ----
+# Ctrl+R fuzzy history · Ctrl+T insert a file path · Alt+C fuzzy-cd. `fzf --zsh`
+# emits all three (fzf 0.48+); older apt builds ship them as a script we source
+# instead. Mirrors the PSFzf keys in pwsh/profile.ps1 (same keys on both shells).
+if command -v fzf >/dev/null; then
+  if fzf --zsh >/dev/null 2>&1; then
+    source <(fzf --zsh)
+  else
+    for f in /usr/share/doc/fzf/examples/key-bindings.zsh /usr/share/fzf/key-bindings.zsh; do
+      [ -r "$f" ] && source "$f"
+    done
+  fi
+fi
+
 # Multiplexing (panes/tabs/splits) is handled by WezTerm itself via direct Alt
 # chords + Ctrl+p/t/n/s modes — see wezterm/wezterm.lua. No multiplexer to start.
