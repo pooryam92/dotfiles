@@ -39,7 +39,7 @@ variables stay contained:
 | Section | What it does                                              |
 | ------- | --------------------------------------------------------- |
 | 1 Options    | numbers, clipboard, search, splits, undo            |
-| 2 Keymaps    | window navigation, `<Esc>` clears search, yank flash |
+| 2 Keymaps    | window navigation + splits, `<Esc>` clears search, yank flash |
 | 3 Colorscheme| `vim.pack` intro + Tokyo Night (Night)              |
 
 ### Plugin management with `vim.pack`
@@ -63,12 +63,17 @@ everything else is stock Neovim:
 | Keys               | Action                                       |
 | ------------------ | -------------------------------------------- |
 | `<C-h/j/k/l>`      | Move focus between split windows             |
+| `<leader>-`        | Split window below (mirrors IdeaVim)         |
+| `<leader>\|`       | Split window right (mirrors IdeaVim)         |
 | `<Esc>`            | Clear search highlight                       |
 | `<Esc><Esc>`       | Exit terminal mode (in a `:terminal` buffer) |
 
-That's the lot — few enough to keep in your head. For finding/opening files
-without a fuzzy finder, the built-ins are `:e <path>` (Tab-completes), `:find`,
-and `:b <name>` to switch buffers. Adding [Telescope](https://github.com/nvim-telescope/telescope.nvim)
+That's the lot — few enough to keep in your head. The `<leader>-` / `<leader>|`
+split maps match the IdeaVim config so split-create feels the same across editors;
+**file-find and AI leader maps are deliberately left out** here (IdeaVim and Zed
+have them) until this config grows a fuzzy finder back. For finding/opening files
+without one, the built-ins are `:e <path>` (Tab-completes), `:find`, and
+`:b <name>` to switch buffers. Adding [Telescope](https://github.com/nvim-telescope/telescope.nvim)
 back is the natural first upgrade when you want frecency/grep search.
 
 ---

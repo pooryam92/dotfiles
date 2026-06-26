@@ -15,18 +15,22 @@
   // Modal, keyboard-first editing on every tool in this repo (goal #1) — the
   // same muscle memory as the Neovim and IdeaVim configs. Toggle at runtime
   // from the command palette: "workspace: toggle vim mode".
-  "cli_default_open_behavior": "existing_window",
   "vim_mode": true,
+
+  // ---- Theme ----
+  // The theme below ships in the "jetbrains-themes" extension (not built in).
+  // Listing it in auto_install_extensions makes Zed auto-install it on a fresh
+  // machine, so the theme survives a clean install on both Linux and Windows.
+  "theme": "JetBrains Islands Dark",
+  "auto_install_extensions": {
+    "jetbrains-themes": true
+  },
+  "cli_default_open_behavior": "existing_window",
 
   // ---- Font: the JetBrainsMono Nerd Font the installers install ----
   // Nerd Font so ligatures/glyphs match the terminal stack.
   "buffer_font_family": "JetBrainsMono Nerd Font",
   "buffer_font_size": 14,
-
-  // ---- Line numbers ----
-  // Hybrid: absolute on the cursor line, relative on the rest — makes vertical
-  // motions (5j, 3k) trivial. Mirrors `.ideavimrc` (number + relativenumber).
-  "relative_line_numbers": true,
 
   // ---- Format on save ----
   // Off, matching the Neovim config (there, conform.nvim's format-on-save is

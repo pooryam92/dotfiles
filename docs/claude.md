@@ -5,9 +5,18 @@ terminal coding agent. This repo configures one piece of it: the **status line**
 — the single line shown under the prompt while Claude is working.
 
 ```
-Opus 4.8   dotfiles    main *   ctx 84k/200k
-└ model    └ dir       └ git    └ context tokens used / window size
+4.8    dotfiles    main *   ctx 84k/200k   5h 24%   wk 81%
+└ model └ dir       └ git    └ context       └ 5-hour └ 7-day plan usage
+                              tokens / window
 ```
+
+The model shows just the version number to save room (`Opus 4.8` → `4.8`); the
+family is dropped since it's almost always Opus. Falls back to the full name if
+there's no parseable version.
+
+The last two segments (`5h`/`wk`) are your subscription limits — they only show
+for Claude.ai Pro/Max accounts, and only after the first API response in a
+session.
 
 - Docs: <https://docs.claude.com/en/docs/claude-code/statusline>
 - Linked into place by both installers (see the table below).
@@ -45,8 +54,13 @@ config here. (Claude Code is the source of truth, so commit the changes it makes
 Claude Code runs the command after each turn and pipes it a JSON blob on **stdin**
 — model, workspace dirs, git, cost, context-window usage, and more. Whatever the
 script prints to **stdout** becomes the bar. `statusline.js` reads that JSON and
-prints four segments: model, directory, git branch (+ dirty `*`), and
-context-window tokens used (out of the window size when Claude reports it).
+prints: model, directory, git branch (+ dirty `*`), context-window tokens used
+(out of the window size when Claude reports it), and — for Pro/Max accounts —
+the 5-hour and 7-day plan-usage percentages from `rate_limits`.
+
+The two usage segments color by percent (a hard quota: green → yellow at 50% →
+red at 80%), whereas `ctx` colors by absolute tokens — the 1M window is flat-
+priced, so what matters there is attention as it fills, not a cap.
 
 **Why Node?** It's the one runtime guaranteed on both machines — Claude Code runs
 on it — so a single script serves every OS with no shell fork (goal #3).

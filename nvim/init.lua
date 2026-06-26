@@ -11,7 +11,7 @@ Organized into numbered `do ... end` blocks so locals stay scoped to
 the section that uses them:
   Section 1 — Options:      core editor settings + leader keys
   Section 2 — Keymaps:      global mappings + autocmds
-  Section 3 — Colorscheme:  tokyonight (matches WezTerm / Zellij)
+  Section 3 — Colorscheme:  tokyonight (matches WezTerm)
 
 Reference docs:
   :help lua-guide     (Lua in Neovim)
@@ -109,6 +109,13 @@ do
   vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower window' })
   vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
 
+  -- Create splits: <leader>- below, <leader>| right. Mirrors the IdeaVim maps so
+  -- split-create muscle memory matches across editors. Built-in :wincmd, no plugin.
+  -- (File-find / AI leader maps are intentionally deferred until this config grows
+  -- a fuzzy finder back — see docs/nvim.md.)
+  vim.keymap.set('n', '<leader>-', '<C-w>s', { desc = 'Split window below' })
+  vim.keymap.set('n', '<leader>|', '<C-w>v', { desc = 'Split window right' })
+
   -- Briefly highlight text after yanking it.
   vim.api.nvim_create_autocmd('TextYankPost', {
     desc = 'Highlight when yanking (copying) text',
@@ -122,7 +129,7 @@ end
 -- ============================================================
 do
   -- `vim.pack` is Neovim's built-in plugin manager (0.12+). tokyonight is the
-  -- only plugin for now — Night style, matching WezTerm / Zellij / Starship.
+  -- only plugin for now — Night style, matching WezTerm / Starship.
   -- Variants: tokyonight-storm, tokyonight-moon, tokyonight-day (light).
   --   :lua vim.pack.update()    update installed plugins
   -- See `:help vim.pack`.

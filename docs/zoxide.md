@@ -56,9 +56,8 @@ helpers) keep working unchanged.
 | `z -`         | Previous directory                                  |
 | `z`           | Home (no argument)                                  |
 
-`zi` needs **fzf** for the interactive list. fzf is installed on Windows
-(scoop); on Linux it isn't part of `install.sh`, so `zi` falls back to plain
-selection — `apt install fzf` to get the picker.
+`zi` needs **fzf** for the interactive list. Both installers install it (scoop
+on Windows, `apt` on Linux), so the picker behaves the same on both machines.
 
 ---
 

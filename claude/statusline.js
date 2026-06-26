@@ -66,7 +66,7 @@ function gitInfo(cwd) {
       cwd,
       encoding: 'utf8',
       stdio: ['ignore', 'pipe', 'ignore'],
-      timeout: 500,
+      timeout: 1000, // mirror starship.toml command_timeout so both bars agree on slow repos
     });
     const lines = out.split('\n');
     const head = lines[0] || '';
@@ -86,9 +86,16 @@ function render(input) {
   const cwd = ws.current_dir || input.cwd || home;
   const segments = [];
 
-  // Model — e.g. "Opus 4.8".
-  const model = (input.model && input.model.display_name) || 'Claude';
-  segments.push(blue(model));
+  // Model — just the version number to save space, e.g. "Opus 4.8" -> "4.8".
+  // The family is dropped: it's almost always Opus, and a bare initial only
+  // confuses (capital "O" reads as 0). Version-agnostic on purpose — nothing
+  // here is pinned to 4.x, so a future "Opus 5" or "Opus 4.10" just shows "5"
+  // / "4.10" automatically. The pattern matches a whole dotted version
+  // (digits and interior dots, no trailing dot); if a release ever ships a
+  // name with no parseable version we fall back to showing it in full.
+  const name = (input.model && input.model.display_name) || 'Claude';
+  const m = name.match(/\d+(?:\.\d+)*/);
+  segments.push(blue(m ? m[0] : name));
 
   // Directory — project-relative, cyan (matches starship [directory]).
   segments.push(cyan(dirSegment(cwd, ws.project_dir, home)));
@@ -122,6 +129,23 @@ function render(input) {
       const label = size ? `${fmtTokens(used)}/${fmtTokens(size)}` : fmtTokens(used);
       segments.push(grey('ctx ') + tone(label));
     }
+  }
+
+  // Plan usage — how much of the Pro/Max subscription limits is spent, so a
+  // cap is visible before we hit it. `rate_limits` only appears for subscribers
+  // after the first API response, and each window can be absent on its own, so
+  // probe defensively. Here % *is* the right unit (it's a hard quota): green
+  // normally, yellow past half, red once it's getting close.
+  const rl = input.rate_limits;
+  if (rl) {
+    const usageTone = (p) => (p >= 80 ? red : p >= 50 ? yellow : green);
+    const win = (w, label) => {
+      const p = w && w.used_percentage;
+      if (typeof p !== 'number') return;
+      segments.push(grey(label + ' ') + usageTone(p)(Math.round(p) + '%'));
+    };
+    win(rl.five_hour, '5h');
+    win(rl.seven_day, 'wk');
   }
 
   return segments.join(grey('  '));

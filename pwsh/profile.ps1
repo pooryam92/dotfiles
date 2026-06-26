@@ -7,7 +7,8 @@
 #   history dedup/search -> PSReadLine options + HistorySearch key handlers
 #   aliases / functions  -> Set-Alias / functions
 #   starship             -> starship init powershell
-#   zellij auto-start     -> guarded block at the bottom
+# Multiplexing (panes/tabs) is handled by WezTerm itself (Alt chords + Ctrl+p/t
+# modes), so there is no multiplexer auto-start here — see wezterm/wezterm.lua.
 
 # ---- Editor ----
 $env:EDITOR = 'nvim'
@@ -42,13 +43,24 @@ if (Get-Module PSReadLine) {
   # and Ctrl+f accepts just the next word. Mirrors the bindkeys in .zshrc.
   Set-PSReadLineKeyHandler -Key Ctrl+e    -Function AcceptSuggestion
   Set-PSReadLineKeyHandler -Key Ctrl+f    -Function AcceptNextSuggestionWord
+
+  # == zsh HIST_IGNORE_SPACE: a leading space keeps a command out of history.
+  # Chain (not replace) the existing default handler so PSReadLine's built-in
+  # sensitive-data filter (tokens/passwords -> never persisted) still runs.
+  $defaultAddToHistory = (Get-PSReadLineOption).AddToHistoryHandler
+  Set-PSReadLineOption -AddToHistoryHandler ({
+    param($line)
+    if ($line -and $line[0] -eq ' ') { return $false }
+    if ($defaultAddToHistory) { return $defaultAddToHistory.Invoke($line) }
+    return $true
+  }.GetNewClosure())
 }
 
 # ---- File-listing colors (Get-ChildItem) ----
-# No custom file-listing colors. We clear the styles to plain text rather than
-# leaving them unset, because PowerShell 7's default $PSStyle.FileInfo.Directory
-# is a blue *background* (ESC[44;1m) that renders as ugly solid bars behind
-# folder names. Empty string == no formatting, so listings are uncolored.
+# Tokyo Night file-listing colors — the pwsh counterpart to zsh's `ls --color=auto`
+# (blue dirs / cyan symlinks / green executables). This also overrides PowerShell
+# 7's default $PSStyle.FileInfo.Directory, which is a blue *background* (ESC[44;1m)
+# that renders as ugly solid bars behind folder names.
 if ($PSStyle) {
   $PSStyle.FileInfo.Directory    = $PSStyle.Bold + $PSStyle.Foreground.FromRgb(0x7aa2f7)  # blue
   $PSStyle.FileInfo.SymbolicLink = $PSStyle.Foreground.FromRgb(0x7dcfff)                   # cyan
@@ -56,7 +68,6 @@ if ($PSStyle) {
 }
 
 # ---- Aliases / functions ----
-Set-Alias -Name zj -Value zellij
 function ll { Get-ChildItem -Force @args }         # long listing incl. hidden (== zsh `ls -lah`)
 function la { Get-ChildItem -Force -Name @args }   # names only, incl. hidden (== zsh `ls -A`)
 function .. { Set-Location .. }
@@ -116,21 +127,18 @@ Initialize-Cached starship -InitArgs 'init','powershell','--print-full-init'
 # zoxide's prompt hook wraps starship's prompt rather than being overwritten by it.
 Initialize-Cached zoxide
 
-# ---- Zellij auto-start (only inside WezTerm, interactive, not nested) ----
-# Mirrors the .zshrc guard. PowerShell isn't a supported target for
-# `zellij setup --generate-auto-start`, so we attach-or-create manually and
-# exit pwsh when Zellij detaches (== ZELLIJ_AUTO_EXIT).
-if ($Host.Name -eq 'ConsoleHost' -and
-    -not $env:ZELLIJ -and
-    $env:WEZTERM_PANE -and
-    (Get-Command zellij -ErrorAction SilentlyContinue)) {
-  # Zellij doesn't inherit the parent pwsh on Windows; with no default_shell set
-  # it falls back to the OS default (cmd.exe). Point it at pwsh via $SHELL, which
-  # Zellij reads for its default shell. (Linux already has $SHELL = zsh.)
-  $env:SHELL = (Get-Command pwsh).Source
-  zellij attach --create main   # attach-or-create the "main" session (named: documented form)
-  # Only close the shell if Zellij exited cleanly (you detached/quit on purpose).
-  # On any failure, fall through to an interactive prompt instead of trapping the
-  # window in an open-then-immediately-close loop.
-  if ($LASTEXITCODE -eq 0) { exit }
+# ---- fzf key-bindings (PSFzf) ----
+# The pwsh counterpart to zsh's fzf bindings: Ctrl+R fuzzy history, Ctrl+T insert a
+# file/dir path, Alt+C fuzzy-cd — the same three keys on both shells. PSFzf is
+# installed by install.ps1 (Install-Module); guarded so the prompt still loads
+# (with PSReadLine's plain Ctrl+R) if it's missing.
+if (Get-Module -ListAvailable PSFzf) {
+  Import-Module PSFzf
+  Set-PsFzfOption -PSReadlineChordProvider 'Ctrl+t' -PSReadlineChordReverseHistory 'Ctrl+r'
+  # PSFzf has no built-in Alt+C chord; bind fuzzy-cd to match fzf's Alt-C, then
+  # redraw the prompt so the new directory shows immediately.
+  Set-PSReadLineKeyHandler -Key 'Alt+c' -ScriptBlock {
+    Invoke-FuzzySetLocation
+    [Microsoft.PowerShell.PSConsoleReadLine]::InvokePrompt()
+  }
 }

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# Dotfiles installer for Pop!_OS / Ubuntu (WezTerm + Zellij + zsh + Starship)
+# Dotfiles installer for Pop!_OS / Ubuntu (WezTerm + zsh + Starship)
 # Idempotent: safe to re-run. Existing files are backed up before linking.
-# Windows uses install.ps1 instead; both share the wezterm/zellij/starship/nvim configs.
+# Windows uses install.ps1 instead; both share the wezterm/starship/nvim configs.
 set -euo pipefail
 
 DOTFILES="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -30,7 +30,7 @@ link() {
 info "Installing apt packages (needs sudo)…"
 sudo apt-get update -y
 sudo apt-get install -y \
-  zsh git curl unzip ca-certificates fontconfig wl-clipboard \
+  zsh git curl unzip ca-certificates fontconfig wl-clipboard fzf \
   zsh-autosuggestions zsh-syntax-highlighting
 
 # ---------------------------------------------------------------------------
@@ -47,28 +47,6 @@ else
     | sudo tee /etc/apt/sources.list.d/wezterm.list >/dev/null
   sudo apt-get update -y
   sudo apt-get install -y wezterm
-fi
-
-# ---------------------------------------------------------------------------
-info "Installing Zellij…"
-if command -v zellij >/dev/null; then
-  info "zellij already installed ($(zellij --version))"
-else
-  case "$ARCH" in
-    amd64) ZJ_ARCH=x86_64 ;;
-    arm64) ZJ_ARCH=aarch64 ;;
-    *)     ZJ_ARCH="" ;;
-  esac
-  if [ -z "$ZJ_ARCH" ]; then
-    warn "No Zellij build for arch '$ARCH'; skipping (see https://github.com/zellij-org/zellij/releases)"
-  else
-    ZJ_URL="$(curl -fsSL https://api.github.com/repos/zellij-org/zellij/releases/latest \
-      | grep -oP '"browser_download_url":\s*"\K[^"]*zellij-'"$ZJ_ARCH"'-unknown-linux-musl\.tar\.gz' | head -1)"
-    curl -fL "$ZJ_URL" -o /tmp/zellij.tar.gz
-    tar -xzf /tmp/zellij.tar.gz -C "$BIN" zellij
-    chmod +x "$BIN/zellij"
-    rm -f /tmp/zellij.tar.gz
-  fi
 fi
 
 # ---------------------------------------------------------------------------
@@ -116,34 +94,15 @@ else
 fi
 
 # ---------------------------------------------------------------------------
-info "Installing tree-sitter CLI…"
-# nvim-treesitter (main branch, used by the nvim config) compiles parsers with
-# the tree-sitter CLI + a C compiler. cc/gcc come from build-essential on most
-# systems; the CLI we install as a user binary.
-if [ -x "$BIN/tree-sitter" ]; then
-  info "tree-sitter already installed ($("$BIN/tree-sitter" --version))"
-else
-  case "$ARCH" in
-    amd64) TS_ARCH=x64 ;;
-    arm64) TS_ARCH=arm64 ;;
-    *)     TS_ARCH="" ;;
-  esac
-  if [ -z "$TS_ARCH" ]; then
-    warn "No tree-sitter CLI build for arch '$ARCH'; Neovim treesitter parsers won't compile"
-  else
-    curl -fL "https://github.com/tree-sitter/tree-sitter/releases/latest/download/tree-sitter-linux-${TS_ARCH}.gz" \
-      -o /tmp/tree-sitter.gz
-    gunzip -f /tmp/tree-sitter.gz
-    install -m 0755 /tmp/tree-sitter "$BIN/tree-sitter"
-    rm -f /tmp/tree-sitter
-  fi
-fi
+# NOTE: the nvim config is colorscheme-only (no treesitter/Telescope), so the
+# tree-sitter CLI, ripgrep and fd are intentionally NOT installed — add them back
+# if you grow the nvim config (see docs/nvim.md). install.ps1 mirrors this.
 
 # ---------------------------------------------------------------------------
 info "Installing Zed…"
-# Zed is the GUI editor counterpart to Neovim (Catppuccin Mocha + Vim mode, shared
-# settings/keymap). The official installer drops it under ~/.local; it self-
-# updates afterwards, so we only run it when Zed isn't already present.
+# Zed is the GUI editor counterpart to Neovim (Vim mode, shared settings/keymap).
+# The official installer drops it under ~/.local; it self-updates afterwards, so
+# we only run it when Zed isn't already present.
 if command -v zed >/dev/null; then
   info "zed already installed ($(zed --version 2>/dev/null | head -1))"
 else
@@ -167,7 +126,6 @@ fi
 # ---------------------------------------------------------------------------
 info "Linking config files…"
 link "$DOTFILES/wezterm/wezterm.lua"    "$HOME/.config/wezterm/wezterm.lua"
-link "$DOTFILES/zellij/config.kdl"     "$HOME/.config/zellij/config.kdl"
 link "$DOTFILES/starship/starship.toml" "$HOME/.config/starship.toml"
 link "$DOTFILES/zsh/.zshrc"            "$HOME/.zshrc"
 link "$DOTFILES/intellij/.ideavimrc"   "$HOME/.ideavimrc"
