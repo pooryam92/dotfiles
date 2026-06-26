@@ -26,6 +26,7 @@ function Link-Config {
     [Parameter(Mandatory)] [string] $Dst,
     [switch] $Directory
   )
+  if (-not (Test-Path -LiteralPath $Src)) { Warn "source missing, skipping: $Src"; return }
   $parent = Split-Path -Parent $Dst
   if (-not (Test-Path $parent)) { New-Item -ItemType Directory -Force -Path $parent | Out-Null }
 
@@ -85,7 +86,7 @@ foreach ($b in 'extras', 'nerd-fonts') { scoop bucket add $b 2>$null }
 # if you grow the nvim config (see docs/nvim.md). install.sh mirrors this.
 Info "Installing packages via scoop…"
 $pkgs = @('pwsh', 'neovim', 'starship', 'wezterm', 'fzf', 'win32yank',
-          'zoxide', 'zed', 'JetBrainsMono-NF')
+          'zoxide', 'zed', 'python', 'JetBrainsMono-NF')
 scoop install @pkgs
 
 # ---------------------------------------------------------------------------
@@ -101,6 +102,37 @@ if (-not (Get-Module -ListAvailable PSFzf)) {
   } catch {
     Warn "PSFzf install failed ($_). Fuzzy Ctrl+r/Ctrl+t/Alt+c stay off until: Install-Module PSFzf"
   }
+}
+
+# ---------------------------------------------------------------------------
+# Claude Code — Anthropic's CLI. Not a scoop app; the official Windows installer
+# self-updates afterwards (or .\update.ps1), so only run it when absent. Its
+# config (settings.json, statusline.js) is linked from this repo below.
+Info "Installing Claude Code…"
+if (Get-Command claude -ErrorAction SilentlyContinue) {
+  Info "claude already installed ($(claude --version 2>$null))"
+} else {
+  try { Invoke-RestMethod -Uri 'https://claude.ai/install.ps1' | Invoke-Expression }
+  catch { Warn "Claude Code install failed ($_). See https://docs.anthropic.com/en/docs/claude-code" }
+}
+
+# ---------------------------------------------------------------------------
+Info "Building the cheat tool's Python venv (Textual TUI)…"
+# `cheat` is a Python + Textual app (tools\cheat-py\cheat.py). Textual lives in a
+# dedicated venv (kept out of the system Python); the shell `cheat` wrapper prefers
+# this interpreter and falls back to a system python (plain-text mode) without it.
+# `keymap` (tools\keymap\keymap.py) shares this same venv, so one Textual install
+# covers both TUIs.
+$cheatVenv = Join-Path $env:USERPROFILE '.local\share\cheat\venv'
+$cheatPy   = Join-Path $cheatVenv 'Scripts\python.exe'
+$haveTextual = $false
+if (Test-Path $cheatPy) { & $cheatPy -c 'import textual' 2>$null; $haveTextual = ($LASTEXITCODE -eq 0) }
+if ($haveTextual) {
+  Info "cheat venv already has Textual"
+} else {
+  python -m venv $cheatVenv
+  & $cheatPy -m pip install -q --upgrade pip textual
+  if ($LASTEXITCODE -ne 0) { Warn "Textual install failed; 'cheat' still works in plain-text mode" }
 }
 
 # ---------------------------------------------------------------------------
@@ -147,12 +179,28 @@ Link-Config (Join-Path $DOT 'nvim')                   (Join-Path $env:LOCALAPPDA
 # Zed on Windows reads %APPDATA%\Zed (Roaming), not ~/.config/zed.
 Link-Config (Join-Path $DOT 'zed\settings.json')      (Join-Path $env:APPDATA 'Zed\settings.json')
 Link-Config (Join-Path $DOT 'zed\keymap.json')        (Join-Path $env:APPDATA 'Zed\keymap.json')
+# The `cheat` command: one implementation (tools\cheat-py\cheat.py — Python + Textual,
+# launched from both shells) plus its data — entries (cheat.tsv) and category index /
+# learning order (cheat-index.tsv). All three are linked together so cheat.py finds
+# its siblings; Textual lives in the venv built above.
+Link-Config (Join-Path $DOT 'tools\cheat-py\cheat.py')        (Join-Path $cfg 'cheat.py')
+Link-Config (Join-Path $DOT 'tools\cheat-py\cheat.tsv')       (Join-Path $cfg 'cheat.tsv')
+Link-Config (Join-Path $DOT 'tools\cheat-py\cheat-index.tsv') (Join-Path $cfg 'cheat-index.tsv')
+# The `keymap` command: a single Python file that reads your shell history into a
+# usage heatmap. Reuses cheat's Textual venv above, so only the script is linked.
+Link-Config (Join-Path $DOT 'tools\keymap\keymap.py')         (Join-Path $cfg 'keymap.py')
+# Both tools share the reusable two-pane TUI in tools\tui\ (content model + Textual
+# browser). They import it by resolving their own symlink back into the repo, the
+# same trick that finds cheat's data files — so the package needs no link of its own.
 Link-Config (Join-Path $DOT 'pwsh\profile.ps1')       $profilePath
 # Claude Code — settings.json carries the status-line pointer; statusline.js is
 # the actual config. Linking settings.json means /config edits land in the repo.
+# commands\ holds repo-managed slash commands (e.g. /keymap — the agent that turns
+# keymap's data into proposed dotfiles tweaks).
 $claude = Join-Path $env:USERPROFILE '.claude'
 Link-Config (Join-Path $DOT 'claude\statusline.js')   (Join-Path $claude 'statusline.js')
 Link-Config (Join-Path $DOT 'claude\settings.json')   (Join-Path $claude 'settings.json')
+Link-Config (Join-Path $DOT 'claude\commands\keymap.md') (Join-Path $claude 'commands\keymap.md')
 
 # ---------------------------------------------------------------------------
 Info "Done. Open WezTerm to start using the new setup."

@@ -1,0 +1,6 @@
+Basics	the ~10 keys you'll use every day
+WezTerm	panes, tabs, splits — your window manager
+Mode	Zellij-style Ctrl+p/t/n/s modes
+Shell	command-line editing & history
+Fuzzy	fzf: search history, files, dirs
+Nav	jump around the filesystem fast

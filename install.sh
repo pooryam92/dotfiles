@@ -6,7 +6,6 @@ set -euo pipefail
 
 DOTFILES="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ARCH="$(dpkg --print-architecture)"          # e.g. amd64
-. /etc/os-release                            # provides $VERSION_ID, $ID
 BIN="$HOME/.local/bin"
 mkdir -p "$BIN" "$HOME/.config"
 
@@ -15,6 +14,7 @@ warn() { printf '\033[1;33m!! \033[0m %s\n' "$*"; }
 
 link() {
   local src="$1" dst="$2"
+  [ -e "$src" ] || { warn "source missing, skipping: $src"; return; }
   mkdir -p "$(dirname "$dst")"
   if [ -L "$dst" ]; then
     rm "$dst"
@@ -31,7 +31,7 @@ info "Installing apt packages (needs sudo)…"
 sudo apt-get update -y
 sudo apt-get install -y \
   zsh git curl unzip ca-certificates fontconfig wl-clipboard fzf \
-  zsh-autosuggestions zsh-syntax-highlighting
+  zsh-autosuggestions zsh-syntax-highlighting python3 python3-venv
 
 # ---------------------------------------------------------------------------
 info "Installing WezTerm…"
@@ -72,7 +72,8 @@ fi
 info "Installing Neovim…"
 # apt ships an old Neovim (0.9.x); the nvim config needs 0.12+ (vim.pack), so
 # install the latest stable release as a user binary in ~/.local/nvim.
-if [ -x "$BIN/nvim" ] && "$BIN/nvim" --version | head -1 | grep -qE 'v0\.(1[2-9]|[2-9][0-9])'; then
+# Accept 0.12–0.99, 0.100+, and any 1.x+ as "new enough" (config needs 0.12+).
+if [ -x "$BIN/nvim" ] && "$BIN/nvim" --version | head -1 | grep -qE 'v(0\.(1[2-9]|[2-9][0-9]|[0-9]{3,})|[1-9][0-9]*\.)'; then
   info "neovim already installed ($("$BIN/nvim" --version | head -1))"
 else
   case "$ARCH" in
@@ -106,7 +107,36 @@ info "Installing Zed…"
 if command -v zed >/dev/null; then
   info "zed already installed ($(zed --version 2>/dev/null | head -1))"
 else
-  curl -f https://zed.dev/install.sh | sh || warn "Zed install failed; see https://zed.dev/docs/linux"
+  curl -fsSL https://zed.dev/install.sh | sh || warn "Zed install failed; see https://zed.dev/docs/linux"
+fi
+
+# ---------------------------------------------------------------------------
+info "Installing Claude Code…"
+# Anthropic's CLI. The native installer drops it under ~/.local/share/claude and
+# symlinks ~/.local/bin/claude; it self-updates afterwards (or `./update.sh`), so
+# we only run it when claude isn't already present. Its config (settings.json,
+# statusline.js) is linked from this repo below.
+if command -v claude >/dev/null; then
+  info "claude already installed ($(claude --version 2>/dev/null))"
+else
+  curl -fsSL https://claude.ai/install.sh | bash || warn "Claude Code install failed; see https://docs.anthropic.com/en/docs/claude-code"
+fi
+
+# ---------------------------------------------------------------------------
+info "Building the cheat tool's Python venv (Textual TUI)…"
+# `cheat` is a Python + Textual app (tools/cheat-py/cheat.py). Pop!_OS ships a
+# PEP-668 "externally managed" Python, so Textual can't be a plain `pip --user`
+# install — it lives in a dedicated venv instead. The shell `cheat` wrapper prefers
+# this interpreter and falls back to the system python3 (plain-text mode) without it.
+# `keymap` (tools/keymap/keymap.py) is the second tool in the suite and shares this
+# same venv — so installing Textual once covers both TUIs.
+CHEAT_VENV="$HOME/.local/share/cheat/venv"
+if "$CHEAT_VENV/bin/python" -c "import textual" 2>/dev/null; then
+  info "cheat venv already has Textual"
+else
+  python3 -m venv "$CHEAT_VENV"
+  "$CHEAT_VENV/bin/pip" install -q --upgrade pip textual \
+    || warn "Textual install failed; 'cheat' still works in plain-text mode"
 fi
 
 # ---------------------------------------------------------------------------
@@ -132,10 +162,28 @@ link "$DOTFILES/intellij/.ideavimrc"   "$HOME/.ideavimrc"
 link "$DOTFILES/nvim"                  "$HOME/.config/nvim"
 link "$DOTFILES/zed/settings.json"     "$HOME/.config/zed/settings.json"
 link "$DOTFILES/zed/keymap.json"       "$HOME/.config/zed/keymap.json"
+# The `cheat` command: one implementation (tools/cheat-py/cheat.py — Python + Textual,
+# launched from both shells) plus its data — entries (cheat.tsv) and category index /
+# learning order (cheat-index.tsv). All three are symlinked together so cheat.py finds
+# its siblings; Textual lives in the venv built above.
+link "$DOTFILES/tools/cheat-py/cheat.py"        "$HOME/.config/cheat.py"
+link "$DOTFILES/tools/cheat-py/cheat.tsv"       "$HOME/.config/cheat.tsv"
+link "$DOTFILES/tools/cheat-py/cheat-index.tsv" "$HOME/.config/cheat-index.tsv"
+# The `keymap` command: a single Python file (tools/keymap/keymap.py) that reads
+# your shell history into a usage heatmap. It reuses cheat's Textual venv above —
+# no extra dependency — so it only needs its own script linked.
+link "$DOTFILES/tools/keymap/keymap.py"         "$HOME/.config/keymap.py"
+# Both tools share the reusable two-pane TUI in tools/tui/ (the content model +
+# Textual browser). They import it by resolving their own symlink back into the
+# repo (Path(__file__).resolve()), the same trick that finds cheat's data files —
+# so the package needs no symlink of its own; it just rides along in the repo.
 # Claude Code — settings.json carries the status-line pointer; statusline.js is
 # the actual config. Linking settings.json means /config edits land in the repo.
+# commands/ holds repo-managed slash commands (e.g. /keymap — the agent that
+# turns keymap's data into proposed dotfiles tweaks).
 link "$DOTFILES/claude/statusline.js"  "$HOME/.claude/statusline.js"
 link "$DOTFILES/claude/settings.json"  "$HOME/.claude/settings.json"
+link "$DOTFILES/claude/commands/keymap.md" "$HOME/.claude/commands/keymap.md"
 
 # ---------------------------------------------------------------------------
 ZSH_PATH="$(command -v zsh)"

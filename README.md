@@ -15,6 +15,7 @@ Windows).
 | GUI editor   | [Zed](https://zed.dev) — fast GPU editor, Vim mode + JetBrains Islands Dark (shared `settings.json`/`keymap.json`) |
 | IDE editing  | [IdeaVim](https://github.com/JetBrains/ideavim) — Vim plugin for JetBrains IDEs (`.ideavimrc`) |
 | AI coding    | [Claude Code](https://docs.claude.com/en/docs/claude-code) — themed status line + synced settings |
+| Self-insight | [keymap](docs/keymap.md) — usage heatmap from your shell history + a `/keymap` agent that proposes config tweaks |
 
 > **Why WezTerm instead of Ghostty?** Ghostty has no official Windows build, so
 > the terminal layer would fork across machines. WezTerm is cross-platform and
@@ -33,6 +34,8 @@ in the actual config in this repo:
 - [Zed](docs/zed.md) — the GUI editor: Vim mode, JetBrains Islands Dark theme, fonts, keymap
 - [IdeaVim](docs/ideavim.md) — Vim in JetBrains IDEs: leader maps, IDE actions
 - [Claude Code](docs/claude.md) — the AI agent: themed status line, synced settings
+- [cheat](docs/cheat.md) — learn-the-terminal sheet: a vim-navigable Textual TUI, lessons & search
+- [keymap](docs/keymap.md) — usage heatmap from your shell history, plus the `/keymap` agent that turns it into config tweaks
 - [Windows](docs/windows.md) — **native Windows setup**: scoop, PowerShell profile, paths
 
 ## Quick start
@@ -69,16 +72,49 @@ backed up to `<file>.bak.<timestamp>` before linking.
 
 **`install.sh` (Linux)** installs apt packages (`zsh`, `git`, `fzf`, plugins,
 etc.), **WezTerm** (official Fury apt repo), and **Starship**, **zoxide**,
-**Neovim**, and **Zed** (official installer) as user binaries in `~/.local/bin`.
-It installs the **JetBrainsMono Nerd Font**, symlinks the configs, and sets
-**zsh** as the login shell (`chsh`). Steps using `sudo` will prompt for your
+**Neovim**, **Zed**, and **Claude Code** (official installers) as user binaries in
+`~/.local/bin`. It installs the **JetBrainsMono Nerd Font**, builds a small Python
+venv (Textual) for the [`cheat`](docs/cheat.md) tool, symlinks the configs, and
+sets **zsh** as the login shell (`chsh`). Steps using `sudo` will prompt for your
 password.
 
 **`install.ps1` (Windows)** uses [scoop](https://scoop.sh) (user-scope, no admin)
 to install **PowerShell 7**, **WezTerm**, **Starship**, **zoxide**, **Neovim**,
 **Zed**, plus `fzf` (fuzzy finder) and `win32yank` (Neovim's clipboard), the Nerd
-Font, and the **PSFzf** module, then links the configs. See
+Font, and the **PSFzf** module. It also installs **Claude Code** (its own native
+installer, not scoop) and **Python** (for the [`cheat`](docs/cheat.md) tool, set
+up with Textual in a venv), then links the configs. See
 [docs/windows.md](docs/windows.md).
+
+### Keeping things updated
+
+The **config files** are symlinks into this repo, so `git pull` is all it takes to
+update them on every machine. The **tools** are install-once, though — re-running
+`install.sh`/`install.ps1` skips anything already present and never upgrades it. To
+bump the tools to their latest releases, use the companion update scripts:
+
+```bash
+./update.sh check      # Linux: list ONLY what's behind (exit 1 if any); no changes
+./update.sh versions   # Linux: full installed-vs-latest table; no changes, no sudo
+./update.sh            # Linux: preview → confirm → upgrade → summary of what moved
+```
+
+```powershell
+.\update.ps1 -Check    # Windows: list what's behind via `scoop status`; no changes
+.\update.ps1 -Versions # Windows: full installed list (`scoop list`); no changes
+.\update.ps1           # Windows: preview → confirm → upgrade everything
+```
+
+`check` answers "what needs updating?" at a glance. A plain `update` first **shows
+you the jump** (`starship 1.25.1 → 1.26.0`) with a **release-notes link** for each
+tool, flags **major / 0.x-minor bumps with ⚠** (the ones most likely to break
+something), and asks before changing anything — so you can read the changelog
+first. Afterwards it prints a summary of exactly what moved.
+
+These track *latest* rather than pinning versions (goal: stay simple) — the preview
+lets you eyeball drift and breaking changes first. WezTerm (Linux), Zed, and Claude
+Code self-update on their own; Neovim's plugins update from inside nvim with
+`:lua vim.pack.update()`.
 
 ## Layout
 
@@ -97,6 +133,11 @@ edits here take effect immediately. Only the shell config differs.
 | `pwsh/profile.ps1`       | —                             | `$PROFILE.CurrentUserAllHosts`          |
 | `claude/statusline.js`   | `~/.claude/statusline.js`     | `%USERPROFILE%\.claude\statusline.js`   |
 | `claude/settings.json`   | `~/.claude/settings.json`     | `%USERPROFILE%\.claude\settings.json`   |
+| `claude/commands/keymap.md`      | `~/.claude/commands/keymap.md` | `%USERPROFILE%\.claude\commands\keymap.md` |
+| `tools/cheat-py/cheat.py`        | `~/.config/cheat.py`          | `%USERPROFILE%\.config\cheat.py`        |
+| `tools/cheat-py/cheat.tsv`       | `~/.config/cheat.tsv`         | `%USERPROFILE%\.config\cheat.tsv`       |
+| `tools/cheat-py/cheat-index.tsv` | `~/.config/cheat-index.tsv`   | `%USERPROFILE%\.config\cheat-index.tsv` |
+| `tools/keymap/keymap.py`         | `~/.config/keymap.py`         | `%USERPROFILE%\.config\keymap.py`       |
 
 After editing:
 
@@ -107,6 +148,14 @@ After editing:
 - **Zed** – applies settings/keymap edits on save; no reload.
 
 ## Keybindings
+
+> **Learning the setup?** Run `cheat` in either shell. Bare `cheat` opens a
+> **vim-navigable Textual TUI** — `j`/`k` move between categories, `l` reads a
+> lesson, `/` searches, `q` quits. `cheat <category>` prints one **lesson** (each
+> key with a short *why/tip*) and `cheat <word>` **searches** — both print once,
+> handy for piping. It's implemented **once** in `tools/cheat-py/cheat.py`
+> (Python + Textual) so both shells just launch it. Full guide, data format, and
+> how to add your own keys: **[docs/cheat.md](docs/cheat.md)**.
 
 There are **two ways to drive panes/tabs**, side by side — use whichever fits the
 moment. Fast direct chords for the things you do constantly, and Zellij-style

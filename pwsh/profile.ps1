@@ -142,3 +142,41 @@ if (Get-Module -ListAvailable PSFzf) {
     [Microsoft.PowerShell.PSConsoleReadLine]::InvokePrompt()
   }
 }
+
+# ---- cheat: learn-the-terminal sheet (one implementation, in cheat.py) ----
+# The logic lives ONCE in ~/.config/cheat.py (a Python + Textual app; the zsh
+# wrapper shares it, so there's no second port to keep in sync). install.ps1 builds
+# a venv at ~/.local/share/cheat/venv with Textual for the TUI; we prefer that
+# interpreter and fall back to a system python (plain-text mode) without it. Bare
+# `cheat` opens the TUI / menu; `cheat <category|word|all>` prints once.
+function cheat {
+  $py = Join-Path $HOME '.local\share\cheat\venv\Scripts\python.exe'
+  if (-not (Test-Path $py)) { $py = (Get-Command python -ErrorAction SilentlyContinue).Source }
+  if (-not $py) { Write-Error 'cheat: needs python'; return }
+  & $py (Join-Path $HOME '.config' 'cheat.py') @args
+}
+# Once-a-day nudge: show one random tip the first time you open a shell each day,
+# so the keys teach themselves without you having to remember the tool exists. The
+# date check is done here (cheap) so python only spawns on a genuinely new day, not
+# on every shell — keeps startup fast. Stamp lives in the cache dir, not the repo.
+$cheatStamp = Join-Path ($env:LOCALAPPDATA ?? (Join-Path $HOME '.cache')) 'cheat' 'last-tip'
+$cheatToday = Get-Date -Format 'yyyyMMdd'
+if ((Get-Content $cheatStamp -ErrorAction SilentlyContinue) -ne $cheatToday) {
+  New-Item -ItemType Directory -Force -Path (Split-Path $cheatStamp) | Out-Null
+  Set-Content -Path $cheatStamp -Value $cheatToday
+  cheat tip
+}
+
+# ---- keymap: your personal shell-usage heatmap (+ data for an agent) -------
+# Reads PSReadLine history and shows what you actually lean on — top commands,
+# busy subcommands, aliases you defined but never use. Shares `cheat`'s Textual
+# venv (not a second dependency) and falls back to a plain report without it.
+# Bare `keymap` opens the TUI; `keymap --plain` prints once; `keymap --json`
+# feeds the `/keymap` agent. (PSReadLine history has no timestamps, so `--days`
+# and the date span are no-ops here — the counts still work.)
+function keymap {
+  $py = Join-Path $HOME '.local\share\cheat\venv\Scripts\python.exe'
+  if (-not (Test-Path $py)) { $py = (Get-Command python -ErrorAction SilentlyContinue).Source }
+  if (-not $py) { Write-Error 'keymap: needs python'; return }
+  & $py (Join-Path $HOME '.config' 'keymap.py') @args
+}

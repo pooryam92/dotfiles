@@ -73,3 +73,40 @@ fi
 
 # Multiplexing (panes/tabs/splits) is handled by WezTerm itself via direct Alt
 # chords + Ctrl+p/t/n/s modes — see wezterm/wezterm.lua. No multiplexer to start.
+
+# ---- cheat: learn-the-terminal sheet (one implementation, in cheat.py) ----
+# The logic lives ONCE in ~/.config/cheat.py (a Python + Textual app; the pwsh
+# wrapper shares it, so there's no second port to keep in sync). install.sh builds
+# a small venv at ~/.local/share/cheat/venv with Textual for the TUI; we prefer
+# that interpreter and fall back to the system python3 (plain-text mode) without
+# it. Bare `cheat` opens the TUI / menu; `cheat <category|word|all>` prints once.
+cheat() {
+  local py="$HOME/.local/share/cheat/venv/bin/python"
+  [ -x "$py" ] || py="$(command -v python3)"
+  [ -n "$py" ] || { print -u2 "cheat: needs python3"; return 1; }
+  "$py" "$HOME/.config/cheat.py" "$@"
+}
+# Once-a-day nudge: show one random tip the first time you open a shell each day,
+# so the keys teach themselves without you having to remember the tool exists. The
+# date check is done here (cheap) so python only spawns on a genuinely new day, not
+# on every shell — keeps startup fast. Stamp lives in the cache dir, not the repo.
+() {
+  local stamp="${XDG_CACHE_HOME:-$HOME/.cache}/cheat/last-tip"
+  local today=$(date +%Y%m%d)
+  [ "$(cat "$stamp" 2>/dev/null)" = "$today" ] && return
+  mkdir -p "${stamp:h}" && print -r -- "$today" > "$stamp"
+  cheat tip
+}
+
+# ---- keymap: your personal shell-usage heatmap (+ data for an agent) -------
+# Reads this shell's history and shows what you actually lean on — top commands,
+# busy subcommands, and aliases you defined but never use.
+# Same Python+Textual venv as `cheat` (shared, not a second dependency); falls
+# back to a plain printed report without it. Bare `keymap` opens the TUI;
+# `keymap --plain` prints once; `keymap --json` feeds the `/keymap` agent.
+keymap() {
+  local py="$HOME/.local/share/cheat/venv/bin/python"
+  [ -x "$py" ] || py="$(command -v python3)"
+  [ -n "$py" ] || { print -u2 "keymap: needs python3"; return 1; }
+  "$py" "$HOME/.config/keymap.py" "$@"
+}
