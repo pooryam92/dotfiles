@@ -28,9 +28,13 @@ config.adjust_window_size_when_changing_font_size = false
 config.window_decorations = 'TITLE | RESIZE'
 
 -- ---- Tabs (now WezTerm's own — no external multiplexer) ----
--- Show the tab bar only when there's more than one tab, so a single-tab window
--- reclaims that row. The retro/compact bar is lighter than the fancy one.
-config.hide_tab_bar_if_only_one_tab = true
+-- Always show the tab bar: it carries the mode-hint line (right status), which must
+-- stay visible while a Zellij-style mode is active. We can't reclaim this row only
+-- in the no-mode case, because the only runtime lever is set_config_overrides, and
+-- re-applying that resets WezTerm's active key-table stack — so a per-tick toggle
+-- silently kicks you out of the mode you just entered. The retro/compact bar is
+-- lighter than the fancy one.
+config.hide_tab_bar_if_only_one_tab = false
 config.use_fancy_tab_bar = false
 config.tab_bar_at_bottom = true
 
@@ -193,12 +197,6 @@ local mode_hints = {
 wezterm.on('update-right-status', function(window, _)
   local name = window:active_key_table()
   window:set_right_status(name and (mode_hints[name] or (' ' .. name .. ' ')) or '')
-  -- The hint lives in the tab bar, but `hide_tab_bar_if_only_one_tab` hides that
-  -- bar in the common single-tab case — which would swallow the hint exactly when
-  -- you need it. So force the bar visible while a mode is active, and reclaim the
-  -- row again when it isn't. (Overrides only re-apply when the value changes, so
-  -- this doesn't thrash.)
-  window:set_config_overrides { hide_tab_bar_if_only_one_tab = (name == nil) }
 end)
 
 return config
