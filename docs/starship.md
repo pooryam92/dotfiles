@@ -19,10 +19,10 @@ zsh hands the prompt to Starship via `eval "$(starship init zsh)"` (see
 
 ## How Starship works
 
-A prompt is built from **modules** (directory, git_branch, nodejs, …). Each
+A prompt is built from **modules** (directory, git_branch, python, …). Each
 module:
-1. **only shows when relevant** — e.g. `nodejs` appears only in a directory with
-   a `package.json`. This keeps the prompt clean.
+1. **only shows when relevant** — e.g. `python` appears only in a directory with
+   a `.py` file or `pyproject.toml`. This keeps the prompt clean.
 2. is laid out by the top-level **`format`** string.
 3. can be styled/tweaked in its own `[module]` table.
 
@@ -56,8 +56,7 @@ $directory\
 $git_branch\
 $git_status\
 $git_state\
-$git_metrics\
-$nodejs$python$rust$golang$c$java$dotnet\
+$python\
 $jobs\
 $line_break\
 $status$character"""
@@ -68,12 +67,11 @@ This is the **order** modules render in. Reading it top to bottom:
 1. `$directory` — current path.
 2. `$git_branch` `$git_status` `$git_state` — branch name, dirty/ahead/behind
    markers, and in-progress states (rebase/merge).
-3. `$git_metrics` — `+added` / `−deleted` line counts for the working tree.
-4. The language group — whichever of node/python/rust/go/c/java/dotnet is
-   relevant to the current project.
-5. `$jobs` — count of background jobs, if any.
-6. `$line_break` — drop to a new line…
-7. `$status$character` — the last command's exit code (only on failure),
+3. `$python` — the Python icon, plus the active virtualenv name when one
+   is set (only while a venv is active).
+4. `$jobs` — count of background jobs, if any.
+5. `$line_break` — drop to a new line…
+6. `$status$character` — the last command's exit code (only on failure),
    then the `❯` you actually type at, both on their own line.
 
 > The trailing `\` on each line is a **line continuation** — it joins the lines
@@ -126,24 +124,12 @@ style = "bold red"
 
 [git_state]
 style = "bold yellow"
-
-[git_metrics]
-disabled = false
-added_style = "bold green"
-deleted_style = "bold red"
 ```
 
 - `git_branch` — the branch name, with a branch glyph.
 - `git_status` — symbols for uncommitted changes, staged files, ahead/behind,
   stashes, etc. (red).
 - `git_state` — shows when a rebase/merge/cherry-pick is in progress (yellow).
-- `git_metrics` — `+N` green / `−N` red lines added/removed in the working tree.
-  Off by default, so we flip `disabled = false`.
-
-> **Speed note.** `git_metrics` is the one module that costs an **extra
-> `git diff` every prompt**. It's cheap in normal repos, but if the prompt ever
-> feels laggy (run `starship timings` to confirm), set `disabled = true` here to
-> drop it. This is the deliberate trade-off for showing line counts.
 
 ### Character (the prompt symbol)
 
@@ -221,18 +207,31 @@ A dim 24-hour `HH:MM` clock on the **right** edge. Off by default, so we flip
 
 [strftime]: https://docs.rs/chrono/latest/chrono/format/strftime/index.html
 
-### Language modules
+### Python (the one language module kept)
 
 ```toml
-[nodejs]
-symbol = " "
 [python]
 symbol = " "
-...
+format = "[$symbol($virtualenv )]($style)"
 ```
 
-Each just sets a custom Nerd Font icon. They auto-appear only inside a project of
-that language (e.g. `python` shows in a dir with `requirements.txt`/`.py`).
+Python earns its place because it shows something you'd actually **act on**:
+the active **virtualenv**. The name comes from `$VIRTUAL_ENV` — just an
+environment variable, so there's **no subprocess** (unlike `$version`) — and it
+stops you from `pip install`-ing into the wrong environment. The icon shows in
+any Python project; the venv name is added only while a venv is active.
+
+The other language modules (node / rust / go / c / java / dotnet) were
+**removed**. With the version dropped they were just decorative icons, and in a
+Node or Java repo the icon tells you nothing you don't already know. To bring
+one back as a project-type cue (free now — no version lookup), re-add its table
+and put its `$name` in `format`:
+
+```toml
+[rust]
+symbol = "…"                  # a Nerd Font glyph — see `starship preset nerd-font-symbols`
+format = "[$symbol]($style)"  # icon only — no $version, so no per-prompt subprocess
+```
 
 ---
 
@@ -259,12 +258,12 @@ format = """
 $directory\
 $git_branch$git_status$git_state\
 $aws\
-$nodejs$python$rust$golang$c$java$dotnet\
+$python\
 $line_break\
 $character"""
 ```
 Most modules only render when relevant, so adding one is safe — it stays hidden
-until it has something to show. (Some, like `time`/`status`/`git_metrics`, are
+until it has something to show. (Some, like `time`/`status`, are
 disabled by default and need `disabled = false` in their table — see above.)
 
 **Move something between the left and right prompt** — cut its `$name` from one
