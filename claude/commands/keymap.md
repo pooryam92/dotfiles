@@ -30,7 +30,7 @@ If the tool errors (no history found), say so plainly and stop.
 Before suggesting anything, know what already exists — don't propose what's there:
 
 - `zsh/.zshrc` and `pwsh/profile.ps1` — existing aliases, functions, keybindings, vi-mode
-- `tools/cheat-py/cheat.tsv` — the learn-the-terminal entries (a new shortcut worth teaching belongs here too)
+- `tools/cheat/cheat.tsv` — the learn-the-terminal entries (a new shortcut worth teaching belongs here too)
 - `wezterm/wezterm.lua`, `zed/keymap.json`, `nvim/`, `starship/starship.toml` — other keyboard surfaces
 - `CLAUDE.md` — the standing goals every change must serve
 

@@ -118,7 +118,7 @@ if (Get-Command claude -ErrorAction SilentlyContinue) {
 
 # ---------------------------------------------------------------------------
 Info "Building the cheat tool's Python venv (Textual TUI)…"
-# `cheat` is a Python + Textual app (tools\cheat-py\cheat.py). Textual lives in a
+# `cheat` is a Python + Textual app (the tools\cheat\ package). Textual lives in a
 # dedicated venv (kept out of the system Python); the shell `cheat` wrapper prefers
 # this interpreter and falls back to a system python (plain-text mode) without it.
 # `keymap` (tools\keymap\keymap.py) shares this same venv, so one Textual install
@@ -179,19 +179,19 @@ Link-Config (Join-Path $DOT 'nvim')                   (Join-Path $env:LOCALAPPDA
 # Zed on Windows reads %APPDATA%\Zed (Roaming), not ~/.config/zed.
 Link-Config (Join-Path $DOT 'zed\settings.json')      (Join-Path $env:APPDATA 'Zed\settings.json')
 Link-Config (Join-Path $DOT 'zed\keymap.json')        (Join-Path $env:APPDATA 'Zed\keymap.json')
-# The `cheat` command: one implementation (tools\cheat-py\cheat.py — Python + Textual,
-# launched from both shells) plus its data — entries (cheat.tsv) and category index /
-# learning order (cheat-index.tsv). All three are linked together so cheat.py finds
-# its siblings; Textual lives in the venv built above.
-Link-Config (Join-Path $DOT 'tools\cheat-py\cheat.py')        (Join-Path $cfg 'cheat.py')
-Link-Config (Join-Path $DOT 'tools\cheat-py\cheat.tsv')       (Join-Path $cfg 'cheat.tsv')
-Link-Config (Join-Path $DOT 'tools\cheat-py\cheat-index.tsv') (Join-Path $cfg 'cheat-index.tsv')
-# The `keymap` command: a single Python file that reads your shell history into a
-# usage heatmap. Reuses cheat's Textual venv above, so only the script is linked.
-Link-Config (Join-Path $DOT 'tools\keymap\keymap.py')         (Join-Path $cfg 'keymap.py')
-# Both tools share the reusable two-pane TUI in tools\tui\ (content model + Textual
-# browser). They import it by resolving their own symlink back into the repo, the
-# same trick that finds cheat's data files — so the package needs no link of its own.
+# The `cheat` command: the tools\cheat\ package (data/content/cli) behind a thin
+# cheat.py entry, launched from both shells, plus its data — entries (cheat.tsv)
+# and category index / learning order (cheat-index.tsv). Textual lives in the venv.
+Link-Config (Join-Path $DOT 'tools\cheat\cheat.py')        (Join-Path $cfg 'cheat.py')
+Link-Config (Join-Path $DOT 'tools\cheat\cheat.tsv')       (Join-Path $cfg 'cheat.tsv')
+Link-Config (Join-Path $DOT 'tools\cheat\cheat-index.tsv') (Join-Path $cfg 'cheat-index.tsv')
+# The `keymap` command: the tools\keymap\ package behind a thin keymap.py entry,
+# reading your shell history into a usage heatmap. Reuses cheat's Textual venv.
+Link-Config (Join-Path $DOT 'tools\keymap\keymap.py')      (Join-Path $cfg 'keymap.py')
+# Both entries are thin: they put the repo's tools\ dir on sys.path by resolving
+# their own symlink back into the repo, then import their package and the shared
+# tools\tui\ browser. That same trick locates the cheat data above — so neither
+# the packages nor tui\ need links of their own.
 Link-Config (Join-Path $DOT 'pwsh\profile.ps1')       $profilePath
 # Claude Code — settings.json carries the status-line pointer; statusline.js is
 # the actual config. Linking settings.json means /config edits land in the repo.

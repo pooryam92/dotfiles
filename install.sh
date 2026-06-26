@@ -124,7 +124,7 @@ fi
 
 # ---------------------------------------------------------------------------
 info "Building the cheat tool's Python venv (Textual TUI)…"
-# `cheat` is a Python + Textual app (tools/cheat-py/cheat.py). Pop!_OS ships a
+# `cheat` is a Python + Textual app (the tools/cheat/ package). Pop!_OS ships a
 # PEP-668 "externally managed" Python, so Textual can't be a plain `pip --user`
 # install — it lives in a dedicated venv instead. The shell `cheat` wrapper prefers
 # this interpreter and falls back to the system python3 (plain-text mode) without it.
@@ -162,21 +162,21 @@ link "$DOTFILES/intellij/.ideavimrc"   "$HOME/.ideavimrc"
 link "$DOTFILES/nvim"                  "$HOME/.config/nvim"
 link "$DOTFILES/zed/settings.json"     "$HOME/.config/zed/settings.json"
 link "$DOTFILES/zed/keymap.json"       "$HOME/.config/zed/keymap.json"
-# The `cheat` command: one implementation (tools/cheat-py/cheat.py — Python + Textual,
-# launched from both shells) plus its data — entries (cheat.tsv) and category index /
-# learning order (cheat-index.tsv). All three are symlinked together so cheat.py finds
-# its siblings; Textual lives in the venv built above.
-link "$DOTFILES/tools/cheat-py/cheat.py"        "$HOME/.config/cheat.py"
-link "$DOTFILES/tools/cheat-py/cheat.tsv"       "$HOME/.config/cheat.tsv"
-link "$DOTFILES/tools/cheat-py/cheat-index.tsv" "$HOME/.config/cheat-index.tsv"
-# The `keymap` command: a single Python file (tools/keymap/keymap.py) that reads
-# your shell history into a usage heatmap. It reuses cheat's Textual venv above —
-# no extra dependency — so it only needs its own script linked.
-link "$DOTFILES/tools/keymap/keymap.py"         "$HOME/.config/keymap.py"
-# Both tools share the reusable two-pane TUI in tools/tui/ (the content model +
-# Textual browser). They import it by resolving their own symlink back into the
-# repo (Path(__file__).resolve()), the same trick that finds cheat's data files —
-# so the package needs no symlink of its own; it just rides along in the repo.
+# The `cheat` command: the tools/cheat/ package (data/content/cli) behind a thin
+# cheat.py entry, launched from both shells. We link the entry plus its data —
+# entries (cheat.tsv) and category index / learning order (cheat-index.tsv).
+# Textual lives in the venv built above.
+link "$DOTFILES/tools/cheat/cheat.py"        "$HOME/.config/cheat.py"
+link "$DOTFILES/tools/cheat/cheat.tsv"       "$HOME/.config/cheat.tsv"
+link "$DOTFILES/tools/cheat/cheat-index.tsv" "$HOME/.config/cheat-index.tsv"
+# The `keymap` command: the tools/keymap/ package behind a thin keymap.py entry,
+# reading your shell history into a usage heatmap. It reuses cheat's Textual venv
+# above — no extra dependency — so it only needs its own entry linked.
+link "$DOTFILES/tools/keymap/keymap.py"      "$HOME/.config/keymap.py"
+# Both entries are thin: they put the repo's tools/ dir on sys.path by resolving
+# their own symlink back into the repo (Path(__file__).resolve()), then import
+# their package and the shared tools/tui/ browser. That same trick locates the
+# cheat data above — so neither the packages nor tui/ need symlinks of their own.
 # Claude Code — settings.json carries the status-line pointer; statusline.js is
 # the actual config. Linking settings.json means /config edits land in the repo.
 # commands/ holds repo-managed slash commands (e.g. /keymap — the agent that

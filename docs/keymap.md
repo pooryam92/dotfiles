@@ -15,10 +15,12 @@ keymap version        # print the version
 ```
 
 It's the **second tool in the suite** after [`cheat`](cheat.md), built on the same
-template: one Python file, a shared Textual venv, graceful degradation. The split
-that makes it interesting is **sense vs. agent**:
+template: a small Python package, a shared Textual venv, graceful degradation. It
+also shares `cheat`'s `tools/tui/` browser, so the two TUIs feel identical. The
+split that makes it interesting is **sense vs. agent**:
 
-- **Sense layer** — `tools/keymap/keymap.py` only *measures*. No opinions, no
+- **Sense layer** — the `tools/keymap/` package only *measures* (history → redact →
+  parse → profile, behind a thin `keymap.py` entry). No opinions, no
   hardcoded "if you do X, do Y" rules to rot. Just facts about your usage.
 - **Agent layer** — the `/keymap` slash command reads those facts plus the current
   repo, *reasons* about what's worth changing, and proposes diffs you approve. The

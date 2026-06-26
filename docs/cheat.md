@@ -18,7 +18,7 @@ Your shell shows one random `cheat tip` the **first time you open a terminal eac
 day** — so the keys teach themselves without you having to remember the tool is
 there. See [The daily nudge](#the-daily-nudge) below.
 
-- Implemented **once** in `tools/cheat-py/cheat.py` (Python + [Textual](https://textual.textualize.io)).
+- Implemented **once** in the `tools/cheat/` package (Python + [Textual](https://textual.textualize.io)).
 - Both shells just launch it — no second port to keep in sync.
 - Data lives beside it in two small TSV files; adding a key or a whole category is a one-line edit.
 
@@ -100,18 +100,27 @@ never in the repo. Run `cheat tip` yourself anytime for a fresh one.
 
 ## How it's wired in this repo
 
-`cheat` is a Python + Textual app. The challenge it solves cross-platform is *the
-runtime*: Textual is a dependency, and Pop!_OS ships a [PEP 668](https://peps.python.org/pep-0668/)
-"externally managed" Python where `pip install --user` is blocked. So Textual
-lives in a **dedicated venv**, and the tool degrades gracefully when it's absent.
+`cheat` is a Python + Textual app, split into the `tools/cheat/` package —
+`data.py` (load the TSVs), `content.py` (build the screens as neutral docs),
+`cli.py` (args + plain output + launch), behind a thin `cheat.py` entry. The
+two-pane browser, vim keys and palette are **not** here: they live in the shared
+`tools/tui/` package, which `keymap` reuses too — see that package's docstrings
+(`tui/__init__.py`, `doc.py`, `render.py`, `browse.py`) for the seam.
+
+The challenge it solves cross-platform is *the runtime*: Textual is a dependency,
+and Pop!_OS ships a [PEP 668](https://peps.python.org/pep-0668/) "externally
+managed" Python where `pip install --user` is blocked. So Textual lives in a
+**dedicated venv**, and the tool degrades gracefully when it's absent.
 
 **Installers** (`install.sh` / `install.ps1`)
 
 - Install Python (`apt` on Linux — already present; `scoop install python` on Windows).
 - Build a venv at `~/.local/share/cheat/venv` and `pip install textual` into it
   (idempotent — skipped if Textual is already there).
-- Symlink the three files together into `~/.config`, so the script finds its data:
-  `cheat.py`, `cheat.tsv`, `cheat-index.tsv`.
+- Symlink the entry plus its two data files into `~/.config`: `cheat.py`,
+  `cheat.tsv`, `cheat-index.tsv`. The entry resolves its own symlink back into the
+  repo to import the `cheat` and `tui` packages (and to find the data), so those
+  packages need no links of their own.
 
 **Shell wrappers** (`zsh/.zshrc`, `pwsh/profile.ps1`) — thin launchers that prefer
 the venv's interpreter and fall back to the system Python:

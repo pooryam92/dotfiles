@@ -134,9 +134,9 @@ edits here take effect immediately. Only the shell config differs.
 | `claude/statusline.js`   | `~/.claude/statusline.js`     | `%USERPROFILE%\.claude\statusline.js`   |
 | `claude/settings.json`   | `~/.claude/settings.json`     | `%USERPROFILE%\.claude\settings.json`   |
 | `claude/commands/keymap.md`      | `~/.claude/commands/keymap.md` | `%USERPROFILE%\.claude\commands\keymap.md` |
-| `tools/cheat-py/cheat.py`        | `~/.config/cheat.py`          | `%USERPROFILE%\.config\cheat.py`        |
-| `tools/cheat-py/cheat.tsv`       | `~/.config/cheat.tsv`         | `%USERPROFILE%\.config\cheat.tsv`       |
-| `tools/cheat-py/cheat-index.tsv` | `~/.config/cheat-index.tsv`   | `%USERPROFILE%\.config\cheat-index.tsv` |
+| `tools/cheat/cheat.py`           | `~/.config/cheat.py`          | `%USERPROFILE%\.config\cheat.py`        |
+| `tools/cheat/cheat.tsv`          | `~/.config/cheat.tsv`         | `%USERPROFILE%\.config\cheat.tsv`       |
+| `tools/cheat/cheat-index.tsv`    | `~/.config/cheat-index.tsv`   | `%USERPROFILE%\.config\cheat-index.tsv` |
 | `tools/keymap/keymap.py`         | `~/.config/keymap.py`         | `%USERPROFILE%\.config\keymap.py`       |
 
 After editing:
@@ -153,7 +153,7 @@ After editing:
 > **vim-navigable Textual TUI** — `j`/`k` move between categories, `l` reads a
 > lesson, `/` searches, `q` quits. `cheat <category>` prints one **lesson** (each
 > key with a short *why/tip*) and `cheat <word>` **searches** — both print once,
-> handy for piping. It's implemented **once** in `tools/cheat-py/cheat.py`
+> handy for piping. It's implemented **once** in the `tools/cheat/` package
 > (Python + Textual) so both shells just launch it. Full guide, data format, and
 > how to add your own keys: **[docs/cheat.md](docs/cheat.md)**.
 
