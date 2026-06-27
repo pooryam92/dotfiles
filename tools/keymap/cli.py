@@ -44,8 +44,8 @@ def run_tui(p):
         ("Aliases", lambda: content.doc_aliases(p)),
     ]
     items = [tui.Item(name, fn) for name, fn in views]
-    tui.browse(items, title="keymap", subtitle="j/k pick · l read · q quit",
-               list_width=22, smoke_env="KEYMAP_SMOKE")
+    tui.browse(items, title="keymap", subtitle=f"{len(views)} views",
+               list_width=22, list_title="views", smoke_env="KEYMAP_SMOKE")
 
 
 def main():

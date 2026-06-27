@@ -21,10 +21,10 @@ render.py) — nothing in the tools. This `__init__` is the public surface:
 """
 
 from .browse import Item, browse
-from .doc import Doc, accent, dim, hl, key, match, text, title
+from .doc import Doc, accent, bar, barfill, dim, hl, key, match, text, title
 from .render import render_ansi, render_markup
 
 __all__ = [
-    "Doc", "Item", "accent", "browse", "dim", "hl", "key", "match",
-    "render_ansi", "render_markup", "text", "title",
+    "Doc", "Item", "accent", "bar", "barfill", "browse", "dim", "hl", "key",
+    "match", "render_ansi", "render_markup", "text", "title",
 ]
