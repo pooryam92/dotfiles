@@ -30,9 +30,12 @@ split that makes it interesting is **sense vs. agent**:
 
 ## The views (bare `keymap`)
 
-In a real terminal (with Textual installed) `keymap` opens a two-pane TUI: a list of
-views on the left, the chart on the right. It's **vim-navigable** — the same hjkl
-muscle memory as `cheat`, your shell, Neovim, and Zed.
+In a real terminal (with Textual installed) `keymap` opens a two-pane TUI sharing
+`cheat`'s lazygit/k9s-style chrome — rounded titled boxes, the focused pane's border
+lit in the accent, the chart box's border naming the current view, and a bottom
+keybar. A list of views sits on the left, the chart on the right. It's
+**vim-navigable** — the same hjkl muscle memory as `cheat`, your shell, Neovim, and
+Zed.
 
 | View            | What it shows                                                  |
 | --------------- | -------------------------------------------------------------- |

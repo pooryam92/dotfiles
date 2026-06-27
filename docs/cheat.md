@@ -28,11 +28,14 @@ there. See [The daily nudge](#the-daily-nudge) below.
 
 ### 1. The TUI — bare `cheat`
 
-In a real terminal (with Textual installed) `cheat` opens a two-pane TUI: the
-category list on the left, the lesson on the right. It updates live as you move,
-and it's **vim-navigable** — the same hjkl muscle memory as your shell, Neovim,
-and Zed. Press `/` to filter across every entry; matches are highlighted and
-counted as you type.
+In a real terminal (with Textual installed) `cheat` opens a two-pane TUI styled
+after canonical Linux TUIs (lazygit/k9s): every pane is a **rounded, titled box**,
+the **focused pane's border lights up** in the accent so you always know where you
+are, the lesson box's border **names what you're reading**, and a context-aware
+**keybar** runs along the bottom. The category list sits on the left, the lesson on
+the right. It updates live as you move, and it's **vim-navigable** — the same hjkl
+muscle memory as your shell, Neovim, and Zed. Press `/` to filter across every
+entry; matches are highlighted and counted as you type.
 
 | Key            | Action                                              |
 | -------------- | --------------------------------------------------- |
@@ -42,6 +45,7 @@ counted as you type.
 | `j` / `k`      | *(in the lesson)* scroll line by line               |
 | `g` / `G`      | *(in the lesson)* top / bottom                      |
 | `h` or `Esc`   | *(in the lesson)* back to the category list         |
+| `1` / `2`      | jump straight to the list / lesson pane (lazygit-style) |
 | `/`            | search across every entry                           |
 | `Esc`          | close the search box                                |
 | `q`            | quit                                                |

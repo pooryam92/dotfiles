@@ -10,35 +10,76 @@ importing the package (for Doc/render_ansi) costs nothing.
 
 import os
 
-from .doc import Doc
+from .doc import Doc, bar
 from .render import markup_line, render_markup
 
 
 class Item:
     """One row in the left list. `label` is a span-list (or a bare str) shown in
     the list; `render` is a zero-arg callable returning the Doc for the detail
-    pane when the row is highlighted."""
+    pane when the row is highlighted; `title` is the plain text shown in the
+    detail panel's border while this row is read (defaults to the label text).
+    `value` is an optional magnitude — when any item carries one, every row grows
+    an htop-style bracket meter on the right, sized against the largest value."""
 
-    def __init__(self, label, render):
+    def __init__(self, label, render, title=None, value=None):
         self.label = [("text", label)] if isinstance(label, str) else label
         self.render = render
+        self.value = value
+        self.title = title if title is not None else \
+            "".join(t for _, t in self.label).strip()
+
+
+def _meter_rows(items, inner_w):
+    """Pre-render each item's row label as a span-list, right-aligning an htop
+    bracket meter when values are present. Returns a list of span-lists (one per
+    item) so `compose` just maps them to markup. Without values, rows are the
+    bare labels — so meter-less tools (keymap's view list) look exactly as before.
+
+    Layout per row:  ``label …gutter… [|||||   ] value`` — all rows share one
+    bar width and one value column so the meters line up into a clean chart."""
+    if not any(it.value is not None for it in items):
+        return [it.label for it in items]
+
+    vmax = max((it.value for it in items if it.value is not None), default=0)
+    vw = len(str(vmax))                       # value column width (right-aligned)
+    label_w = max(sum(len(t) for _, t in it.label) for it in items)
+    # inner_w = label_w + gutter(≥1) + "[" bars "]"(bar_w+2) + " " + value(vw)
+    bar_w = max(4, min(16, inner_w - label_w - 1 - 2 - 1 - vw))
+
+    rows = []
+    for it in items:
+        if it.value is None:
+            rows.append(it.label)
+            continue
+        lw = sum(len(t) for _, t in it.label)
+        meter = bar(it.value, vmax, bar_w) + [("dim", " " + str(it.value).rjust(vw))]
+        meter_w = bar_w + 2 + 1 + vw
+        gutter = max(1, inner_w - lw - meter_w)
+        rows.append(it.label + [("text", " " * gutter)] + meter)
+    return rows
 
 
 def browse(items, *, title="", subtitle="", search=None, list_width=30,
-           smoke_env=None, shot_env=None):
+           list_title="list", smoke_env=None, shot_env=None):
     """Run the two-pane TUI over `items`.
 
+    Chrome mirrors canonical Linux TUIs (lazygit/k9s): every pane is a titled,
+    rounded box; the focused pane's border lights up; the detail box's border
+    names what you're reading; a context-aware keybar sits at the bottom.
+
     items      list[Item] — left list + per-row detail Doc
-    title/subtitle  header text (subtitle doubles as the key hint line)
+    title/subtitle  header text shown top-left (subtitle = context, not keys —
+               the keys live in the bottom bar)
     search     optional callable(query:str) -> Doc; when given, `/` opens a
                filter box and its Doc replaces the detail pane live
     list_width left-column width in cells
+    list_title label drawn into the left pane's border
     smoke_env  if set and that env var is truthy, run a headless self-test
                (move, read, search, quit) instead of a live app
     shot_env   during a smoke run, if this env var is set, save an SVG frame to
                the path it holds
     """
-    from rich.markup import escape as _escape
     from textual.app import App, ComposeResult
     from textual.binding import Binding
     from textual.containers import Horizontal, VerticalScroll
@@ -47,11 +88,14 @@ def browse(items, *, title="", subtitle="", search=None, list_width=30,
     # Vim navigation lives on the widgets so the keys do the right thing for
     # whichever pane is focused: the list moves a cursor, the pane scrolls.
     class VimListView(ListView):
+        # show=True so the focused pane contributes its keys to the bottom bar,
+        # giving the context-aware keybar that lazygit/k9s have.
         BINDINGS = [
-            Binding("j", "cursor_down", show=False),
-            Binding("k", "cursor_up", show=False),
+            Binding("j", "cursor_down", "down"),
+            Binding("k", "cursor_up", "up"),
             Binding("g", "top", show=False),
             Binding("G", "bottom", show=False),
+            Binding("l", "app.focus_detail", "read"),
         ]
 
         def action_top(self):
@@ -65,37 +109,51 @@ def browse(items, *, title="", subtitle="", search=None, list_width=30,
     class VimScroll(VerticalScroll):
         can_focus = True
         BINDINGS = [
-            Binding("j", "scroll_down", show=False),
-            Binding("k", "scroll_up", show=False),
+            Binding("j", "scroll_down", "down"),
+            Binding("k", "scroll_up", "up"),
             Binding("g", "scroll_home", show=False),
             Binding("G", "scroll_end", show=False),
-            Binding("h", "app.focus_list", show=False),
+            Binding("h", "app.focus_list", "back"),
         ]
 
     bindings = [
         Binding("q", "quit", "quit"),
-        Binding("l", "focus_detail", "read"),
-        Binding("escape", "back", "back"),
+        Binding("escape", "back", show=False),
+        Binding("1", "focus_list", show=False),    # lazygit-style pane jump
+        Binding("2", "focus_detail", show=False),
     ]
     if search is not None:
-        bindings.insert(1, Binding("slash", "search", "search"))
+        bindings.insert(1, Binding("slash", "search", "filter"))
 
     class BrowseApp(App):
         # Colours come from the tokyo-night theme's variables ($secondary, $panel,
         # …) so the chrome matches WezTerm with no hardcoded hexes; list_width is
-        # the only per-tool knob, woven in here.
+        # the only per-tool knob, woven in here. The look mirrors lazygit/k9s:
+        # every pane is a rounded titled box, and the focused one's border (and
+        # title) light up in the accent so you always know where you are.
         CSS = f"""
         Screen {{ background: $background; color: $foreground; }}
 
-        #list {{ width: {list_width}; border-right: solid $panel; }}
+        #list {{
+            width: {list_width};
+            border: round $panel;
+            border-title-color: $text-muted;
+            padding: 0 1;
+        }}
+        #list:focus {{ border: round $secondary; border-title-color: $secondary; }}
         #list > ListItem {{ padding: 0 1; }}
         #list > ListItem.-highlight {{ background: $boost; }}
         #list:focus > ListItem.-highlight {{ background: $secondary 25%; text-style: bold; }}
 
-        #detailbox {{ width: 1fr; padding: 0 1; }}
-        #detailbox:focus {{ border-left: solid $secondary; }}
+        #detailbox {{
+            width: 1fr;
+            border: round $panel;
+            border-title-color: $text-muted;
+            padding: 0 1;
+        }}
+        #detailbox:focus {{ border: round $secondary; border-title-color: $secondary; }}
 
-        #search {{ display: none; dock: bottom; background: $surface; border: tall $secondary; }}
+        #search {{ display: none; dock: bottom; background: $surface; border: round $secondary; }}
         #search.on {{ display: block; }}
         #search > .input--placeholder {{ color: $text-disabled; }}
         """
@@ -103,9 +161,12 @@ def browse(items, *, title="", subtitle="", search=None, list_width=30,
 
         def compose(self) -> ComposeResult:
             yield Header(show_clock=False)
+            # Usable text width = list_width − border(2) − #list padding(2) −
+            # ListItem padding(2). Getting this right keeps meter rows on one line.
+            row_labels = _meter_rows(items, list_width - 6)
             rows = []
-            for i, it in enumerate(items):
-                li = ListItem(Static(markup_line(it.label, _escape)))
+            for i, label in enumerate(row_labels):
+                li = ListItem(Static(markup_line(label)))
                 li.idx = i
                 rows.append(li)
             with Horizontal():
@@ -122,15 +183,18 @@ def browse(items, *, title="", subtitle="", search=None, list_width=30,
             self.theme = "tokyo-night"  # match WezTerm / the rest of the setup
             self.title = title
             self.sub_title = subtitle
+            self.query_one("#list", VimListView).border_title = list_title
             self.query_one("#list", VimListView).focus()
 
-        def _show(self, doc):
+        def _show(self, doc, panel_title=None):
             self.query_one("#detail", Static).update(render_markup(doc))
+            self.query_one("#detailbox", VimScroll).border_title = panel_title or ""
             self.query_one("#detailbox", VimScroll).scroll_home(animate=False)
 
         def _show_item(self, item):
             if item is not None and getattr(item, "idx", None) is not None:
-                self._show(items[item.idx].render())
+                it = items[item.idx]
+                self._show(it.render(), it.title)
 
         def on_list_view_highlighted(self, event):
             self._show_item(event.item)
@@ -152,7 +216,8 @@ def browse(items, *, title="", subtitle="", search=None, list_width=30,
             box.focus()
 
         def on_input_changed(self, event):
-            self._show(search(event.value) if event.value else Doc())
+            q = event.value
+            self._show(search(q) if q else Doc(), f"search: {q}" if q else None)
 
         def action_back(self):
             if search is not None:

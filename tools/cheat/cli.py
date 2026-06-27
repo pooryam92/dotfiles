@@ -63,14 +63,18 @@ def run_tui(cats, rows):
     items = []
     for cat, blurb in cats:
         n = len(in_cat(rows, cat))
-        label = [tui.text(cat.lower()), tui.dim(f"  ({n})")]
-        items.append(tui.Item(label, lambda c=cat: content.doc_lesson(cats, rows, c)))
+        # The count rides in the row's htop meter now (browse sizes the bar from
+        # `value`), so the label is just the name.
+        items.append(tui.Item([tui.text(cat.lower())],
+                              lambda c=cat: content.doc_lesson(cats, rows, c),
+                              title=cat.lower(), value=n))
     tui.browse(
         items,
         title="cheat",
-        subtitle="j/k move · l read · / search · q quit",
+        subtitle=f"{len(cats)} categories",
         search=lambda q: content.doc_search(rows, q),
         list_width=30,
+        list_title=f"categories [{len(cats)}]",
         smoke_env="CHEAT_SMOKE",
         shot_env="CHEAT_SHOT",
     )

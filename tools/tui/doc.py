@@ -9,15 +9,28 @@ Textual pane). Nothing here imports Textual or rich — that's the whole point.
 
 # The styles a renderer must know how to colour. Kept here so render.py and any
 # future renderer can assert they cover the set.
-STYLES = ("title", "key", "text", "dim", "accent", "match")
+STYLES = ("title", "key", "text", "dim", "accent", "match", "bar")
 
 
 def title(s):  return ("title", s)   # section heading       (blue, bold)
 def key(s):    return ("key", s)     # a key / name / label  (cyan)
 def text(s):   return ("text", s)    # ordinary body text    (default fg)
 def dim(s):    return ("dim", s)     # secondary / hints      (grey)
-def accent(s): return ("accent", s)  # bars, emphasis         (yellow)
+def accent(s): return ("accent", s)  # emphasis               (yellow)
 def match(s):  return ("match", s)   # a search hit           (yellow, bold)
+def barfill(s):return ("bar", s)     # htop meter fill        (green)
+
+
+def bar(value, vmax, width):
+    """An htop-style bracket meter as spans: ``[|||||     ]``. The filled portion
+    is `bar` (green, the htop meter colour), the brackets and empty track stay
+    `dim`. `width` is the cell count *inside* the brackets; `value/vmax` sets the
+    fill. Returns a span-list (splice with `*bar(...)`); the caller appends any
+    trailing number, since alignment differs between a list row and inline text."""
+    filled = 0 if vmax <= 0 else round(width * value / vmax)
+    filled = max(0, min(width, filled))
+    return [("dim", "["), ("bar", "|" * filled),
+            ("dim", " " * (width - filled) + "]")]
 
 
 def hl(s, query, base="text"):
