@@ -5,12 +5,12 @@
     "command": "node ~/.claude/statusline.js"
   },
   "effortLevel": "high",
-  "editorMode": "vim",
   "autoUpdatesChannel": "latest",
   "voice": {
     "enabled": true,
     "mode": "hold"
   },
   "skipWorkflowUsageWarning": true,
-  "theme": "dark-ansi"
+  "theme": "dark-ansi",
+  "editorMode": "vim"
 }
