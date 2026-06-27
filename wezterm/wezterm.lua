@@ -74,8 +74,10 @@ config.keys = {
   { key = 'L', mods = 'ALT|SHIFT', action = act.AdjustPaneSize { 'Right', 3 } },
 
   -- Rotate panes — WezTerm has no directional swap, so cycling is how you reorder.
-  { key = '[', mods = 'ALT|SHIFT', action = act.RotatePanes 'CounterClockwise' },
-  { key = ']', mods = 'ALT|SHIFT', action = act.RotatePanes 'Clockwise' },
+  -- Physical keycodes, not `[`/`]`: Alt+Shift+[ emits `{`, so a `[`+SHIFT binding
+  -- never fires. `phys:` matches the key by position, independent of the glyph/layout.
+  { key = 'phys:LeftBracket',  mods = 'ALT|SHIFT', action = act.RotatePanes 'CounterClockwise' },
+  { key = 'phys:RightBracket', mods = 'ALT|SHIFT', action = act.RotatePanes 'Clockwise' },
 
   -- Tabs (Alt+1..9 added below).
   { key = 't', mods = 'ALT', action = act.SpawnTab 'CurrentPaneDomain' },
