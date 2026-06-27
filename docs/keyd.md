@@ -28,8 +28,8 @@ The laptop's physical **Super key is dead** — a failed switch. We confirmed it
 sends *no* event to Linux at all (checked with `keyd monitor` and
 `libinput debug-events`, with keyd stopped, watching every device), while it
 worked under Windows. It's not a software/driver issue and there's no firmware or
-BIOS "Windows-key lock" on this model (Lenovo IdeaPad 5 15ARE05) — so it's
-hardware, and not fixable in config.
+BIOS "Windows-key lock" on this machine — so it's hardware, and not fixable in
+config.
 
 Remapping **Left Ctrl → Super** restores a working `Mod` key on the left, where
 muscle memory expects it. Nothing is lost: **Ctrl** is still available by
