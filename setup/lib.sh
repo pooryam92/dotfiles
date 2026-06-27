@@ -20,6 +20,17 @@ BASE_APT=(zsh git curl unzip ca-certificates fontconfig wl-clipboard fzf
 
 info() { printf '\033[1;34m==>\033[0m %s\n' "$*"; }
 warn() { printf '\033[1;33m!! \033[0m %s\n' "$*"; }
+die()  { printf '\033[1;31mxx \033[0m %s\n' "$*" >&2; exit 1; }
+
+# Authenticate sudo once now, then keep its timestamp fresh in the background until
+# this script exits. A long source build (keyd here, or niri's cargo build) can
+# outlast sudo's default timeout; without this the next `sudo` mid-run surprise-prompts
+# for a password — or fails outright when non-interactive. Call once, early.
+keep_sudo_fresh() {
+  sudo -v || return 1
+  local main_pid=$$
+  ( while kill -0 "$main_pid" 2>/dev/null; do sudo -n true; sleep 60; done ) 2>/dev/null &
+}
 
 # --- config links ----------------------------------------------------------
 # Symlink a repo file/dir to a target, backing up any existing real file first.
@@ -114,6 +125,9 @@ changelog_url() { tool_col "$1" 4; }
 bump_flag() {
   local o n; o="$(norm "$1")"; n="$(norm "$2")"
   [ -n "$o" ] && [ -n "$n" ] && [ "$o" != "$n" ] || { echo ' '; return; }
+  # Dotless / date-based versions (e.g. wezterm "20240203-110809-…") have no semver
+  # major.minor to compare — there's nothing to call "breaking", so don't flag them.
+  case "$o" in *.*) ;; *) echo ' '; return ;; esac
   local oM="${o%%.*}" nM="${n%%.*}" oRest="${o#*.}" nRest="${n#*.}"
   local oMin="${oRest%%.*}" nMin="${nRest%%.*}"
   if [ "$oM" != "$nM" ]; then echo '⚠'; return; fi
@@ -169,7 +183,7 @@ install_zoxide() {
 # Neovim — apt ships an old build (0.9.x); the nvim config needs 0.12+ (vim.pack), so
 # install the latest stable release as a user binary in ~/.local/nvim.
 fetch_nvim() {
-  local nvim_arch
+  local nvim_arch tgz
   case "$ARCH" in
     amd64) nvim_arch=x86_64 ;;
     arm64) nvim_arch=arm64 ;;
@@ -179,13 +193,14 @@ fetch_nvim() {
     warn "No Neovim build for arch '$ARCH'; skipping (see https://github.com/neovim/neovim/releases)"
     return
   fi
+  tgz="$(mktemp)"   # unpredictable, mode-600 temp — avoids a fixed /tmp name (collision + symlink-attack safe)
   curl -fL "https://github.com/neovim/neovim/releases/latest/download/nvim-linux-${nvim_arch}.tar.gz" \
-    -o /tmp/nvim.tar.gz
+    -o "$tgz"
   rm -rf "$HOME/.local/nvim"
   mkdir -p "$HOME/.local/nvim"
-  tar -xzf /tmp/nvim.tar.gz -C "$HOME/.local/nvim" --strip-components=1
+  tar -xzf "$tgz" -C "$HOME/.local/nvim" --strip-components=1
   ln -sf "$HOME/.local/nvim/bin/nvim" "$BIN/nvim"
-  rm -f /tmp/nvim.tar.gz
+  rm -f "$tgz"
   # Neovim's plugins update separately, from inside nvim: :lua vim.pack.update()
 }
 install_nvim() {
@@ -245,11 +260,13 @@ install_claude() {
 
 # JetBrainsMono Nerd Font — re-download the latest release and refresh the cache.
 fetch_font() {
+  local zip
   mkdir -p "$FONT_DIR"
+  zip="$(mktemp)"   # unpredictable, mode-600 temp — avoids a fixed /tmp name
   curl -fL https://github.com/ryanoasis/nerd-fonts/releases/latest/download/JetBrainsMono.zip \
-    -o /tmp/JetBrainsMono.zip
-  unzip -oq /tmp/JetBrainsMono.zip -d "$FONT_DIR"
-  rm -f /tmp/JetBrainsMono.zip
+    -o "$zip"
+  unzip -oq "$zip" -d "$FONT_DIR"
+  rm -f "$zip"
   fc-cache -f >/dev/null
 }
 install_font() {

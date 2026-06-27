@@ -21,13 +21,13 @@
 # outside the cross-platform install.{sh,ps1} pair by design.
 set -euo pipefail
 
-DOTFILES="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+# Reuse install.sh's shared helpers — info/warn/die, $DOTFILES, keep_sudo_fresh, and
+# link() (backup-then-symlink). lib.sh is the repo's shared-shell-helpers module;
+# sourcing it keeps that logic in ONE place instead of re-implementing it here.
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/setup/lib.sh"
+
 SRC="${SRC_DIR:-$HOME/src}"          # where the two source trees are cloned
 PREFIX="/usr/local"                  # where the session files + niri binary land
-
-info() { printf '\033[1;34m==>\033[0m %s\n' "$*"; }
-warn() { printf '\033[1;33m!! \033[0m %s\n' "$*"; }
-die()  { printf '\033[1;31mxx \033[0m %s\n' "$*" >&2; exit 1; }
 
 # ---------------------------------------------------------------------------
 info "Checking prerequisites…"
@@ -39,6 +39,9 @@ command -v git >/dev/null            || die "git not found."
 
 # ---------------------------------------------------------------------------
 info "Installing build tools + niri build deps (needs sudo)…"
+# Keep sudo fresh: the cargo build below runs for minutes (past sudo's timeout), and
+# the `sudo install` afterwards would otherwise re-prompt — or fail non-interactively.
+keep_sudo_fresh
 # `just` runs cosmic-ext-extra-sessions' recipes. The rest are niri's documented
 # build deps for Ubuntu/Debian (https://github.com/YaLTeR/niri — Building).
 sudo apt-get update -y
@@ -93,17 +96,9 @@ fi
 # ---------------------------------------------------------------------------
 info "Linking niri config…"
 # Same pattern as install.sh: repo is the source of truth, ~/.config points at it.
-mkdir -p "$HOME/.config/niri"
-DST="$HOME/.config/niri/config.kdl"
-SRC_CFG="$DOTFILES/niri/config.kdl"
-if [ -L "$DST" ]; then
-  rm "$DST"
-elif [ -e "$DST" ]; then
-  mv "$DST" "$DST.bak.$(date +%s)"
-  warn "backed up existing $DST"
-fi
-ln -s "$SRC_CFG" "$DST"
-info "linked $DST -> $SRC_CFG"
+# link() (from lib.sh) backs up any existing real file, then symlinks; it mkdir -p's
+# the parent dir itself.
+link "$DOTFILES/niri/config.kdl" "$HOME/.config/niri/config.kdl"
 
 # ---------------------------------------------------------------------------
 info "Done. Log out, then pick \"COSMIC on niri\" on the greeter's session menu."

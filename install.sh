@@ -8,6 +8,10 @@ set -euo pipefail
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/setup/lib.sh"
 mkdir -p "$BIN" "$HOME/.config"
 
+# Authenticate sudo up front and keep it alive — the keyd source build later can
+# outlast sudo's timeout and would otherwise surprise-prompt mid-install.
+keep_sudo_fresh
+
 # --- system packages -------------------------------------------------------
 info "Installing apt packages (needs sudo)…"
 sudo apt-get update -y
