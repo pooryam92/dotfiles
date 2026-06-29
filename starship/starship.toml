@@ -1,7 +1,12 @@
 "$schema" = 'https://starship.rs/config-schema.json'
 
 add_newline = true
-command_timeout = 1000
+# Cap how long ANY module's external command (git status, python --version, …) may
+# run before the prompt renders without it. Kept low because the prompt redraws on
+# every Enter, so a slow command here is felt directly as input lag. 200ms is ample
+# for git_status in a normal repo (<50ms); anything slower is skipped rather than
+# stalling the prompt. Raise it if you work in very large repos and want the status.
+command_timeout = 200
 
 # LEFT prompt — where am I + project state. Kept tight; transient info lives on
 # the right (see right_format).
