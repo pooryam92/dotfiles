@@ -18,14 +18,13 @@ sudo apt-get update -y
 sudo apt-get install -y "${BASE_APT[@]}"
 
 # --- tools (install-once; each guards itself) ------------------------------
-install_wezterm
-install_starship
-install_zoxide
-install_nvim
-install_keyd
-install_zed
-install_claude
-install_font
+# Driven by the manifest (setup/tools.tsv) in order — INSTALL_TOOLS is every tool for
+# this platform. Each install_<name> in lib.sh is that tool's install-once guard; a row
+# with no matching action is a manifest/lib mismatch, so fail loudly rather than skip it.
+for t in "${INSTALL_TOOLS[@]}"; do
+  declare -F "install_$t" >/dev/null || die "tools.tsv lists '$t' but setup/lib.sh has no install_$t"
+  "install_$t"
+done
 
 # --- config links ----------------------------------------------------------
 do_links

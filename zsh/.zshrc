@@ -73,3 +73,24 @@ fi
 
 # Multiplexing (panes/tabs/splits) is handled by WezTerm itself via direct Alt
 # chords + Ctrl+p/t/n/s modes — see wezterm/wezterm.lua. No multiplexer to start.
+
+# ---- Drills (spaced-repetition learning of this repo's own tools) ----
+# `learn` runs a drill session; at shell start, if any cards are due, print one line
+# pointing at it (silent otherwise). drill.js lives in the repo and is run in place
+# (no symlink): resolve the repo root from THIS file's real path — it's symlinked
+# from the repo to ~/.zshrc, so `${(%):-%x}:A` is the repo's zsh/.zshrc and `:h:h`
+# is the repo root. Everything is guarded on node so a missing runtime is silent.
+if command -v node >/dev/null; then
+  _drill_js="${${(%):-%x}:A:h:h}/drills/drill.js"
+  if [ -f "$_drill_js" ]; then
+    alias learn="node ${(q)_drill_js}"
+    _due=$(node "$_drill_js" --count 2>/dev/null)
+    if [ "${_due:-0}" -gt 0 ] 2>/dev/null; then
+      _word=drills; [ "$_due" -eq 1 ] && _word=drill
+      print -P "🎴 $_due $_word due — run %B%F{yellow}learn%f%b"
+      unset _word
+    fi
+    unset _due
+  fi
+  unset _drill_js
+fi

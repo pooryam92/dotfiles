@@ -24,6 +24,8 @@ function Info($msg) { Write-Host "==> $msg" -ForegroundColor Cyan }
 function Warn($msg) { Write-Host "!!  $msg" -ForegroundColor Yellow }
 
 # --- manifest readers ------------------------------------------------------
+# Import-Csv keys by header name, so new tools.tsv columns are picked up automatically.
+# Columns used here: scoop_pkg ("-" = not a scoop app) and platform (linux = skip on Windows).
 function Read-Tools { Import-Csv -Delimiter "`t" -Path (Join-Path $LIB 'tools.tsv') }
 function Read-Links { Import-Csv -Delimiter "`t" -Path (Join-Path $LIB 'links.tsv') }
 
@@ -38,7 +40,8 @@ function Get-ScoopApps {
 function Get-Changelogs {
   $map = [ordered]@{}
   foreach ($k in $BaseChangelog.Keys) { $map[$k] = $BaseChangelog[$k] }
-  foreach ($t in Read-Tools) {
+  # Skip Linux-only tools (platform=linux, e.g. keyd) — they don't exist on Windows.
+  foreach ($t in Read-Tools | Where-Object { $_.platform -ne 'linux' }) {
     $key = if ($t.scoop_pkg -and $t.scoop_pkg -ne '-') { $t.scoop_pkg } else { $t.name }
     $map[$key] = $t.changelog_url
   }

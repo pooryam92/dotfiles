@@ -29,6 +29,7 @@ in the actual config in this repo:
 - [zsh](docs/zsh.md) — the shell: history, completion, plugins, aliases
 - [Starship](docs/starship.md) — the prompt: modules, format, styling
 - [zoxide](docs/zoxide.md) — smarter `cd`: jump to frecent dirs with `z`/`zi`
+- [Drills (`learn`)](docs/drills.md) — spaced-repetition drills for this repo's own tools: `learn` quizzes you on features you might not know
 - [Neovim](docs/nvim.md) — minimal single-file config: sensible defaults, keymaps, Tokyo Night
 - [Zed](docs/zed.md) — the GUI editor: Vim mode, JetBrains Islands Dark theme, fonts, keymap
 - [IdeaVim](docs/ideavim.md) — Vim in JetBrains IDEs: leader maps, IDE actions

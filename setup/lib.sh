@@ -71,12 +71,22 @@ do_links() {
   done < "$LIBDIR/links.tsv"
 }
 
-# --- version reporting (used by update.sh) ---------------------------------
-# Read column $2 of the tools.tsv row named $1 (cols: name source scoop changelog desc).
+# --- tool manifest (tools.tsv) ---------------------------------------------
+# Columns: 1 name  2 linux_source  3 scoop_pkg  4 changelog_url  5 desc
+#   6 manage    both    = install.sh installs it, update.sh force-updates it, version-tracked
+#               self    = installed, but it self-updates — update.sh only reports it
+#               install = install-once only; never force-updated, not version-tracked (keyd)
+#   7 platform  both | linux | windows — which OS this tool exists on
+# Read column $2 of the row named $1.
 tool_col() { awk -F'\t' -v n="$1" -v c="$2" 'NR>1 && $1==n {print $c}' "$LIBDIR/tools.tsv"; }
 
-# Every tool we manage, in tools.tsv order.
-mapfile -t TOOLS < <(awk -F'\t' 'NR>1{print $1}' "$LIBDIR/tools.tsv")
+# Tools install.sh installs on Linux, in manifest order (platform both or linux). This
+# drives the install loop, so adding a tool = a tools.tsv row + a matching install_<name>.
+mapfile -t INSTALL_TOOLS < <(awk -F'\t' 'NR>1 && $1!="" && ($7=="both"||$7=="linux"){print $1}' "$LIBDIR/tools.tsv")
+
+# Version-tracked tools (manage != install) — the installed-vs-latest views in update.sh
+# skip install-only tools like keyd, which have no comparable/detectable version.
+mapfile -t TOOLS < <(awk -F'\t' 'NR>1 && $1!="" && $6!="install"{print $1}' "$LIBDIR/tools.tsv")
 
 # Latest GitHub release tag via the /releases/latest redirect — no API token, no jq.
 gh_latest() {
@@ -219,8 +229,9 @@ install_nvim() {
 # keyd — remaps keys at the evdev layer, so it works under any compositor (niri,
 # cosmic-comp), X11, and the TTY. Used for CapsLock→Esc/Ctrl and LeftCtrl→Super (this
 # laptop's Super key is physically dead — see docs/keyd.md). Not packaged for Pop!_OS
-# 24.04, so build from source like Neovim. Linux-only (Windows uses PowerToys Keyboard
-# Manager). Install-only: not version-tracked in update.sh.
+# 24.04, so build from source like Neovim. In tools.tsv it's manage=install,
+# platform=linux: install-once (never force-updated) and skipped on Windows (PowerToys
+# Keyboard Manager covers it there).
 install_keyd() {
   if command -v keyd >/dev/null; then
     info "keyd already installed ($(keyd --version 2>/dev/null | head -1))"

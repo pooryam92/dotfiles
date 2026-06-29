@@ -1,0 +1,15 @@
+id	tool	task	reveal
+wez-copy-mode	WezTerm	Scroll back through earlier output and select text with vim motions — no mouse. How do you enter copy mode?	Ctrl+s — then vim motions (h/j/k/l, w/b), `/` to search, `v` then `y` to select & yank, `q`/Esc to exit. WezTerm grabs Ctrl+s before the shell, so it never triggers flow-control freeze.
+wez-zoom	WezTerm	You want the focused pane to fill the whole window for a moment, then snap back to the layout. How?	Alt+z toggles pane zoom (TogglePaneZoomState). Press again to restore.
+wez-rotate	WezTerm	Reorder the panes in the current tab without closing any. How?	Alt+Shift+[ rotates counter-clockwise, Alt+Shift+] clockwise (RotatePanes). WezTerm has no directional swap, so cycling is how you reorder.
+wez-resize	WezTerm	Grow or shrink the focused pane without the mouse. How?	Alt+Shift+H/J/K/L grows toward that side (3 cells per press; repeat to nudge).
+zsh-vi-mode	zsh	Edit a long command line with vim motions (jump words, change-inside-quotes, etc.). How do you leave insert mode?	Esc enters vi command mode (`bindkey -v`). The prompt arrow turns bold-yellow ❮; press `i`/`a` to go back to insert.
+zsh-accept-suggestion	zsh	The grey ghost-text suggestion is exactly what you want — accept it without reaching for →. How?	Ctrl+E accepts the whole suggestion (end-of-line); Ctrl+F accepts just the next word (forward-word).
+zsh-fzf-history	zsh	Find and rerun an old command by fuzzy-typing a fragment of it. How?	Ctrl+R — fzf fuzzy history search.
+zsh-fzf-file	zsh	Drop a file or directory path into the command you're typing by fuzzy-picking it. How?	Ctrl+T — fzf file/path picker, inserts at the cursor.
+zsh-fzf-cd	zsh	Jump into a subdirectory by fuzzy-picking it instead of typing the path. How?	Alt+C — fzf fuzzy-cd.
+zsh-auto-cd	zsh	Change into a directory by typing only its path — no `cd` in front. How?	AUTO_CD is on: type the path (e.g. `~/dotfiles`) and Enter; zsh cd's into it.
+zsh-hist-space	zsh	Run a command this once but keep it out of your shell history. How?	Prefix it with a single space (HIST_IGNORE_SPACE). The same leading-space trick is wired up in PowerShell here too.
+zoxide-z	zoxide	Jump to a directory you visit often by typing only part of its name. How?	z <partial> — jumps to the most "frecent" match (e.g. `z dot` → ~/dotfiles).
+zoxide-zi	zoxide	You're unsure which match `z` will land on — pick from the candidates interactively. How?	zi <partial> — lists the matches in fzf to choose from.
+starship-vimode	Starship	Glance at the prompt only: are you in insert mode or vi command mode right now?	The prompt character says it: green/red ❯ = insert mode; bold-yellow ❮ = command mode (after Esc). The color change, not just the flipped arrow, signals the switch.
