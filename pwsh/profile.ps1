@@ -143,9 +143,9 @@ if (Get-Module -ListAvailable PSFzf) {
   }
 }
 
-# ---- Drills (spaced-repetition learning of this repo's own tools) ----
-# Windows counterpart of the zsh drills block. `learn` runs a drill session; at
-# startup, if any cards are due, print one line pointing at it (silent otherwise).
+# ---- Drills (flashcard learning of this repo's own tools) ----
+# Windows counterpart of the zsh drills block. `learn` runs a flashcard session over
+# drills/deck.tsv (`learn <category>` narrows it). Pull-only — no shell-start nudge.
 # drill.js lives in the repo and is run in place: resolve the repo root from this
 # profile's real path — it's symlinked from the repo to $PROFILE, so the symlink
 # target is <repo>/pwsh/profile.ps1 and its grandparent is the repo root. Guarded on
@@ -157,12 +157,5 @@ if (Get-Command node -ErrorAction SilentlyContinue) {
   $drillJs = Join-Path $drillRoot 'drills/drill.js'
   if (Test-Path $drillJs) {
     function learn { node $drillJs @args }
-    $due = 0
-    try { $due = [int](node $drillJs --count 2>$null) } catch { $due = 0 }
-    if ($due -gt 0) {
-      $word = if ($due -eq 1) { 'drill' } else { 'drills' }
-      Write-Host "🎴 $due $word due — run " -NoNewline
-      Write-Host 'learn' -ForegroundColor Yellow
-    }
   }
 }

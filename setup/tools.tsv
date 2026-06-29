@@ -6,4 +6,5 @@ nvim	gh:neovim/neovim	neovim	https://github.com/neovim/neovim/releases	editor; n
 zed	gh:zed-industries/zed	zed	https://zed.dev/releases	GUI editor; self-updates	self	both
 font	gh:ryanoasis/nerd-fonts	JetBrainsMono-NF	https://github.com/ryanoasis/nerd-fonts/releases	Nerd Font; version not detectable	both	both
 claude	npm:@anthropic-ai/claude-code	-	https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md	Anthropic CLI; native, self-updates	both	both
+node	apt:nodejs	nodejs-lts	https://github.com/nodejs/node/releases	JS runtime; runs the drill (learn) tool	install	both
 keyd	src:rvaiya/keyd	-	https://github.com/rvaiya/keyd/releases	key remapper; source build, Linux-only	install	linux

@@ -269,6 +269,15 @@ install_claude() {
          || warn "Claude Code install failed; see https://docs.anthropic.com/en/docs/claude-code"; fi
 }
 
+# Node.js — the drill runner's (drills/drill.js) runtime. Usually already present
+# (Claude Code ships a Node), so install from apt only when it's actually missing.
+# apt's nodejs is new enough to run the script and its `node --test` suite.
+install_node() {
+  if command -v node >/dev/null; then info "node already installed ($(node --version 2>/dev/null))"
+  else info "Installing Node.js…"; sudo apt-get install -y nodejs \
+         || warn "Node install failed; see https://nodejs.org/en/download/package-manager"; fi
+}
+
 # JetBrainsMono Nerd Font — re-download the latest release and refresh the cache.
 fetch_font() {
   local zip

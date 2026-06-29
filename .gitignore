@@ -6,7 +6,3 @@ nvim/nvim-pack-lock.json
 # Python bytecode
 __pycache__/
 *.pyc
-
-# Drill progress is per-machine; it lives under the OS state dir, never in git.
-# Ignore it defensively in case it's ever generated inside the repo.
-drills/progress.json

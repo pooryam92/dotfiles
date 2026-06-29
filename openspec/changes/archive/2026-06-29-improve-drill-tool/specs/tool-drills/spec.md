@@ -1,14 +1,4 @@
-# tool-drills Specification
-
-## Purpose
-
-Provide a flashcard drill system that helps the maintainer learn and retain the
-features of their daily-driver terminal tools through short, self-graded practice
-sessions, with a single cross-platform runner. There is no scheduling and no saved
-state — every card is available every session, and the maintainer pulls a session
-(optionally narrowed to one category) whenever they want.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: Curated drill deck
 The system SHALL provide a versioned, curated deck of drills stored in the repo,
@@ -16,16 +6,16 @@ where each drill describes one feature of one tool as a task to perform and the
 answer to reveal. The deck SHALL be a TSV with the columns `id`, `tool`, `task`,
 `reveal`, `origin`, and `category`, where `origin` records whether the feature is
 **custom** (configured in this repo's dotfiles and absent from a vanilla install) or
-**built-in** (a default of the tool that works out of the box), and `category` is the
-card's owning tool in lowercase (e.g. `wezterm`, `niri`) — the same tool as the `tool`
-column, used as the axis the session filters and the menu groups by. The deck SHALL
-seed the daily-driver tools (WezTerm, zsh, Starship, zoxide) first.
+**built-in** (a default of the tool that works out of the box), and `category` tags
+the card with a topic (e.g. navigation, search, panes, git) independent of its owning
+tool. The deck SHALL seed the daily-driver tools (WezTerm, zsh, Starship, zoxide)
+first.
 
 #### Scenario: Deck provides task-and-reveal challenges
 - **WHEN** a maintainer opens the deck file
 - **THEN** each line defines a unique `id`, the owning `tool`, a `task` phrased as a
   "can you do X?" challenge, the `reveal` answer (e.g. the keybinding or command),
-  an `origin` of `custom` or `builtin`, and a `category` equal to the owning tool
+  an `origin` of `custom` or `builtin`, and a `category` topic tag
 
 #### Scenario: Deck is hand-editable and grows over time
 - **WHEN** a maintainer adds a feature to learn
@@ -42,49 +32,27 @@ able to **skip** the current card without grading it and to quit at any prompt. 
 session SHALL ignore unrecognized input — including arrow keys and other multi-byte
 escape sequences — at the grade prompt rather than treating it as a grade, and SHALL
 end with a one-line summary of how many cards were reviewed, got right, missed, and
-skipped. The session SHALL also surface each card's owning `tool` and its `origin`
-(custom vs built-in) so the user can tell which tool the feature belongs to and
-whether it comes from this repo's config or is a tool default. (The `category` equals
-the tool, so it is not shown separately.) The command SHALL accept an
+skipped. The session SHALL also surface each card's `origin` (custom vs built-in) and
+its `category` so the user can tell whether the feature comes from this repo's config
+or is a tool default and what topic it belongs to. The command SHALL accept an
 optional category argument (`learn <category>`) that restricts the session to cards in
-that category. When invoked with no category argument in an interactive terminal, the
-command SHALL present a keyboard-driven menu of the deck's categories — each with its
-card count, plus an "all categories" entry — and run the session for the chosen
-category (or the whole deck if "all" is chosen); the user SHALL be able to cancel the
-menu without running a session. When invoked with no category argument in a
-non-interactive (e.g. piped) context, the command SHALL consider the whole deck
-without prompting. The command SHALL be invokable from both the Linux (zsh) and
-Windows (PowerShell) shells.
+that category; with no argument it considers the whole deck. The command SHALL be
+invokable from both the Linux (zsh) and Windows (PowerShell) shells.
 
 #### Scenario: Running a drill session
 - **WHEN** the user runs `learn`
 - **THEN** the system shows a task, waits, reveals the answer on a keypress, and
   prompts the user to self-grade got it / missed
 
-#### Scenario: Card tool and origin are surfaced
+#### Scenario: Card origin and category are surfaced
 - **WHEN** a card is shown during a session
-- **THEN** the display shows the card's owning tool and indicates whether its feature
-  is custom (this repo's config) or built-in (a tool default)
+- **THEN** the display indicates whether the card's feature is custom (this repo's
+  config) or built-in (a tool default) and shows the card's category
 
 #### Scenario: Session filtered by category
 - **WHEN** the user runs `learn <category>`
 - **THEN** the session presents only cards whose `category` matches that argument
   and ignores cards in other categories
-
-#### Scenario: Interactive category menu
-- **WHEN** the user runs `learn` with no category argument in an interactive terminal
-- **THEN** the system shows a keyboard-navigable menu listing each category with its
-  card count and an "all categories" entry, and on selection runs the session for the
-  chosen category (or the whole deck if "all" is chosen)
-
-#### Scenario: Cancelling the category menu
-- **WHEN** the user cancels the category menu (e.g. `q` or Esc) instead of choosing
-- **THEN** no drill session runs and the command exits cleanly
-
-#### Scenario: No category in a non-interactive context
-- **WHEN** the user runs `learn` with no category argument with stdin not a TTY
-  (e.g. piped)
-- **THEN** the system skips the menu and considers the whole deck
 
 #### Scenario: Unknown category requested
 - **WHEN** the user runs `learn <category>` with a category that matches no cards
@@ -111,6 +79,8 @@ Windows (PowerShell) shells.
 - **WHEN** the user runs `learn` on Linux or on Windows
 - **THEN** the same runner executes with the same behavior (single cross-platform
   implementation, no per-OS fork of the drill logic)
+
+## ADDED Requirements
 
 ### Requirement: Runner correctness is test-covered
 The system SHALL include an automated test for the drill runner that exercises the
@@ -156,3 +126,23 @@ in the setup manifests so that a freshly provisioned machine has the runtime the
 - **WHEN** the setup scripts provision a new machine from the manifests
 - **THEN** Node is installed (or already present and recognized) so that `learn`
   runs
+
+## REMOVED Requirements
+
+### Requirement: Spaced-repetition scheduling
+**Reason**: The Leitner-box scheduling added friction without earning its complexity
+for a small personal deck — cards you wanted to review were "not due yet". The session
+now considers the whole deck every run; `learn <category>` covers focusing on a topic.
+**Migration**: None. The runner no longer computes or reads next-due dates.
+
+### Requirement: Per-machine progress persistence
+**Reason**: With scheduling removed there is no box/due state to persist; grades are a
+session-only tally. The hidden state file made behavior depend on invisible history.
+**Migration**: Existing `progress.json` files become unused and can be deleted; the
+`.gitignore` entry for them is removed.
+
+### Requirement: Due-only shell-start nudge
+**Reason**: With no "due" concept there is nothing to count at shell start, and the
+nudge was easy to tune out. `learn` is now pull-only — run it when you want.
+**Migration**: The nudge and its `--count` code are removed from `zsh/.zshrc` and
+`pwsh/profile.ps1`; the node-guarded `learn` alias stays.

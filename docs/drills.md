@@ -1,26 +1,39 @@
 # Drills (`learn`)
 
-A tiny **spaced-repetition deck** for the tools in this repo. The problem it
-solves is *unknown unknowns* — features you'd use if only you knew they existed.
-A passive "tip of the day" can't help there (you can't act slowly on a feature
-you've never heard of), and the previous tip-feed was removed for being easy to
-tune out. So instead of telling you a fact, a drill **challenges** you:
+A tiny **flashcard deck** for the tools in this repo. The problem it solves is
+*unknown unknowns* — features you'd use if only you knew they existed. A passive
+"tip of the day" can't help there (you can't act slowly on a feature you've never
+heard of), and the previous tip-feed was removed for being easy to tune out. So
+instead of telling you a fact, a drill **challenges** you. Each card clears the screen
+and lands like a flashcard, with a progress meter and a running tally:
 
 ```
-── 3/14  [WezTerm]
-   Reorder the panes in the current tab without closing any. How?
-   ↳ press any key to reveal · q to quit …
-   ✓ Alt+Shift+[ rotates counter-clockwise, Alt+Shift+] clockwise (RotatePanes).
-   got it? (g = got it · m = missed · q = quit) …
+🎴  WezTerm · custom    ███░░░░░░░░░░░  3/14
+
+  Reorder the panes in the current tab without closing any. How?
+
+  ↳ press any key to reveal · q to quit …
+
+  ✓ Alt+Shift+[ rotates counter-clockwise, Alt+Shift+] clockwise (RotatePanes).
+
+  g got it   m missed   s skip   q quit      ✓2 ✗0 ⤼0
 ```
 
 You read the task, go try it in the real tool, then reveal the answer and grade
-yourself. Active recall + spaced repetition makes it stick.
+yourself. Active recall is what makes it stick. Colour (task, answer, grade keys, the
+meter) is used only in an interactive terminal — piping `learn` or setting `NO_COLOR`
+falls back to plain text, and the same codes render on both Windows Terminal and
+WezTerm.
+
+There is **no scheduling** — every card is fair game every session, and you pull a
+session whenever you want. (An earlier version used spaced-repetition due dates; they
+added friction without earning it for a small personal deck, so they were removed.)
 
 - **Runner:** `drills/drill.js` — one cross-platform Node script (Node is already
   in the stack via Claude Code, so no new runtime — same reasoning as
   `claude/statusline.js`).
 - **Deck:** `drills/deck.tsv` — curated, versioned, hand-editable.
+- **Runtime:** Node, tracked in `setup/tools.tsv` so a fresh machine installs it.
 
 ---
 
@@ -29,84 +42,102 @@ yourself. Active recall + spaced repetition makes it stick.
 Run a session from either shell:
 
 ```sh
-learn
+learn            # pick a tool from an interactive menu, then drill it
+learn niri       # skip the menu, drill the niri cards directly
 ```
 
-`learn` is a function/alias defined in `zsh/.zshrc` and `pwsh/profile.ps1`. It
-shows only the cards that are **due** (never-seen cards count as due). For each:
+Plain `learn` opens an **arrow-key category menu** instead of marching through the
+whole deck. Categories are the tools themselves, so each row is one tool with its
+card count, plus an *All categories* entry on top:
+
+```
+🎴 Pick a category to drill — ↑/↓ move · Enter start · q quit
+  ▸ All categories  (72)
+    niri            (22)
+    wezterm         (14)
+    zsh             (13)
+    …
+```
+
+`↑`/`↓` (or `k`/`j`) move the cursor, **Enter** starts the highlighted tool, and
+`q`/`Esc` cancels without drilling. This is what keeps the tool usable as the deck
+grows: you drill one tool at a time rather than skimming everything. The menu only
+appears in an interactive terminal — piping `learn` (or passing a `<category>`)
+skips it, so scripted use still runs against the whole deck.
+
+`learn` is a function/alias defined in `zsh/.zshrc` and `pwsh/profile.ps1` (guarded
+on Node — if Node isn't installed the command is silently absent). For each card:
 
 1. The task is shown — go attempt it in the actual tool.
-2. Press any key to **reveal** the answer (`q` quits and saves).
-3. Grade yourself: **`g`** got it · **`m`** missed.
+2. Press any key to **reveal** the answer (`q` quits).
+3. Grade yourself: **`g`** got it · **`m`** missed · **`s`** skip (don't grade it) ·
+   **`q`** quit. Arrow keys and other stray keys at the grade prompt are ignored. The
+   tally on the right (`✓ ✗ ⤼`) updates as you go.
 
-When nothing is due, it says so rather than re-drilling what you've mastered.
+Cards are **shuffled** each interactive session, so order never becomes a memory
+crutch — you recall the answer, not "the third card." (Piped/non-interactive runs keep
+deck order so scripted output stays stable.)
 
-### The shell-start nudge
-
-On a new shell, **only when cards are due**, one line prints and nothing else:
+At the end it prints one summary line — how many you reviewed, got, missed, and
+skipped:
 
 ```
-🎴 4 drills due — run learn
+🎴 Reviewed 12 (9 got it · 3 missed · 1 skipped) of 14.
 ```
 
-Silent otherwise. It's a content-free pointer (a count, never an answer) that
-nudges you to *pull* a session — the opposite of a tip shoved at you mid-work.
-If Node isn't installed, the nudge and the `learn` command are skipped silently.
+Nothing is saved between sessions; the grade is just that session's tally.
 
----
+### Filtering by category
 
-## Scheduling (Leitner boxes)
+Two ways to narrow a session to one topic:
 
-Each card sits in a box; the box sets how long until it's due again:
-
-| Box | Next due in |
-| --- | ----------- |
-| 1   | 1 day       |
-| 2   | 3 days      |
-| 3   | 7 days      |
-| 4   | 21 days     |
-| 5   | 60 days     |
-
-- **Got it** → advance one box (capped at 5) and push the due date out by that
-  box's interval.
-- **Missed** → reset to box 1 and become due again immediately, so it resurfaces
-  next session.
-
-It's deliberately not a full SM-2/Anki engine — a handful of boxes is plenty for
-a personal deck of dozens of cards.
-
----
-
-## Where progress lives
-
-Your boxes and due dates are per-machine and **never committed** (progress is
-personal and would only create cross-machine merge noise — same reasoning as
-`.zsh_history`). The state file is a small `progress.json` under the OS state dir:
-
-- **Linux/macOS:** `$XDG_STATE_HOME/dotfiles-drills/progress.json`
-  (default `~/.local/state/dotfiles-drills/progress.json`)
-- **Windows:** `%LOCALAPPDATA%\dotfiles-drills\progress.json`
-
-It's gitignored defensively (`drills/progress.json`) in case it's ever generated
-inside the repo. Delete the file to reset all progress.
+- **The menu** — run plain `learn` and pick a tool (see above). Best when you don't
+  remember the exact tool names.
+- **By name** — `learn <tool>` jumps straight in, exact match, case-insensitive
+  (e.g. `learn wezterm`, `learn zsh`, `learn niri`). An unknown name reports that
+  nothing matches rather than falling back to the whole deck.
 
 ---
 
 ## Adding cards
 
-The deck is a TSV with four tab-separated columns — add one row, no code changes:
+The deck is a TSV with six tab-separated columns — add one row, no code changes:
 
 ```
-id	tool	task	reveal
+id	tool	task	reveal	origin	category
 ```
 
-- **`id`** — unique, kebab-case (e.g. `zsh-fzf-history`); it's the key in the
-  progress file, so don't rename it casually or you'll reset that card.
-- **`tool`** — the owning tool, shown in brackets during the drill.
+- **`id`** — unique, kebab-case (e.g. `zsh-fzf-history`).
+- **`tool`** — the owning tool, shown in the card header.
 - **`task`** — phrased as a "can you do X?" challenge, not a statement.
 - **`reveal`** — the answer (keybinding/command), ideally with a one-line why.
+- **`origin`** — **`custom`** if the feature is configured in this repo's dotfiles
+  (it won't exist on a vanilla install — e.g. a WezTerm keybind in `wezterm.lua`, a
+  zsh `setopt`, a niri/keyd binding); **`builtin`** if it's a tool default that works
+  out of the box (e.g. zoxide's `z`). The rule of thumb: *did I set this up, or does
+  the tool do it by default?*
+- **`category`** — the owning tool in lowercase (e.g. `wezterm`, `zsh`, `zoxide`,
+  `starship`, `keyd`, `niri`) — the same tool as the `tool` column, just lowercased.
+  It's the axis `learn <tool>` filters on and the category menu groups by, so a new
+  card for an existing tool reuses that tool's slug rather than inventing a new one.
 
-Keep reveals grounded in the actual config (`wezterm/wezterm.lua`,
-`zsh/.zshrc`, `starship/starship.toml`, …) and re-check them when those configs
-change — a stale answer is worse than no card. The deck seeds the daily drivers
-first (WezTerm, zsh, Starship, zoxide) and grows by hand from there.
+A row missing any column (or with a blank field) is skipped at load time, so a
+half-filled card just won't appear — check the card count if one goes missing.
+
+Keep reveals grounded in the actual config (`wezterm/wezterm.lua`, `zsh/.zshrc`,
+`starship/starship.toml`, `niri/config.kdl`, `keyd/default.conf`, …) and re-check
+them when those configs change — a stale answer is worse than no card. The deck
+seeds the daily drivers first (WezTerm, zsh, Starship, zoxide) and grows by hand
+from there.
+
+---
+
+## Tests
+
+`drills/drill.test.js` covers deck parsing (including the `origin`/`category`
+columns and skipping malformed rows) and the category filter. No framework — run it
+with the runner's own runtime:
+
+```sh
+node --test drills/
+```
