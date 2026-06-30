@@ -106,7 +106,7 @@ norm() { printf '%s' "${1#v}"; }
 
 # Generic version reader: from line 1 of `<bin> --version`, take the first
 # whitespace-delimited token containing a digit. Works across every format we have —
-# starship/zoxide "tool 1.2.3", nvim "NVIM v0.12.3", zed "Zed 1.8.2 <hash>",
+# starship/zoxide "tool 1.2.3", nvim "NVIM v0.12.3",
 # wezterm "wezterm 20240203-110809-…" (date-based), claude "2.1.195 (Claude Code)".
 detect_version() {
   "$1" --version 2>/dev/null | head -1 \
@@ -253,13 +253,9 @@ install_keyd() {
   sudo keyd reload 2>/dev/null || warn "keyd reload failed; run 'sudo keyd reload' once the service is up"
 }
 
-# Zed — GUI editor counterpart to Neovim. The installer drops it under ~/.local and
-# it self-updates afterwards, so there's no fetch_* upgrade path.
-install_zed() {
-  if command -v zed >/dev/null; then info "zed already installed ($(zed --version 2>/dev/null | head -1))"
-  else info "Installing Zed…"; curl -fsSL https://zed.dev/install.sh | sh \
-         || warn "Zed install failed; see https://zed.dev/docs/linux"; fi
-}
+# Zed — the GUI editor — is NOT managed here. It's a GUI app, installed on its own
+# by zed/install-zed.sh (mirroring niri's standalone installer), so it stays out of
+# the CLI install/update loops. Its config is still symlinked via links.tsv.
 
 # Claude Code — Anthropic's CLI. The native installer self-updates (or `claude
 # update`), so we only run it when absent. Its config is linked from this repo.
@@ -267,15 +263,6 @@ install_claude() {
   if command -v claude >/dev/null; then info "claude already installed ($(claude --version 2>/dev/null))"
   else info "Installing Claude Code…"; curl -fsSL https://claude.ai/install.sh | bash \
          || warn "Claude Code install failed; see https://docs.anthropic.com/en/docs/claude-code"; fi
-}
-
-# Node.js — the drill runner's (drills/drill.js) runtime. Usually already present
-# (Claude Code ships a Node), so install from apt only when it's actually missing.
-# apt's nodejs is new enough to run the script and its `node --test` suite.
-install_node() {
-  if command -v node >/dev/null; then info "node already installed ($(node --version 2>/dev/null))"
-  else info "Installing Node.js…"; sudo apt-get install -y nodejs \
-         || warn "Node install failed; see https://nodejs.org/en/download/package-manager"; fi
 }
 
 # JetBrainsMono Nerd Font — re-download the latest release and refresh the cache.

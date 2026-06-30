@@ -73,15 +73,3 @@ fi
 
 # Multiplexing (panes/tabs/splits) is handled by WezTerm itself via direct Alt
 # chords + Ctrl+p/t/n/s modes — see wezterm/wezterm.lua. No multiplexer to start.
-
-# ---- Drills (flashcard learning of this repo's own tools) ----
-# `learn` runs a flashcard session over drills/deck.tsv (`learn <category>` narrows
-# it). Pull-only — no shell-start nudge. drill.js lives in the repo and is run in
-# place (no symlink): resolve the repo root from THIS file's real path — it's
-# symlinked from the repo to ~/.zshrc, so `${(%):-%x}:A` is the repo's zsh/.zshrc and
-# `:h:h` is the repo root. Guarded on node so a missing runtime is silent.
-if command -v node >/dev/null; then
-  _drill_js="${${(%):-%x}:A:h:h}/drills/drill.js"
-  [ -f "$_drill_js" ] && alias learn="node ${(q)_drill_js}"
-  unset _drill_js
-fi

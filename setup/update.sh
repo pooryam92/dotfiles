@@ -80,10 +80,6 @@ do_upgrades() {
   info "Upgrading Neovim…";   fetch_nvim
   info "Upgrading JetBrainsMono Nerd Font…"; fetch_font
 
-  # Zed self-updates in the background, so there's nothing to pull here.
-  if command -v zed >/dev/null; then
-    info "Zed self-updates ($(zed --version 2>/dev/null | head -1)); no action needed"
-  fi
   # Claude Code — native installer, self-updating. `claude update` forces it now.
   if command -v claude >/dev/null; then
     info "Updating Claude Code…"

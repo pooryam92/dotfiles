@@ -165,20 +165,3 @@ Set-PSReadLineKeyHandler -Key Alt+c -ScriptBlock {
     [Microsoft.PowerShell.PSConsoleReadLine]::InvokePrompt()
   }
 }
-
-# ---- Drills (flashcard learning of this repo's own tools) ----
-# Windows counterpart of the zsh drills block. `learn` runs a flashcard session over
-# drills/deck.tsv (`learn <category>` narrows it). Pull-only — no shell-start nudge.
-# drill.js lives in the repo and is run in place: resolve the repo root from this
-# profile's real path — it's symlinked from the repo to $PROFILE, so the symlink
-# target is <repo>/pwsh/profile.ps1 and its grandparent is the repo root. Guarded on
-# node so a missing runtime is silent.
-if (Get-Command node -ErrorAction SilentlyContinue) {
-  $target = (Get-Item $PSCommandPath).ResolveLinkTarget($true)
-  $drillRoot = if ($target) { $target.Directory.Parent.FullName }
-               else { Split-Path -Parent (Split-Path -Parent $PSCommandPath) }
-  $drillJs = Join-Path $drillRoot 'drills/drill.js'
-  if (Test-Path $drillJs) {
-    function learn { node $drillJs @args }
-  }
-}

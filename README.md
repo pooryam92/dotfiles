@@ -29,9 +29,8 @@ in the actual config in this repo:
 - [zsh](docs/zsh.md) — the shell: history, completion, plugins, aliases
 - [Starship](docs/starship.md) — the prompt: modules, format, styling
 - [zoxide](docs/zoxide.md) — smarter `cd`: jump to frecent dirs with `z`/`zi`
-- [Drills (`learn`)](docs/drills.md) — flashcard drills for this repo's own tools: `learn` quizzes you on features you might not know
 - [Neovim](docs/nvim.md) — minimal single-file config: sensible defaults, keymaps, Tokyo Night
-- [Zed](docs/zed.md) — the GUI editor: Vim mode, JetBrains Islands Dark theme, fonts, keymap
+- [Zed](docs/zed.md) — the GUI editor: Vim mode, JetBrains Islands Dark theme, fonts, keymap (**opt-in install**: `zed/install-zed.{sh,ps1}`)
 - [IdeaVim](docs/ideavim.md) — Vim in JetBrains IDEs: leader maps, IDE actions
 - [Claude Code](docs/claude.md) — the AI agent: themed status line, synced settings
 - [COSMIC on niri](docs/niri.md) — **opt-in, Linux-only**: COSMIC's shell on a scrollable-tiling compositor (`niri/install-cosmic-niri.sh`)
@@ -71,17 +70,23 @@ backed up to `<file>.bak.<timestamp>` before linking.
 
 **`install.sh` (Linux)** installs apt packages (`zsh`, `git`, `fzf`, plugins,
 etc.), **WezTerm** (official Fury apt repo), and **Starship**, **zoxide**,
-**Neovim**, **Zed**, and **Claude Code** (official installers) as user binaries in
-`~/.local/bin`. It installs the **JetBrainsMono Nerd Font**, symlinks the configs,
-and sets **zsh** as the login shell (`chsh`). Steps using `sudo` will prompt for
-your password.
+**Neovim**, and **Claude Code** (official installers) as user binaries in
+`~/.local/bin`. It installs the **JetBrainsMono Nerd Font**, symlinks the configs
+(including Zed's), and sets **zsh** as the login shell (`chsh`). Steps using
+`sudo` will prompt for your password.
 
 **`install.ps1` (Windows)** uses [scoop](https://scoop.sh) (user-scope, no admin)
 to install **PowerShell 7**, **WezTerm**, **Starship**, **zoxide**, **Neovim**,
-**Zed**, plus `fzf` (fuzzy finder) and `win32yank` (Neovim's clipboard), the Nerd
+plus `fzf` (fuzzy finder) and `win32yank` (Neovim's clipboard), the Nerd
 Font, and the **PSFzf** module. It also installs **Claude Code** (its own native
-installer, not scoop), then links the configs. See
+installer, not scoop), then links the configs (including Zed's). See
 [docs/windows.md](docs/windows.md).
+
+These install the **terminal/CLI stack** only. **Zed** (the GUI editor) is a
+GUI app, so — like the niri session below — it installs from its own script
+(`zed/install-zed.sh` on Linux, `zed/install-zed.ps1` on Windows); the installers
+above still symlink Zed's config either way. Zed self-updates, so the update
+scripts don't track it.
 
 ### Keeping things updated
 
@@ -109,9 +114,9 @@ something), and asks before changing anything — so you can read the changelog
 first. Afterwards it prints a summary of exactly what moved.
 
 These track *latest* rather than pinning versions (goal: stay simple) — the preview
-lets you eyeball drift and breaking changes first. WezTerm (Linux), Zed, and Claude
-Code self-update on their own; Neovim's plugins update from inside nvim with
-`:lua vim.pack.update()`.
+lets you eyeball drift and breaking changes first. WezTerm (Linux) and Claude Code
+self-update on their own (as does Zed, installed separately); Neovim's plugins
+update from inside nvim with `:lua vim.pack.update()`.
 
 ## Layout
 

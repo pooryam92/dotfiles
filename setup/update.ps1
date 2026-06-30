@@ -32,7 +32,8 @@ if ($Versions) {
   $psfzf = Get-Module -ListAvailable PSFzf | Select-Object -First 1
   if ($psfzf) { Info "PSFzf module: $($psfzf.Version)" }
   $null = Show-Claude
-  Info "Zed and Claude Code self-update, so they won't show as outdated in scoop."
+  Info "Claude Code self-updates, so it won't show as outdated in scoop."
+  Info "Zed is installed separately (zed\install-zed.ps1) and self-updates too."
   return
 }
 

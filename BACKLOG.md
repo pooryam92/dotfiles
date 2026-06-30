@@ -22,8 +22,7 @@ Small, deferred tasks. One line each — link details where useful.
   viins '\e.' insert-last-word` and `autoload -Uz edit-command-line; zle -N
   edit-command-line; bindkey -M viins '^X^E' edit-command-line` (+ vicmd). pwsh:
   `Set-PSReadLineKeyHandler -Key 'Alt+.' -Function YankLastArg` and `-Chord
-  'Ctrl+x,Ctrl+e' -Function ViEditVisually`. Mirrors across both (Goal #3); once
-  added, each unlocks a matching drill card.
+  'Ctrl+x,Ctrl+e' -Function ViEditVisually`. Mirrors across both (Goal #3).
 
 - [ ] **Drop the WezTerm window rule once on WezTerm nightly.** The
   `default-column-width {}` rule in `niri/config.kdl` works around a WezTerm
