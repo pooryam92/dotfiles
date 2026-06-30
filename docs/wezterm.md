@@ -4,8 +4,9 @@
 window that draws text, handles fonts/colors, and runs your shell. It's
 GPU-accelerated, cross-platform (Linux, macOS, **Windows**), and configured with
 a single Lua file. It's also the **multiplexer**: panes, tabs, and splits are
-built in (driven by the Alt chords + `Ctrl+p`/`t`/`n`/`s` modes below), so there's no separate Zellij/tmux
-layer. Everything else in this setup (your shell, Starship) runs *inside* WezTerm.
+built in (driven by the `Alt` chords below — no modes, no leader), so there's no
+separate Zellij/tmux layer. Everything else in this setup (your shell, Starship)
+runs *inside* WezTerm.
 
 > This replaces Ghostty. WezTerm was chosen because it runs natively on **both
 > Linux and Windows**, so one config file serves every machine — Ghostty has no
@@ -103,74 +104,54 @@ config.keys = {
 | `ctrl+-`       | Font size −1      |
 | `ctrl+0`       | Reset font size   |
 
-### Multiplexing — two layers: direct chords + Zellij-style modes
+### Multiplexing — one layer: direct `Alt` chords
 
-There are **two ways to drive panes/tabs**, both live at once — use whichever
-fits the moment:
+There are no modes and no leader key. Everything is a **direct `Alt` chord** —
+hold `Alt` and press the key. `Alt`, not `Ctrl`, because `Ctrl+h` is backspace and
+`Ctrl+l` is clear-screen in every shell; `Alt+<letter>` is otherwise free.
 
-1. **Direct chords** — the fast path for what you do constantly.
-2. **Zellij-style modes** — `Ctrl+p/t/n/s` enter a *mode* (a WezTerm key table),
-   exactly like Zellij. Discoverable: the active mode + its keys show in the tab
-   bar, and you press a letter then `Esc`. There is no `Ctrl+a` leader.
+**Panes:**
 
-**Direct (no prefix, no Shift):**
+| Keys                         | Action                                              |
+| ---------------------------- | --------------------------------------------------- |
+| `Alt+\`                      | Split pane **right**                                |
+| `Alt+-`                      | Split pane **down**                                 |
+| `Alt+x`                      | Close the focused pane                              |
+| `Alt+z`                      | Zoom the focused pane to fill the tab (toggle)      |
+| `Alt+h/j/k/l` or `Alt+←↓↑→`  | Move focus between panes                            |
+| `Alt+Shift+h/j/k/l`          | Resize the focused pane (press repeatedly to nudge) |
+| `Alt+Shift+[` / `Alt+Shift+]`  | Rotate panes counter-clockwise / clockwise        |
 
-| Keys                         | Action                                            |
-| ---------------------------- | ------------------------------------------------- |
-| `Alt+\`                      | Split pane **right**                              |
-| `Alt+-`                      | Split pane **down**                               |
-| `Alt+x`                      | Close the focused pane                            |
-| `Alt+h/j/k/l` or `Alt+←↓↑→`  | Move focus between panes                          |
-| `Alt+g`                      | Build a 3-pane layout: one left, two stacked right |
+**Tabs:**
+
+| Keys            | Action                          |
+| --------------- | ------------------------------- |
+| `Alt+t`         | New tab                         |
+| `Alt+w`         | Close tab                       |
+| `Alt+[` / `Alt+]` | Previous / next tab           |
+| `Alt+1`…`Alt+9` | Jump straight to that tab       |
+
+**Scrollback:**
+
+| Keys     | Action                                                          |
+| -------- | -------------------------------------------------------------- |
+| `Ctrl+s` | Copy mode — vim motions · `/` search · `y` yank · `Esc` to exit |
 
 Split mnemonic: `\` ≈ a vertical divider (new pane to the right); `-` ≈ a
-horizontal divider (new pane below). `Alt`, not `Ctrl` — `Ctrl+h` is backspace and
-`Ctrl+l` is clear-screen, so they'd be clobbered in every shell. `Alt+hjkl` /
-`Alt+arrows` are otherwise unused, and arrows mean you don't have to think in vim.
+horizontal divider (new pane below). Resize is just the move keys with `Shift`
+added. `Ctrl+s` is safe because WezTerm grabs it before the shell sees it, so the
+usual `Ctrl+s` terminal freeze never fires.
 
-**Zellij-style modes** (press `Ctrl`-key, it stays active until `Esc`):
-
-| Enter mode | Keys inside the mode                                                       |
-| ---------- | -------------------------------------------------------------------------- |
-| `Ctrl+p` **pane**   | `n`/`r` split right · `d` split down · `x` close · `f` fullscreen · `h/j/k/l` (or arrows) move · `Esc`/`Enter` exit |
-| `Ctrl+t` **tab**    | `n` new · `1`–`9` go to tab · `h`/`l` prev/next · `r` rename · `x` close · `Esc` exit |
-| `Ctrl+n` **resize** | `h/j/k/l` or arrows resize repeatedly · `Esc`/`q` exit                     |
-| `Ctrl+s` **scroll** | copy mode — vim motions · `/` search · `y` yank · `Esc` exit               |
-
-Inside a mode, actions that *create* (split / new tab / close) exit the mode so
-you can type immediately; *movement* keeps the mode up. The active mode shows on
-the right of the tab bar — Zellij's mode line.
-
-**How the modes are built** — each `Ctrl`-key activates a key table that stays up
-(`one_shot=false`); a `update-right-status` handler renders the hint line. See
-<https://wezterm.org/config/key-tables.html>.
-
-```lua
-{ key = 'p', mods = 'CTRL', action = act.ActivateKeyTable { name = 'pane', one_shot = false } },
-
-config.key_tables = {
-  pane = {
-    -- split_and_exit wraps the action with PopKeyTable so the mode closes after
-    { key = 'n', action = split_and_exit(act.SplitHorizontal { domain = 'CurrentPaneDomain' }) },
-    { key = 'h', action = act.ActivatePaneDirection 'Left' },   -- movement stays
-    { key = 'Escape', action = 'PopKeyTable' },
-    -- …
-  },
-}
-```
-
-Note: the lowercase `Ctrl+p/t/n/s` are distinct from WezTerm's default
-`Ctrl+Shift+P/T/N` (command palette / new tab / new window), which still work.
-Two cues mark the focused pane — the closest WezTerm gets to Zellij's framed
-panes, since it has [no native per-pane title bar](https://github.com/wezterm/wezterm/issues/297):
+Two cues mark the focused pane — the closest WezTerm gets to framed panes, since
+it has [no native per-pane title bar](https://github.com/wezterm/wezterm/issues/297):
 inactive panes are dimmed (`config.inactive_pane_hsb`), and the split lines
 between panes are coloured Tokyo Night blue (`config.colors.split`) so the
 boundaries read as visible borders.
 
-> **Coming from Zellij?** This recreates Zellij's modal `Ctrl+p`/`Ctrl+t`/`Ctrl+n`
-> scheme. The one thing it can't bring back is detach/reattach — closing the window
-> ends its sessions. That was a deliberate trade (you rarely used it) for one fewer
-> tool and identical keybinds on both OSes.
+> **Why no modes?** An earlier version mirrored Zellij's modal
+> `Ctrl+p`/`t`/`n`/`s` key tables on top of these chords. It was two ways to do the
+> same thing, plus a key-table stack and a tab-bar status line to maintain. The
+> chords alone are faster and far simpler, so the modal layer was removed.
 
 > **Want seamless Neovim ↔ WezTerm splits?** [smart-splits.nvim](https://github.com/mrjones2014/smart-splits.nvim)
 > makes one set of `Ctrl+hjkl` keys cross both WezTerm panes *and* Neovim splits.
@@ -189,8 +170,8 @@ boundaries read as visible borders.
 - Because copy-on-select is on, **select text to copy**; paste with
   `ctrl+shift+v`.
 - **Panes/tabs:** `Alt+\` / `Alt+-` to split, `Alt+x` to close, `Alt+h/j/k/l` (or `Alt+arrows`) to
-  move between panes, `Alt+g` for the 3-pane layout, `Ctrl+t` then `n` for a new
-  tab. See the keybind tables above.
+  move between panes, `Alt+t` for a new tab,
+  `Alt+1`…`9` to jump to a tab. See the keybind tables above.
 
 ### Built-in keys worth knowing (no config needed)
 
@@ -228,19 +209,17 @@ end
 config.color_scheme = scheme_for(wezterm.gui.get_appearance())
 ```
 
-**Change a mode-entry key** (e.g. use `Ctrl+b` instead of `Ctrl+p` for pane mode):
+**Rebind a chord** (e.g. close the pane with `Alt+q` instead of `Alt+x`) — edit
+its entry in `config.keys`:
 ```lua
-{ key = 'b', mods = 'CTRL', action = act.ActivateKeyTable { name = 'pane', one_shot = false } },
+{ key = 'q', mods = 'ALT', action = act.CloseCurrentPane { confirm = false } },
 ```
 
-**Confirm before closing a pane** (default closes immediately) — in the `pane`
-key table, swap the `x` entry's `confirm = false` for `true`:
+**Confirm before closing a pane** (default closes immediately) — swap the
+`Alt+x` entry's `confirm = false` for `true`:
 ```lua
-{ key = 'x', action = split_and_exit(act.CloseCurrentPane { confirm = true }) },
+{ key = 'x', mods = 'ALT', action = act.CloseCurrentPane { confirm = true } },
 ```
-
-**Tweak the `Alt+g` layout** — edit the `action_callback`: `pane:split` directions
-and `size` fractions decide the arrangement (e.g. add a third `:split` for 4 panes).
 
 ---
 

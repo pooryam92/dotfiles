@@ -127,17 +127,40 @@ Initialize-Cached starship -InitArgs 'init','powershell','--print-full-init'
 # zoxide's prompt hook wraps starship's prompt rather than being overwritten by it.
 Initialize-Cached zoxide
 
-# ---- fzf key-bindings (PSFzf) ----
-# The pwsh counterpart to zsh's fzf bindings: Ctrl+R fuzzy history, Ctrl+T insert a
-# file/dir path, Alt+C fuzzy-cd — the same three keys on both shells. PSFzf is
-# installed by install.ps1 (Install-Module); guarded so the prompt still loads
-# (with PSReadLine's plain Ctrl+R) if it's missing.
-if (Get-Module -ListAvailable PSFzf) {
+# ---- fzf key-bindings (PSFzf, lazy-loaded) ----
+# Same three keys as zsh's fzf bindings: Ctrl+R fuzzy history, Ctrl+T insert a
+# file/dir path, Alt+C fuzzy-cd — the same keys on both shells. BUT `Import-Module
+# PSFzf` costs ~1s, and this profile reruns on EVERY new WezTerm pane, so importing
+# it eagerly made every split slow. Instead, bind the three keys to stubs that
+# import PSFzf on first use, install PSFzf's real chords (which replace the stubs),
+# then run the action once so the first keypress isn't swallowed. Per-pane cost: ~0;
+# the ~1s import is paid once, on the first fzf keypress of a session. PSFzf is
+# installed by install.ps1 (Install-Module); Ctrl+R falls back to PSReadLine's plain
+# reverse-search if it's missing.
+$script:psfzfReady = $false
+function Initialize-PsFzf {
+  if ($script:psfzfReady) { return $true }
+  if (-not (Get-Module -ListAvailable PSFzf)) { return $false }
   Import-Module PSFzf
   Set-PsFzfOption -PSReadlineChordProvider 'Ctrl+t' -PSReadlineChordReverseHistory 'Ctrl+r'
   # PSFzf has no built-in Alt+C chord; bind fuzzy-cd to match fzf's Alt-C, then
   # redraw the prompt so the new directory shows immediately.
   Set-PSReadLineKeyHandler -Key 'Alt+c' -ScriptBlock {
+    Invoke-FuzzySetLocation
+    [Microsoft.PowerShell.PSConsoleReadLine]::InvokePrompt()
+  }
+  $script:psfzfReady = $true
+  return $true
+}
+Set-PSReadLineKeyHandler -Key Ctrl+r -ScriptBlock {
+  if (Initialize-PsFzf) { Invoke-FzfPsReadlineHandlerHistory }
+  else { [Microsoft.PowerShell.PSConsoleReadLine]::ReverseSearchHistory() }
+}
+Set-PSReadLineKeyHandler -Key Ctrl+t -ScriptBlock {
+  if (Initialize-PsFzf) { Invoke-FzfPsReadlineHandlerProvider }
+}
+Set-PSReadLineKeyHandler -Key Alt+c -ScriptBlock {
+  if (Initialize-PsFzf) {
     Invoke-FuzzySetLocation
     [Microsoft.PowerShell.PSConsoleReadLine]::InvokePrompt()
   }

@@ -33,7 +33,8 @@ const grey = (s) => paint('90', s);
 // Compact token counts: 1234 -> "1.2k", 84000 -> "84k", 1000000 -> "1M".
 function fmtTokens(n) {
   if (n < 1000) return String(n);
-  if (n < 1000000) return (n / 1000).toFixed(n >= 100000 ? 0 : 1).replace(/\.0$/, '') + 'k';
+  // 999_500+ rounds up to "1000k"; promote to "1M" so the carry reads right.
+  if (n < 999500) return (n / 1000).toFixed(n >= 100000 ? 0 : 1).replace(/\.0$/, '') + 'k';
   return (n / 1000000).toFixed(n % 1000000 === 0 ? 0 : 1).replace(/\.0$/, '') + 'M';
 }
 
@@ -70,7 +71,10 @@ function gitInfo(cwd) {
     });
     const lines = out.split('\n');
     const head = lines[0] || '';
-    let branch = head.replace(/^## /, '').split('...')[0].split(' ')[0];
+    // Strip "## ", then the upstream ("...origin/x") and any "[ahead N]". A fresh
+    // repo reads "## No commits yet on <branch>", so pull the name out of that too.
+    let branch = head.replace(/^## /, '').replace(/^No commits yet on /, '');
+    branch = branch.split('...')[0].split(' ')[0];
     if (head.includes('(no branch)') || branch === 'HEAD') branch = 'detached';
     const dirty = lines.slice(1).some((l) => l.trim() !== '');
     return { branch, dirty };
@@ -95,7 +99,25 @@ function render(input) {
   // name with no parseable version we fall back to showing it in full.
   const name = (input.model && input.model.display_name) || 'Claude';
   const m = name.match(/\d+(?:\.\d+)*/);
-  segments.push(blue(m ? m[0] : name));
+  let model = blue(m ? m[0] : name);
+
+  // Thinking effort — the reasoning level for the turn (set via /effort or the
+  // Tab cycle). Claude Code reports it as `effort.level`, one of
+  // low|medium|high|xhigh|max (default high), and only for models that support
+  // it — older ones omit the field, so guard and just skip the tag there.
+  // Glued to the version with a grey dot ("4.8·max") so it reads as an
+  // attribute of the model, not a separate segment. Colour ramps quiet→warm
+  // with the level: the default sits calm (purple), the cheap end greys out,
+  // and the slow/expensive top end (xhigh/max) warms up as a reminder it'll
+  // think longer. Deliberately NOT the green→yellow→red ramp ctx/quota use —
+  // a higher thinking level isn't a problem, just a louder setting.
+  const lvl = input.effort && input.effort.level;
+  if (lvl) {
+    const label = { low: 'low', medium: 'med', high: 'high', xhigh: 'xhigh', max: 'max' };
+    const levelTone = { low: grey, medium: green, high: purple, xhigh: yellow, max: red };
+    model += grey('·') + (levelTone[lvl] || purple)(label[lvl] || lvl);
+  }
+  segments.push(model);
 
   // Directory — project-relative, cyan (matches starship [directory]).
   segments.push(cyan(dirSegment(cwd, ws.project_dir, home)));

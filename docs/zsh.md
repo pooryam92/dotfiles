@@ -168,7 +168,7 @@ back to sourcing that. The same three keys are wired in `pwsh/profile.ps1` via t
 PSFzf module, so the muscle memory is identical on both shells.
 
 > **No multiplexer here.** Panes, tabs, and splits are handled by WezTerm itself
-> (Alt chords + `Ctrl+p`/`t`/`n`/`s` modes — see [wezterm.md](wezterm.md)), so the
+> (direct Alt chords — see [wezterm.md](wezterm.md)), so the
 > shell doesn't launch Zellij or tmux. Opening a WezTerm window drops you straight
 > at the prompt.
 

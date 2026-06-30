@@ -30,9 +30,10 @@ in the actual config in this repo:
 - [Starship](docs/starship.md) — the prompt: modules, format, styling
 - [zoxide](docs/zoxide.md) — smarter `cd`: jump to frecent dirs with `z`/`zi`
 - [Neovim](docs/nvim.md) — minimal single-file config: sensible defaults, keymaps, Tokyo Night
-- [Zed](docs/zed.md) — the GUI editor: Vim mode, JetBrains Islands Dark theme, fonts, keymap
+- [Zed](docs/zed.md) — the GUI editor: Vim mode, JetBrains Islands Dark theme, fonts, keymap (**opt-in install**: `zed/install-zed.{sh,ps1}`)
 - [IdeaVim](docs/ideavim.md) — Vim in JetBrains IDEs: leader maps, IDE actions
 - [Claude Code](docs/claude.md) — the AI agent: themed status line, synced settings
+- [COSMIC on niri](docs/niri.md) — **opt-in, Linux-only**: COSMIC's shell on a scrollable-tiling compositor (`niri/install-cosmic-niri.sh`)
 - [Windows](docs/windows.md) — **native Windows setup**: scoop, PowerShell profile, paths
 
 ## Quick start
@@ -59,8 +60,8 @@ See [docs/windows.md](docs/windows.md) for prerequisites (Developer Mode for liv
 symlinks) and details.
 
 Then open a fresh **WezTerm** window — it launches your shell with the Starship
-prompt. Split with `Alt+\` / `Alt+-`, hop panes with `Alt+h/j/k/l`, or use the
-Zellij-style `Ctrl+p`/`Ctrl+t` modes (see below).
+prompt. Split with `Alt+\` / `Alt+-`, hop panes with `Alt+h/j/k/l` (see
+[Keybindings](#keybindings) for the full set).
 
 ## What the installers do
 
@@ -69,21 +70,65 @@ backed up to `<file>.bak.<timestamp>` before linking.
 
 **`install.sh` (Linux)** installs apt packages (`zsh`, `git`, `fzf`, plugins,
 etc.), **WezTerm** (official Fury apt repo), and **Starship**, **zoxide**,
-**Neovim**, and **Zed** (official installer) as user binaries in `~/.local/bin`.
-It installs the **JetBrainsMono Nerd Font**, symlinks the configs, and sets
-**zsh** as the login shell (`chsh`). Steps using `sudo` will prompt for your
-password.
+**Neovim**, and **Claude Code** (official installers) as user binaries in
+`~/.local/bin`. It installs the **JetBrainsMono Nerd Font**, symlinks the configs
+(including Zed's), and sets **zsh** as the login shell (`chsh`). Steps using
+`sudo` will prompt for your password.
 
 **`install.ps1` (Windows)** uses [scoop](https://scoop.sh) (user-scope, no admin)
 to install **PowerShell 7**, **WezTerm**, **Starship**, **zoxide**, **Neovim**,
-**Zed**, plus `fzf` (fuzzy finder) and `win32yank` (Neovim's clipboard), the Nerd
-Font, and the **PSFzf** module, then links the configs. See
+plus `fzf` (fuzzy finder) and `win32yank` (Neovim's clipboard), the Nerd
+Font, and the **PSFzf** module. It also installs **Claude Code** (its own native
+installer, not scoop), then links the configs (including Zed's). See
 [docs/windows.md](docs/windows.md).
+
+These install the **terminal/CLI stack** only. **Zed** (the GUI editor) is a
+GUI app, so — like the niri session below — it installs from its own script
+(`zed/install-zed.sh` on Linux, `zed/install-zed.ps1` on Windows); the installers
+above still symlink Zed's config either way. Zed self-updates, so the update
+scripts don't track it.
+
+### Keeping things updated
+
+The **config files** are symlinks into this repo, so `git pull` is all it takes to
+update them on every machine. The **tools** are install-once, though — re-running
+`install.sh`/`install.ps1` skips anything already present and never upgrades it. To
+bump the tools to their latest releases, use the companion update scripts:
+
+```bash
+./setup/update.sh check      # Linux: list ONLY what's behind (exit 1 if any); no changes
+./setup/update.sh versions   # Linux: full installed-vs-latest table; no changes, no sudo
+./setup/update.sh            # Linux: preview → confirm → upgrade → summary of what moved
+```
+
+```powershell
+.\setup\update.ps1 -Check    # Windows: list what's behind via `scoop status`; no changes
+.\setup\update.ps1 -Versions # Windows: full installed list (`scoop list`); no changes
+.\setup\update.ps1           # Windows: preview → confirm → upgrade everything
+```
+
+`check` answers "what needs updating?" at a glance. A plain `update` first **shows
+you the jump** (`starship 1.25.1 → 1.26.0`) with a **release-notes link** for each
+tool, flags **major / 0.x-minor bumps with ⚠** (the ones most likely to break
+something), and asks before changing anything — so you can read the changelog
+first. Afterwards it prints a summary of exactly what moved.
+
+These track *latest* rather than pinning versions (goal: stay simple) — the preview
+lets you eyeball drift and breaking changes first. WezTerm (Linux) and Claude Code
+self-update on their own (as does Zed, installed separately); Neovim's plugins
+update from inside nvim with `:lua vim.pack.update()`.
 
 ## Layout
 
 Most configs are **shared** between Linux and Windows and linked into place, so
 edits here take effect immediately. Only the shell config differs.
+
+The setup machinery lives in **`setup/`**: the link targets below are data in
+[`setup/links.tsv`](setup/links.tsv) and the version-tracked tools in
+[`setup/tools.tsv`](setup/tools.tsv), both read by the shared helpers in
+`setup/lib.sh` / `setup/lib.ps1`. Adding a config or tool is a single manifest row
+(plus a one-line action function for a tool that isn't a plain apt/scoop package).
+Only `install.sh` / `install.ps1` stay at the repo root as the entry points.
 
 | Repo file                | Linux target                  | Windows target                          |
 | ------------------------ | ----------------------------- | --------------------------------------- |
@@ -97,6 +142,7 @@ edits here take effect immediately. Only the shell config differs.
 | `pwsh/profile.ps1`       | —                             | `$PROFILE.CurrentUserAllHosts`          |
 | `claude/statusline.js`   | `~/.claude/statusline.js`     | `%USERPROFILE%\.claude\statusline.js`   |
 | `claude/settings.json`   | `~/.claude/settings.json`     | `%USERPROFILE%\.claude\settings.json`   |
+| `niri/config.kdl`                | `~/.config/niri/config.kdl`   | — (Linux-only; via `niri/install-cosmic-niri.sh`) |
 
 After editing:
 
@@ -108,37 +154,42 @@ After editing:
 
 ## Keybindings
 
-There are **two ways to drive panes/tabs**, side by side — use whichever fits the
-moment. Fast direct chords for the things you do constantly, and Zellij-style
-*modes* for everything else (discoverable: the active mode shows in the tab bar).
+Panes and tabs are driven by **direct chords** — no prefix, no leader, no modes.
+Almost everything is `Alt+<key>`, because `Alt` is free whereas `Ctrl+h`
+(backspace) and `Ctrl+l` (clear) belong to the shell.
 
-### Direct chords (no prefix, no Shift)
+### Panes
 
 | Key                        | Action                          |
 | -------------------------- | ------------------------------- |
 | `alt+\`                    | Split pane **right**            |
 | `alt+-`                    | Split pane **down**             |
-| `alt+x`                    | Close the focused pane          |
 | `alt+h/j/k/l` or `alt+←↓↑→`| Move focus between panes        |
-| `alt+g`                    | Build a **3-pane layout** (one left, two stacked right) |
-| `ctrl+shift+r`             | Reload config                   |
-| `ctrl+=` / `ctrl+-` / `ctrl+0` | Font size up / down / reset |
+| `alt+shift+h/j/k/l`        | Resize the focused pane (repeat to nudge) |
+| `alt+shift+[` / `alt+shift+]` | Rotate panes counter-/clockwise |
+| `alt+z`                    | Zoom (toggle fullscreen pane)   |
+| `alt+x`                    | Close the focused pane          |
 
 > Mnemonic for splits: `\` ≈ a vertical divider (pane to the right); `-` ≈ a
 > horizontal divider (pane below). `Alt`, not `Ctrl`, so `Ctrl+l` clear-screen
 > and `Ctrl+h` backspace stay intact.
 
-### Zellij-style modes
+### Tabs
 
-Press the `Ctrl` key to enter a mode (it stays active — the tab bar shows which);
-press a letter, then `Esc` to leave. Mirrors Zellij's `Ctrl+p`/`Ctrl+t` scheme.
+| Key                        | Action                          |
+| -------------------------- | ------------------------------- |
+| `alt+t`                    | New tab                         |
+| `alt+w`                    | Close tab                       |
+| `alt+[` / `alt+]`          | Previous / next tab             |
+| `alt+1`–`alt+9`            | Jump to tab _N_                 |
 
-| Enter mode | Then…                                                            |
-| ---------- | ---------------------------------------------------------------- |
-| `Ctrl+p` **pane**   | `n`/`r` split right · `d` split down · `x` close · `f` fullscreen · `h/j/k/l` move · `Esc` |
-| `Ctrl+t` **tab**    | `n` new · `1`–`9` go to tab · `h`/`l` prev/next · `r` rename · `x` close · `Esc` |
-| `Ctrl+n` **resize** | `h/j/k/l` or arrows to resize repeatedly · `Esc` |
-| `Ctrl+s` **scroll** | copy mode: vim motions · `/` search · `y` yank · `Esc` |
+### Scrollback & misc
+
+| Key                        | Action                          |
+| -------------------------- | ------------------------------- |
+| `ctrl+s`                   | Copy mode — vim motions, `/` search, `y` yank |
+| `ctrl+shift+r`             | Reload config                   |
+| `ctrl+=` / `ctrl+-` / `ctrl+0` | Font size up / down / reset |
 
 ### Built-in WezTerm keys (no config needed)
 
@@ -162,9 +213,8 @@ Aliases: `ll`/`la`, `..`/`...` (defined in both `zsh/.zshrc` and
   get the full setup immediately. The `is_windows` branch in `wezterm.lua` is the
   only place the terminal layer diverges.
 - WezTerm is also the multiplexer — panes, tabs, and splits are built in, driven
-  by direct `Alt` chords plus Zellij-style `Ctrl+p`/`Ctrl+t`/`Ctrl+n` modes in
-  `wezterm.lua`. There's no separate multiplexer process to start, and the same
-  keybinds work identically on both platforms.
+  by direct `Alt` chords in `wezterm.lua`. There's no separate multiplexer
+  process to start, and the same keybinds work identically on both platforms.
 - Tokyo Night is configured natively in WezTerm (built-in scheme); Neovim uses
   `folke/tokyonight.nvim` and Starship uses ANSI named colors that follow the
   terminal palette — no theme files to install.
@@ -174,7 +224,7 @@ Aliases: `ll`/`la`, `..`/`...` (defined in both `zsh/.zshrc` and
 | Want to…                     | Edit                                                |
 | ---------------------------- | --------------------------------------------------- |
 | Change font / size / opacity | `wezterm/wezterm.lua`                               |
-| Change pane/tab keybinds     | the `config.keys` / `config.key_tables` block in `wezterm/wezterm.lua` |
+| Change pane/tab keybinds     | the `config.keys` block in `wezterm/wezterm.lua`    |
 | Change the prompt            | `starship/starship.toml` (see starship.rs/config)   |
 | Change the Claude status line| `claude/statusline.js` (see [docs/claude.md](docs/claude.md)) |
 | Add aliases / env            | `zsh/.zshrc` (Linux) / `pwsh/profile.ps1` (Windows) |

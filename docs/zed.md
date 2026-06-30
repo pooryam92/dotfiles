@@ -21,7 +21,8 @@ Everything else is left at Zed's sensible defaults.
 
 ## How it's wired in this repo
 
-Two files are linked into Zed's config directory by both installers:
+Two files are linked into Zed's config directory by the main installers
+(`install.sh` / `install.ps1`):
 
 | Repo file            | Linux target                | Windows target              |
 | -------------------- | --------------------------- | --------------------------- |
@@ -31,9 +32,20 @@ Two files are linked into Zed's config directory by both installers:
 > Note the case: Zed's config dir is lowercase `zed` on Linux (XDG) but
 > capitalized `Zed` on Windows (Roaming `%APPDATA%`).
 
-The installers also **install Zed itself** — `curl … zed.dev/install.sh` on
-Linux, `scoop install zed` (extras bucket) on Windows — and Zed self-updates from
-there.
+**Installing Zed itself is opt-in and lives in its own script** — Zed is a GUI
+app, so it stays out of the main installers' terminal/CLI flow (the same way the
+niri session does). Run it once:
+
+```bash
+./zed/install-zed.sh      # Linux  — curl … zed.dev/install.sh
+```
+```powershell
+.\zed\install-zed.ps1     # Windows — scoop install zed (extras bucket)
+```
+
+Zed self-updates from there, so the update scripts don't track it. The config
+links above are handled by the main installers regardless of whether Zed itself
+is installed.
 
 ---
 

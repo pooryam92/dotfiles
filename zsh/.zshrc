@@ -72,4 +72,4 @@ if command -v fzf >/dev/null; then
 fi
 
 # Multiplexing (panes/tabs/splits) is handled by WezTerm itself via direct Alt
-# chords + Ctrl+p/t/n/s modes — see wezterm/wezterm.lua. No multiplexer to start.
+# chords — see wezterm/wezterm.lua. No multiplexer to start.
