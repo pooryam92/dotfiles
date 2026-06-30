@@ -60,8 +60,8 @@ See [docs/windows.md](docs/windows.md) for prerequisites (Developer Mode for liv
 symlinks) and details.
 
 Then open a fresh **WezTerm** window — it launches your shell with the Starship
-prompt. Split with `Alt+\` / `Alt+-`, hop panes with `Alt+h/j/k/l`, or use the
-Zellij-style `Ctrl+p`/`Ctrl+t` modes (see below).
+prompt. Split with `Alt+\` / `Alt+-`, hop panes with `Alt+h/j/k/l` (see
+[Keybindings](#keybindings) for the full set).
 
 ## What the installers do
 
@@ -154,37 +154,42 @@ After editing:
 
 ## Keybindings
 
-There are **two ways to drive panes/tabs**, side by side — use whichever fits the
-moment. Fast direct chords for the things you do constantly, and Zellij-style
-*modes* for everything else (discoverable: the active mode shows in the tab bar).
+Panes and tabs are driven by **direct chords** — no prefix, no leader, no modes.
+Almost everything is `Alt+<key>`, because `Alt` is free whereas `Ctrl+h`
+(backspace) and `Ctrl+l` (clear) belong to the shell.
 
-### Direct chords (no prefix, no Shift)
+### Panes
 
 | Key                        | Action                          |
 | -------------------------- | ------------------------------- |
 | `alt+\`                    | Split pane **right**            |
 | `alt+-`                    | Split pane **down**             |
-| `alt+x`                    | Close the focused pane          |
 | `alt+h/j/k/l` or `alt+←↓↑→`| Move focus between panes        |
-| `alt+g`                    | Build a **3-pane layout** (one left, two stacked right) |
-| `ctrl+shift+r`             | Reload config                   |
-| `ctrl+=` / `ctrl+-` / `ctrl+0` | Font size up / down / reset |
+| `alt+shift+h/j/k/l`        | Resize the focused pane (repeat to nudge) |
+| `alt+shift+[` / `alt+shift+]` | Rotate panes counter-/clockwise |
+| `alt+z`                    | Zoom (toggle fullscreen pane)   |
+| `alt+x`                    | Close the focused pane          |
 
 > Mnemonic for splits: `\` ≈ a vertical divider (pane to the right); `-` ≈ a
 > horizontal divider (pane below). `Alt`, not `Ctrl`, so `Ctrl+l` clear-screen
 > and `Ctrl+h` backspace stay intact.
 
-### Zellij-style modes
+### Tabs
 
-Press the `Ctrl` key to enter a mode (it stays active — the tab bar shows which);
-press a letter, then `Esc` to leave. Mirrors Zellij's `Ctrl+p`/`Ctrl+t` scheme.
+| Key                        | Action                          |
+| -------------------------- | ------------------------------- |
+| `alt+t`                    | New tab                         |
+| `alt+w`                    | Close tab                       |
+| `alt+[` / `alt+]`          | Previous / next tab             |
+| `alt+1`–`alt+9`            | Jump to tab _N_                 |
 
-| Enter mode | Then…                                                            |
-| ---------- | ---------------------------------------------------------------- |
-| `Ctrl+p` **pane**   | `n`/`r` split right · `d` split down · `x` close · `f` fullscreen · `h/j/k/l` move · `Esc` |
-| `Ctrl+t` **tab**    | `n` new · `1`–`9` go to tab · `h`/`l` prev/next · `r` rename · `x` close · `Esc` |
-| `Ctrl+n` **resize** | `h/j/k/l` or arrows to resize repeatedly · `Esc` |
-| `Ctrl+s` **scroll** | copy mode: vim motions · `/` search · `y` yank · `Esc` |
+### Scrollback & misc
+
+| Key                        | Action                          |
+| -------------------------- | ------------------------------- |
+| `ctrl+s`                   | Copy mode — vim motions, `/` search, `y` yank |
+| `ctrl+shift+r`             | Reload config                   |
+| `ctrl+=` / `ctrl+-` / `ctrl+0` | Font size up / down / reset |
 
 ### Built-in WezTerm keys (no config needed)
 
@@ -208,9 +213,8 @@ Aliases: `ll`/`la`, `..`/`...` (defined in both `zsh/.zshrc` and
   get the full setup immediately. The `is_windows` branch in `wezterm.lua` is the
   only place the terminal layer diverges.
 - WezTerm is also the multiplexer — panes, tabs, and splits are built in, driven
-  by direct `Alt` chords plus Zellij-style `Ctrl+p`/`Ctrl+t`/`Ctrl+n` modes in
-  `wezterm.lua`. There's no separate multiplexer process to start, and the same
-  keybinds work identically on both platforms.
+  by direct `Alt` chords in `wezterm.lua`. There's no separate multiplexer
+  process to start, and the same keybinds work identically on both platforms.
 - Tokyo Night is configured natively in WezTerm (built-in scheme); Neovim uses
   `folke/tokyonight.nvim` and Starship uses ANSI named colors that follow the
   terminal palette — no theme files to install.
@@ -220,7 +224,7 @@ Aliases: `ll`/`la`, `..`/`...` (defined in both `zsh/.zshrc` and
 | Want to…                     | Edit                                                |
 | ---------------------------- | --------------------------------------------------- |
 | Change font / size / opacity | `wezterm/wezterm.lua`                               |
-| Change pane/tab keybinds     | the `config.keys` / `config.key_tables` block in `wezterm/wezterm.lua` |
+| Change pane/tab keybinds     | the `config.keys` block in `wezterm/wezterm.lua`    |
 | Change the prompt            | `starship/starship.toml` (see starship.rs/config)   |
 | Change the Claude status line| `claude/statusline.js` (see [docs/claude.md](docs/claude.md)) |
 | Add aliases / env            | `zsh/.zshrc` (Linux) / `pwsh/profile.ps1` (Windows) |

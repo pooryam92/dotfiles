@@ -221,9 +221,6 @@ its entry in `config.keys`:
 { key = 'x', mods = 'ALT', action = act.CloseCurrentPane { confirm = true } },
 ```
 
-**Tweak the `Alt+g` layout** — edit the `action_callback`: `pane:split` directions
-and `size` fractions decide the arrangement (e.g. add a third `:split` for 4 panes).
-
 ---
 
 ## Troubleshooting

@@ -90,8 +90,8 @@ pwsh/profile.ps1       ->  $PROFILE.CurrentUserAllHosts         (resolved from p
 | zoxide (`z`/`zi`)        | `Initialize-Cached zoxide` — see [zoxide.md](zoxide.md) |
 | fzf `Ctrl+R`/`T`, `Alt+C`| **PSFzf** module (Ctrl+R history, Ctrl+T path, Alt+C cd) |
 
-**No multiplexer auto-start.** Panes and tabs are WezTerm's job (Alt chords +
-`Ctrl+p`/`t`/`n`/`s` modes — see [wezterm.md](wezterm.md)), so the profile doesn't
+**No multiplexer auto-start.** Panes and tabs are WezTerm's job (direct Alt
+chords — see [wezterm.md](wezterm.md)), so the profile doesn't
 launch Zellij or anything else; opening a WezTerm window drops you straight at the
 pwsh prompt. The
 pane/tab keybinds are identical to Linux because they live in the shared
@@ -125,7 +125,7 @@ After install, run `:checkhealth` and confirm the **Clipboard** section is green
   linked there. OneDrive redirection is the usual culprit.
 - **Tofu boxes (□)** — set WezTerm's font to `JetBrainsMono Nerd Font` and
   confirm the font installed (`scoop list` should show `JetBrainsMono-NF`).
-- **Pane keys do nothing** (`Alt+\`, `Ctrl+p`, …) — WezTerm didn't pick up the
+- **Pane keys do nothing** (`Alt+\`, `Alt+h/j/k/l`, …) — WezTerm didn't pick up the
   config. Reload with `ctrl+shift+r`, or check `wezterm.lua` is actually linked
   (not a stale copy).
 - **Configs were copied, not linked** — enable Developer Mode and re-run.
