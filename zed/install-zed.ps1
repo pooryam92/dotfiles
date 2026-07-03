@@ -7,7 +7,7 @@
 # Invoke-Links (zed/settings.json, zed/keymap.json via links.tsv); only the
 # install lives here.
 #
-# Zed self-updates afterwards, so update.ps1 never touches it. Re-running is safe:
+# Zed self-updates afterwards, so `install.ps1 update` never touches it. Re-running is safe:
 # `scoop install` no-ops when zed is already present.
 #
 # Linux counterpart: zed/install-zed.sh. See docs/zed.md.

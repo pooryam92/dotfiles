@@ -34,7 +34,7 @@ wraps the prompt instead of clobbering it:
 
 - **PowerShell** (`pwsh/profile.ps1`): `zoxide init powershell` spawns the binary,
   so its output is cached to disk and dot-sourced — a new WezTerm pane then pays no
-  subprocess. `setup\update.ps1` deletes the cache after a zoxide upgrade so the
+  subprocess. `.\install.ps1 update` deletes the cache after a zoxide upgrade so the
   next shell regenerates it:
 
   ```powershell

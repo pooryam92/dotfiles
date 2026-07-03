@@ -112,7 +112,7 @@ function ... { Set-Location ../.. }
 # ---- zoxide (smarter cd: `z <dir>` frecency jump, `zi` fuzzy pick via fzf) ----
 # `zoxide init` spawns the binary, so cache its output to disk and dot-source the cache;
 # a new WezTerm pane then pays no subprocess. After upgrading zoxide, delete the cache
-# (setup\update.ps1 does this) so the next shell regenerates it from the new binary.
+# (.\install.ps1 update does this) so the next shell regenerates it from the new binary.
 $zoxideCache = Join-Path ([IO.Path]::GetTempPath()) 'zoxide_init.ps1'
 if (-not (Test-Path $zoxideCache)) {
   $zoxideExe = (Get-Command zoxide -ErrorAction SilentlyContinue)?.Source

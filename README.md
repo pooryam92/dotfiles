@@ -94,19 +94,20 @@ scripts don't track it.
 
 The **config files** are symlinks into this repo, so `git pull` is all it takes to
 update them on every machine. The **tools** are install-once, though — re-running
-`install.sh`/`install.ps1` skips anything already present and never upgrades it. To
-bump the tools to their latest releases, use the companion update scripts:
+`install.sh`/`install.ps1` with no argument skips anything already present and never
+upgrades it. To bump the tools to their latest releases, the installer doubles as the
+updater via subcommands:
 
 ```bash
-./setup/update.sh check      # Linux: list ONLY what's behind (exit 1 if any); no changes
-./setup/update.sh versions   # Linux: full installed-vs-latest table; no changes, no sudo
-./setup/update.sh            # Linux: preview → confirm → upgrade → summary of what moved
+./install.sh check      # Linux: list ONLY what's behind (exit 1 if any); no changes
+./install.sh versions   # Linux: full installed-vs-latest table; no changes, no sudo
+./install.sh update     # Linux: preview → confirm → upgrade → summary of what moved
 ```
 
 ```powershell
-.\setup\update.ps1 -Check    # Windows: list what's behind via `scoop status`; no changes
-.\setup\update.ps1 -Versions # Windows: full installed list (`scoop list`); no changes
-.\setup\update.ps1           # Windows: preview → confirm → upgrade everything
+.\install.ps1 check     # Windows: list what's behind via `scoop status`; no changes
+.\install.ps1 versions  # Windows: full installed list (`scoop list`); no changes
+.\install.ps1 update    # Windows: preview → confirm → upgrade everything
 ```
 
 `check` answers "what needs updating?" at a glance. A plain `update` first **shows

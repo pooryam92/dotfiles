@@ -9,7 +9,7 @@
 # the binary install lives here.
 #
 # The official installer drops Zed under ~/.local and it self-updates afterwards,
-# so there's no separate update path — update.sh never touches it. Re-running this
+# so there's no separate update path — `install.sh update` never touches it. Re-running this
 # is safe: it skips the install when zed is already on PATH.
 #
 # Windows counterpart: zed/install-zed.ps1 (scoop). See docs/zed.md.

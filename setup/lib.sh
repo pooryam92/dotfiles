@@ -1,19 +1,19 @@
 #!/usr/bin/env bash
-# Shared helpers for install.sh and update.sh — sourced by both, never run directly.
-# Holds the things that used to be copy-pasted between the two scripts: logging,
-# path constants, the symlink helper, the version-report machinery, and the per-tool
-# install/upgrade actions. The DATA (which tools, where they come from, where configs
-# link to) lives in tools.tsv / links.tsv; this file holds the ACTIONS.
+# Shared helpers for install.sh (and the standalone zed/niri installers) — sourced,
+# never run directly. Holds logging, path constants, the symlink helper, the
+# version-report machinery, and the per-tool install/upgrade actions. The DATA (which
+# tools, where they come from, where configs link to) lives in tools.tsv / links.tsv;
+# this file holds the ACTIONS.
 
-# This lib lives in setup/ alongside update.sh and the manifests; the config sources
-# it links live one level up at the repo root.
+# This lib lives in setup/ alongside the manifests; the config sources it links live
+# one level up at the repo root.
 LIBDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"   # …/setup
 DOTFILES="$(dirname "$LIBDIR")"                           # repo root
 ARCH="$(dpkg --print-architecture)"          # e.g. amd64
 BIN="$HOME/.local/bin"
 FONT_DIR="$HOME/.local/share/fonts/JetBrainsMono"
 
-# Base apt packages install.sh manages — targeted so update.sh upgrades just these,
+# Base apt packages install.sh manages — targeted so `update` upgrades just these,
 # not the whole system.
 BASE_APT=(zsh git curl unzip ca-certificates fontconfig wl-clipboard fzf
           zsh-autosuggestions zsh-syntax-highlighting)
@@ -73,8 +73,8 @@ do_links() {
 
 # --- tool manifest (tools.tsv) ---------------------------------------------
 # Columns: 1 name  2 linux_source  3 scoop_pkg  4 changelog_url  5 desc
-#   6 manage    both    = install.sh installs it, update.sh force-updates it, version-tracked
-#               self    = installed, but it self-updates — update.sh only reports it
+#   6 manage    both    = `install` installs it, `update` force-updates it, version-tracked
+#               self    = installed, but it self-updates — `update` only reports it
 #               install = install-once only; never force-updated, not version-tracked (keyd)
 #   7 platform  both | linux | windows — which OS this tool exists on
 # Read column $2 of the row named $1.
@@ -84,7 +84,7 @@ tool_col() { awk -F'\t' -v n="$1" -v c="$2" 'NR>1 && $1==n {print $c}' "$LIBDIR/
 # drives the install loop, so adding a tool = a tools.tsv row + a matching install_<name>.
 mapfile -t INSTALL_TOOLS < <(awk -F'\t' 'NR>1 && $1!="" && ($7=="both"||$7=="linux"){print $1}' "$LIBDIR/tools.tsv")
 
-# Version-tracked tools (manage != install) — the installed-vs-latest views in update.sh
+# Version-tracked tools (manage != install) — the installed-vs-latest views in `update`
 # skip install-only tools like keyd, which have no comparable/detectable version.
 mapfile -t TOOLS < <(awk -F'\t' 'NR>1 && $1!="" && $6!="install"{print $1}' "$LIBDIR/tools.tsv")
 
@@ -155,8 +155,8 @@ is_behind() {
 }
 
 # --- install / upgrade actions ---------------------------------------------
-# Each fetch_* forces the tool to its latest (used by update.sh). Each install_*
-# is the install-once guard around it (used by install.sh).
+# Each fetch_* forces the tool to its latest (used by `update`). Each install_*
+# is the install-once guard around it (used by `install`).
 
 # WezTerm via the official Fury APT repo (handles future updates via apt; amd64 +
 # arm64). See https://wezfurlong.org/wezterm/install/linux.html

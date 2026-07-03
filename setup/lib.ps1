@@ -1,8 +1,8 @@
-# Shared helpers for install.ps1 and update.ps1 — dot-sourced by both, never run
-# directly. Holds what used to be copy-pasted between the two: logging, the link
-# helper, manifest readers, the scoop app list, changelogs, and the per-tool setup
-# steps. The DATA (which tools, scoop ids, changelogs, link targets) lives in
-# tools.tsv / links.tsv; this file holds the ACTIONS. Counterpart of lib.sh.
+# Shared helpers for install.ps1 (and the standalone zed installer) — dot-sourced,
+# never run directly. Holds logging, the link helper, manifest readers, the scoop app
+# list, changelogs, and the per-tool setup steps. The DATA (which tools, scoop ids,
+# changelogs, link targets) lives in tools.tsv / links.tsv; this file holds the
+# ACTIONS. Counterpart of lib.sh.
 
 $LIB = $PSScriptRoot                       # …\setup — this lib + the manifests live here
 $DOT = Split-Path -Parent $LIB             # repo root — where the config sources live
