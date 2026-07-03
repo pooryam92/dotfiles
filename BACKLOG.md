@@ -11,13 +11,6 @@ Small, deferred tasks. One line each — link details where useful.
   a `fetch_fd`/`install_fd` in lib.sh, and update the line-225 note. Optional
   follow-ons: `delta` (git diffs), `bat`/`eza`. (Goal #2: weigh against staying small.)
 
-- [ ] **Bind `Alt+.` (insert-last-word) and `Ctrl+X Ctrl+E` (edit-command-line) in
-  both shells.** Neither is bound today (checked the live keymap). zsh: `bindkey -M
-  viins '\e.' insert-last-word` and `autoload -Uz edit-command-line; zle -N
-  edit-command-line; bindkey -M viins '^X^E' edit-command-line` (+ vicmd). pwsh:
-  `Set-PSReadLineKeyHandler -Key 'Alt+.' -Function YankLastArg` and `-Chord
-  'Ctrl+x,Ctrl+e' -Function ViEditVisually`. Mirrors across both (Goal #3).
-
 - [ ] **Drop the WezTerm window rule once on WezTerm nightly.** The
   `default-column-width {}` rule in `niri/config.kdl` works around a WezTerm
   initial-configure bug that only shows up on stable (`20240203`). It's fixed in

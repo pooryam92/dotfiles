@@ -9,7 +9,7 @@ $DOT = Split-Path -Parent $LIB             # repo root — where the config sour
 
 # Base scoop apps that aren't version-tracked tools (the Linux side keeps the same
 # split: base apt packages vs. the tools in tools.tsv). Joined with the tools' scoop
-# ids by Get-ScoopApps. pwsh=target shell, fzf=fuzzy finder (zoxide `zi` + PSFzf),
+# ids by Get-ScoopApps. pwsh=target shell, fzf=fuzzy finder (zoxide `zi`),
 # win32yank=Neovim clipboard provider.
 $BASE_SCOOP = @('pwsh', 'fzf', 'win32yank')
 
@@ -30,8 +30,10 @@ function Read-Tools { Import-Csv -Delimiter "`t" -Path (Join-Path $LIB 'tools.ts
 function Read-Links { Import-Csv -Delimiter "`t" -Path (Join-Path $LIB 'links.tsv') }
 
 # Scoop app list = base apps + every tool with a scoop_pkg ("-" = native, e.g. claude).
+# Skip Linux-only tools (platform=linux, e.g. starship — Windows uses a native prompt).
 function Get-ScoopApps {
-  $toolPkgs = Read-Tools | Where-Object { $_.scoop_pkg -and $_.scoop_pkg -ne '-' } |
+  $toolPkgs = Read-Tools |
+              Where-Object { $_.scoop_pkg -and $_.scoop_pkg -ne '-' -and $_.platform -ne 'linux' } |
               ForEach-Object { $_.scoop_pkg }
   return @($BASE_SCOOP + $toolPkgs)
 }

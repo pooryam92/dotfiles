@@ -1,52 +1,55 @@
 # PowerShell 7 profile — managed by dotfiles (linked by install.ps1).
 # Windows counterpart of zsh/.zshrc. Linked to $PROFILE.CurrentUserAllHosts.
 #
-# zsh feature            -> PowerShell equivalent
-#   autosuggestions      -> PSReadLine -PredictionSource History (inline ghost text)
-#   syntax-highlighting  -> PSReadLine inline command coloring (built in)
-#   history dedup/search -> PSReadLine options + HistorySearch key handlers
-#   aliases / functions  -> Set-Alias / functions
-#   starship             -> starship init powershell
-# Multiplexing (panes/tabs) is handled by WezTerm itself (Alt chords + Ctrl+p/t
-# modes), so there is no multiplexer auto-start here — see wezterm/wezterm.lua.
+# Stripped to the bare minimum for speed (see repo goal #2). The old profile ran
+# starship, which shelled out to starship.exe on EVERY prompt draw (~200ms of lag
+# after each command) plus ~180ms at launch. This profile uses a native prompt
+# function instead — no subprocess, ~2ms — so launches and every keystroke stay fast.
+#
+# NOTE (goal #3, deferred): zsh/.zshrc still uses starship on Pop!_OS, so the two
+# shells look different for now. Mirror this native prompt into .zshrc when you want
+# them identical again.
 
 # ---- Editor ----
 $env:EDITOR = 'nvim'
 
-# ---- PSReadLine: history, prediction, syntax highlighting, keybindings ----
-Import-Module PSReadLine -ErrorAction SilentlyContinue
+# ---- PSReadLine: emacs editing, history, inline prediction, keybindings ----
+# PS7 auto-loads PSReadLine in interactive sessions, so this is the line editor we
+# already have — configuring it is the whole keyboard experience (goal #1) and costs
+# almost nothing on top. Keep it.
 if (Get-Module PSReadLine) {
-  # One splat instead of six separate Set-PSReadLineOption calls. NOTE: splatting
-  # needs a $variable + the @ operator (`@psrlOpts`); a bare `@{...}` literal is
-  # passed as a positional arg and errors.
-  #   PredictionSource/ViewStyle == zsh-autosuggestions inline ghost text.
   $psrlOpts = @{
-    EditMode                      = 'Vi'   # modal editing (Esc -> normal mode); matches zsh `bindkey -v`.
-                                           # Mode is shown in the prompt via starship's vimcmd_symbol;
-                                           # don't set -ViModeIndicator here, starship's init overrides it.
+    EditMode                      = 'Emacs'       # always-on editing keys, no modes; matches zsh `bindkey -e`
     HistoryNoDuplicates           = $true
     MaximumHistoryCount           = 50000
     HistorySearchCursorMovesToEnd = $true
-    PredictionSource              = 'History'
+    PredictionSource              = 'History'     # zsh-autosuggestions-style inline ghost text
     PredictionViewStyle           = 'InlineView'
   }
   Set-PSReadLineOption @psrlOpts
 
-  # Up/Down do prefix history search (matches the .zshrc bindkeys).
+  # Up/Down do prefix history search; Tab opens a completion menu (== zsh bindkeys).
   Set-PSReadLineKeyHandler -Key UpArrow   -Function HistorySearchBackward
   Set-PSReadLineKeyHandler -Key DownArrow -Function HistorySearchForward
-  # Tab opens a completion menu (== zsh `menu select`).
   Set-PSReadLineKeyHandler -Key Tab       -Function MenuComplete
-  # Accept the inline prediction without the arrow keys (works in Vi insert mode,
-  # since these aren't vi-motion keys). `End` already accepts the whole suggestion
-  # by default; Ctrl+e is added so the key matches the zsh binding (end-of-line),
-  # and Ctrl+f accepts just the next word. Mirrors the bindkeys in .zshrc.
-  Set-PSReadLineKeyHandler -Key Ctrl+e    -Function AcceptSuggestion
-  Set-PSReadLineKeyHandler -Key Ctrl+f    -Function AcceptNextSuggestionWord
+  # Accept the inline prediction. Ctrl+e accepts the whole suggestion when one is
+  # showing (cursor at end of line), otherwise just jumps to end of line — so it's
+  # both "accept suggestion" and emacs end-of-line in one key. Alt+f accepts the next
+  # word. Same keys as zsh; Ctrl+f stays its emacs default (ForwardChar / move right).
+  Set-PSReadLineKeyHandler -Key Ctrl+e -ScriptBlock {
+    $line = $null; $cursor = 0
+    [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$line, [ref]$cursor)
+    if ($cursor -eq $line.Length) { [Microsoft.PowerShell.PSConsoleReadLine]::AcceptSuggestion($null, $null) }
+    else                          { [Microsoft.PowerShell.PSConsoleReadLine]::EndOfLine($null, $null) }
+  }
+  Set-PSReadLineKeyHandler -Key Alt+f  -Function AcceptNextSuggestionWord
+  # Ctrl+X Ctrl+E: edit the current command in $EDITOR (nvim), bash/readline-style.
+  # Alt+.: insert the previous command's last argument. Both mirror zsh.
+  Set-PSReadLineKeyHandler -Chord 'Ctrl+x,Ctrl+e' -Function ViEditVisually
+  Set-PSReadLineKeyHandler -Key Alt+.     -Function YankLastArg
 
-  # == zsh HIST_IGNORE_SPACE: a leading space keeps a command out of history.
-  # Chain (not replace) the existing default handler so PSReadLine's built-in
-  # sensitive-data filter (tokens/passwords -> never persisted) still runs.
+  # == zsh HIST_IGNORE_SPACE: a leading space keeps a command out of history. Chain
+  # (not replace) the default handler so PSReadLine's sensitive-data filter still runs.
   $defaultAddToHistory = (Get-PSReadLineOption).AddToHistoryHandler
   Set-PSReadLineOption -AddToHistoryHandler ({
     param($line)
@@ -56,112 +59,70 @@ if (Get-Module PSReadLine) {
   }.GetNewClosure())
 }
 
+# ---- Native prompt (replaces starship — no subprocess, ~2ms) ----
+# Shows a ~-abbreviated path, the current git branch, and a > that turns red after a
+# failed command. The branch is read straight from .git/HEAD rather than shelling out
+# to `git` on every draw — that's what keeps the prompt instant. (Plain repos only; a
+# worktree/submodule .git-file just shows no branch, which is fine here.)
+function prompt {
+  $ok = $?
+  $path = $PWD.Path
+  if ($path.StartsWith($HOME, [System.StringComparison]::OrdinalIgnoreCase)) {
+    $path = '~' + $path.Substring($HOME.Length)
+  }
+
+  $branch = ''
+  $dir = $PWD.Path
+  while ($dir) {
+    $head = Join-Path $dir '.git\HEAD'
+    if (Test-Path -LiteralPath $head) {
+      $ref = (Get-Content -LiteralPath $head -Raw).Trim()
+      $branch = if ($ref -like 'ref: refs/heads/*') { $ref.Substring(16) }
+                elseif ($ref)                        { $ref.Substring(0, [Math]::Min(7, $ref.Length)) }
+                else                                 { '' }
+      break
+    }
+    $parent = Split-Path $dir -Parent
+    if ($parent -eq $dir) { break }   # hit the drive root
+    $dir = $parent
+  }
+
+  $e = [char]27
+  $dirPart  = "$e[34m$path$e[0m"                                       # blue path
+  $gitPart  = if ($branch) { " $e[36m$branch$e[0m" } else { '' }        # cyan branch
+  $markPart = if ($ok)     { "$e[32m>$e[0m" }       else { "$e[31m>$e[0m" }  # green/red >
+  "$dirPart$gitPart`n$markPart "
+}
+
 # ---- File-listing colors (Get-ChildItem) ----
-# Tokyo Night file-listing colors — the pwsh counterpart to zsh's `ls --color=auto`
-# (blue dirs / cyan symlinks / green executables). This also overrides PowerShell
-# 7's default $PSStyle.FileInfo.Directory, which is a blue *background* (ESC[44;1m)
-# that renders as ugly solid bars behind folder names.
+# Tokyo Night colors, and override PS7's default blue-background dirs (ugly solid bars).
+# Pure in-process assignment — no startup cost.
 if ($PSStyle) {
   $PSStyle.FileInfo.Directory    = $PSStyle.Bold + $PSStyle.Foreground.FromRgb(0x7aa2f7)  # blue
   $PSStyle.FileInfo.SymbolicLink = $PSStyle.Foreground.FromRgb(0x7dcfff)                   # cyan
   $PSStyle.FileInfo.Executable   = $PSStyle.Foreground.FromRgb(0x9ece6a)                   # green
 }
 
-# ---- Aliases / functions ----
+# ---- Aliases / functions (zero cost, kept for ergonomics) ----
 function ll { Get-ChildItem -Force @args }         # long listing incl. hidden (== zsh `ls -lah`)
 function la { Get-ChildItem -Force -Name @args }   # names only, incl. hidden (== zsh `ls -A`)
 function .. { Set-Location .. }
 function ... { Set-Location ../.. }
 
-# ---- Cached tool init (starship, zoxide) ----
-# `<tool> init powershell` spawns the binary and regenerates the same script every
-# launch (starship alone is ~180ms). Cache it to disk and dot-source the cache;
-# only re-run when the binary is newer than the cache (i.e. after an upgrade).
-function Initialize-Cached {
-  param(
-    [Parameter(Mandatory)] [string] $Name,
-    [string[]] $InitArgs = @('init', 'powershell'),
-    [switch] $Force   # regenerate even if the cache exists (after a binary upgrade)
-  )
-  $cache = Join-Path ([IO.Path]::GetTempPath()) "${Name}_init.ps1"
-  # Warm path: cache already exists -> dot-source it straight away. We deliberately
-  # skip the old `Get-Command` + LastWriteTime freshness check here: that PATH scan
-  # cost ~25ms *every* launch just to detect the rare case of a tool upgrade. Instead
-  # the cache is treated as durable; refresh it explicitly with `Update-ShellCache`
-  # (or per-tool `Initialize-Cached <name> -Force ...`) after upgrading starship/zoxide.
-  if ((Test-Path $cache) -and -not $Force) { . $cache; return }
-  # Cold/forced path: resolve the binary and (re)generate the cache.
-  $exe = (Get-Command $Name -ErrorAction SilentlyContinue)?.Source
-  if (-not $exe) { return }
-  # Generate to a temp file first, then promote it only if the binary succeeded and
-  # produced output. Writing straight to $cache would truncate it before the binary
-  # runs, so a failed/killed init would leave an empty or partial cache that the warm
-  # path then dot-sources on every future launch — silently breaking the prompt until
-  # a manual Update-ShellCache. The temp+move also avoids two parallel launches
-  # interleaving writes to the same cache file.
-  $tmp = "$cache.$PID.tmp"
-  & $exe @InitArgs | Out-File -Encoding utf8 $tmp
-  if ($LASTEXITCODE -eq 0 -and (Test-Path $tmp) -and (Get-Item $tmp).Length -gt 0) {
-    Move-Item -Force $tmp $cache
-    . $cache
-  } else {
-    Remove-Item $tmp -ErrorAction SilentlyContinue
+# ---- zoxide (smarter cd: `z <dir>` frecency jump, `zi` fuzzy pick via fzf) ----
+# `zoxide init` spawns the binary, so cache its output to disk and dot-source the cache;
+# a new WezTerm pane then pays no subprocess. After upgrading zoxide, delete the cache
+# (setup\update.ps1 does this) so the next shell regenerates it from the new binary.
+$zoxideCache = Join-Path ([IO.Path]::GetTempPath()) 'zoxide_init.ps1'
+if (-not (Test-Path $zoxideCache)) {
+  $zoxideExe = (Get-Command zoxide -ErrorAction SilentlyContinue)?.Source
+  if ($zoxideExe) {
+    # Write to a PID-tagged temp first, then promote — so a failed init or two panes
+    # launching at once can't leave a half-written cache that every future shell sources.
+    $tmp = "$zoxideCache.$PID.tmp"
+    & $zoxideExe init powershell | Out-File -Encoding utf8 $tmp
+    if ((Test-Path $tmp) -and (Get-Item $tmp).Length -gt 0) { Move-Item -Force $tmp $zoxideCache }
+    else { Remove-Item $tmp -ErrorAction SilentlyContinue }
   }
 }
-
-# Force-refresh every cached tool init. Run this once after upgrading starship/zoxide
-# (e.g. via scoop/winget) so the cached prompt code picks up the new binary's output.
-function Update-ShellCache {
-  Initialize-Cached starship -Force -InitArgs 'init','powershell','--print-full-init'
-  Initialize-Cached zoxide   -Force
-  Write-Host 'Shell init caches refreshed.' -ForegroundColor Green
-}
-
-# Starship prompt. Use --print-full-init: plain `init powershell` only emits a
-# stub that re-spawns starship.exe at load time, so caching it caches nothing
-# (the binary still runs every tab, ~340ms). --print-full-init emits the real
-# prompt code, which dot-sources from disk in ~85ms with no subprocess.
-Initialize-Cached starship -InitArgs 'init','powershell','--print-full-init'
-# zoxide — smarter cd. `z <dir>` jumps to the most "frecent" match, `zi` picks
-# interactively (needs fzf, which the installer provides). Init AFTER starship so
-# zoxide's prompt hook wraps starship's prompt rather than being overwritten by it.
-Initialize-Cached zoxide
-
-# ---- fzf key-bindings (PSFzf, lazy-loaded) ----
-# Same three keys as zsh's fzf bindings: Ctrl+R fuzzy history, Ctrl+T insert a
-# file/dir path, Alt+C fuzzy-cd — the same keys on both shells. BUT `Import-Module
-# PSFzf` costs ~1s, and this profile reruns on EVERY new WezTerm pane, so importing
-# it eagerly made every split slow. Instead, bind the three keys to stubs that
-# import PSFzf on first use, install PSFzf's real chords (which replace the stubs),
-# then run the action once so the first keypress isn't swallowed. Per-pane cost: ~0;
-# the ~1s import is paid once, on the first fzf keypress of a session. PSFzf is
-# installed by install.ps1 (Install-Module); Ctrl+R falls back to PSReadLine's plain
-# reverse-search if it's missing.
-$script:psfzfReady = $false
-function Initialize-PsFzf {
-  if ($script:psfzfReady) { return $true }
-  if (-not (Get-Module -ListAvailable PSFzf)) { return $false }
-  Import-Module PSFzf
-  Set-PsFzfOption -PSReadlineChordProvider 'Ctrl+t' -PSReadlineChordReverseHistory 'Ctrl+r'
-  # PSFzf has no built-in Alt+C chord; bind fuzzy-cd to match fzf's Alt-C, then
-  # redraw the prompt so the new directory shows immediately.
-  Set-PSReadLineKeyHandler -Key 'Alt+c' -ScriptBlock {
-    Invoke-FuzzySetLocation
-    [Microsoft.PowerShell.PSConsoleReadLine]::InvokePrompt()
-  }
-  $script:psfzfReady = $true
-  return $true
-}
-Set-PSReadLineKeyHandler -Key Ctrl+r -ScriptBlock {
-  if (Initialize-PsFzf) { Invoke-FzfPsReadlineHandlerHistory }
-  else { [Microsoft.PowerShell.PSConsoleReadLine]::ReverseSearchHistory() }
-}
-Set-PSReadLineKeyHandler -Key Ctrl+t -ScriptBlock {
-  if (Initialize-PsFzf) { Invoke-FzfPsReadlineHandlerProvider }
-}
-Set-PSReadLineKeyHandler -Key Alt+c -ScriptBlock {
-  if (Initialize-PsFzf) {
-    Invoke-FuzzySetLocation
-    [Microsoft.PowerShell.PSConsoleReadLine]::InvokePrompt()
-  }
-}
+if (Test-Path $zoxideCache) { . $zoxideCache }

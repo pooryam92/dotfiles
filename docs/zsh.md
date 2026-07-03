@@ -78,22 +78,30 @@ zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'
 ### Keybindings
 
 ```sh
-bindkey -v
+bindkey -e
 bindkey '^[[A' history-search-backward
 bindkey '^[[B' history-search-forward
-bindkey '^E' end-of-line
-bindkey '^F' forward-word
+autoload -Uz edit-command-line; zle -N edit-command-line
+bindkey '^X^E' edit-command-line
+bindkey '^[.' insert-last-word
 ```
 
-- `bindkey -v` — **vi-style modal editing**: you start in insert mode, `Esc` drops
-  to normal mode (the prompt's vi indicator changes via Starship). Matches
-  PowerShell's `EditMode Vi` so both shells edit the same way.
+- `bindkey -e` — **emacs-style line editing**: every edit key is always on, with no
+  mode to track. `Ctrl+A`/`Ctrl+E` jump to start/end, `Ctrl+W` deletes the word
+  behind the cursor, `Ctrl+U` kills the line, `Ctrl+R` searches history. It's zsh's
+  default, set explicitly to match PowerShell's `EditMode Emacs` so both shells edit
+  the same way. (For long commands, `Ctrl+X Ctrl+E` opens `$EDITOR` — see below.)
 - `↑`/`↓` do a **prefix history search**: type `git ` then `↑` to cycle only
   through past commands starting with `git`.
-- `Ctrl+E` / `Ctrl+F` — accept the autosuggestion without the arrow keys:
-  `Ctrl+E` (`end-of-line`) takes the **whole** suggestion, `Ctrl+F` (`forward-word`)
-  takes the **next word**. vi-insert doesn't bind these by default; we add them so
-  the keys are identical on Windows (see [windows.md](windows.md)).
+- `Ctrl+X Ctrl+E` — open the current command line in `$EDITOR` (nvim); save and
+  quit to run it. The readline/bash convention, for anything too long to edit
+  comfortably inline.
+- `Alt+.` — insert the **last argument** of the previous command (repeat to walk
+  further back) — the classic "reuse that path/filename" key.
+- Accepting autosuggestions needs no extra bindings here: `Ctrl+E` (`end-of-line`)
+  takes the **whole** suggestion and `Alt+F` (`forward-word`) the **next word** —
+  both are zsh-autosuggestions' default accept widgets, and the same keys work on
+  Windows (see [windows.md](windows.md)). `Ctrl+F` stays `forward-char` (move right).
 
 ### Aliases
 
@@ -124,7 +132,7 @@ done
 ```
 
 - **autosuggestions** — shows a greyed-out suggestion from history as you type;
-  press `→`, `End`, or `Ctrl+E` to accept the whole thing, or `Ctrl+F` for just
+  press `→`, `End`, or `Ctrl+E` to accept the whole thing, or `Alt+F` for just
   the next word.
 - **syntax-highlighting** — colors your command line as you type (valid commands
   green, unknown red, quotes/paths highlighted). **Must be sourced last**, which
@@ -176,13 +184,13 @@ PSFzf module, so the muscle memory is identical on both shells.
 
 ## Day-to-day usage
 
-- **Accept an autosuggestion:** `→`, `End`, or `Ctrl+E`. Accept one word: `Ctrl+F`.
+- **Accept an autosuggestion:** `→`, `End`, or `Ctrl+E`. Accept one word: `Alt+F`.
 - **Search history fuzzily by prefix:** type a few chars, then `↑`/`↓`.
-- **Move on the line:** `Ctrl+E` jumps to the end; for the rest hit `Esc` for vi
-  normal mode and use motions (`0`/`^` start, `$` end, `w`/`b` word, `i`/`a` back
-  to insert).
+- **Move on the line:** `Ctrl+A`/`Ctrl+E` jump to start/end, `Alt+B`/`Alt+F` by
+  word, `Ctrl+W` deletes the word behind the cursor, `Ctrl+U` kills the line.
+- **Reuse the last command's last argument:** `Alt+.` (repeat for older ones).
 - **Don't record a command:** start it with a leading space.
-- **Edit a long command in `$EDITOR`:** `Ctrl+x Ctrl+e`.
+- **Edit a long command in `$EDITOR`:** `Ctrl+X Ctrl+E`.
 - **Reload config after editing:** `exec zsh`.
 
 ---
@@ -212,13 +220,20 @@ command -v direnv >/dev/null && eval "$(direnv hook zsh)"
 
 ## Cheatsheet
 
+These are the shell-shared editing keys — identical on PowerShell (see the
+cross-shell reference in [shell-editing.md](shell-editing.md)).
+
 | Key            | Action                            |
 | -------------- | --------------------------------- |
 | `→` / `End` / `Ctrl+E` | Accept whole autosuggestion |
-| `Ctrl+F`       | Accept next word of suggestion    |
+| `Alt+F`        | Accept next word of suggestion    |
 | `↑` / `↓`      | Prefix-search history             |
-| `Esc`          | Enter vi normal mode (`0`/`$`/`w`/`b` to move) |
+| `Ctrl+A` / `Ctrl+E` | Jump to start / end of line  |
+| `Alt+B` / `Alt+F`   | Move backward / forward a word |
 | `Ctrl+W`       | Delete word backward              |
+| `Ctrl+U`       | Kill the whole line               |
+| `Alt+.`        | Insert last arg of previous command |
+| `Ctrl+X Ctrl+E`| Edit the command in `$EDITOR` (nvim) |
 | `Ctrl+R`       | Fuzzy reverse-search history (fzf)|
 | `Ctrl+T`       | Insert a file/dir path (fzf)      |
 | `Alt+C`        | Fuzzy-cd into a subdirectory (fzf)|

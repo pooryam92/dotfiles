@@ -1,7 +1,7 @@
 # Install Zed — the GUI editor — Windows, OPT-IN.
 #
 # This is NOT part of install.ps1. install.ps1 manages the terminal/CLI stack
-# (PowerShell 7, WezTerm, Starship, zoxide, Neovim, Claude Code, the Nerd Font…);
+# (PowerShell 7, WezTerm, zoxide, Neovim, Claude Code, the Nerd Font…);
 # Zed is a GUI app, so it installs on its own — mirroring the Linux
 # zed/install-zed.sh. Zed's *config* files are still linked by install.ps1's
 # Invoke-Links (zed/settings.json, zed/keymap.json via links.tsv); only the

@@ -8,6 +8,12 @@ binary, configured with one TOML file, and works the same across any shell.
 zsh hands the prompt to Starship via `eval "$(starship init zsh)"` (see
 [zsh.md](zsh.md)).
 
+> **Linux/zsh only.** On Windows, pwsh uses a small native `prompt` function
+> instead of Starship — Starship shells out to `starship.exe` on every prompt
+> draw (~200ms of lag per command there), so it's dropped from the Windows install
+> for speed. This page applies to the zsh side; see [windows.md](windows.md) for
+> the native prompt.
+
 - Docs / full config reference: <https://starship.rs/config/>
 - All modules: <https://starship.rs/config/#prompt>
 - Your config: `starship/starship.toml` → symlinked to `~/.config/starship.toml`
@@ -137,17 +143,15 @@ style = "bold yellow"
 [character]
 success_symbol = "[❯](bold green)"
 error_symbol = "[❯](bold red)"
-vimcmd_symbol = "[❮](bold yellow)"
 ```
 
 - Green `❯` after a command **succeeds**, red `❯` after one **fails** (instant
   visual feedback on exit codes).
-- `vimcmd_symbol` — a **bold-yellow `❮`** when you're in vi *command/normal* mode
-  (after pressing `Esc`). Both shells run in vi mode (`bindkey -v` in zsh,
-  `EditMode = 'Vi'` in PSReadLine), so this is live. On PowerShell, starship's
-  init repaints the prompt on mode switch via a `ViModeChangeHandler`; in zsh the
-  `zle-keymap-select` hook does it. The yellow color (not just the flipped arrow)
-  is what makes the insert→normal switch obvious at a glance.
+- There's **no `vimcmd_symbol`**: both shells use emacs-style editing (`bindkey -e`
+  in zsh, `EditMode = 'Emacs'` in PSReadLine), so there's no vi normal mode for it
+  to signal. If you ever switch a shell back to vi editing, add
+  `vimcmd_symbol = "[❮](bold yellow)"` here — the color change (not just the flipped
+  arrow) is what makes the insert→normal switch obvious at a glance.
 
 > Note the `[text](style)` syntax — that's Starship's inline styling format used
 > throughout config strings.

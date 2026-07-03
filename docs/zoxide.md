@@ -23,21 +23,24 @@ around. The more you use a directory, the higher it ranks.
 ## How it's wired in this repo
 
 zoxide needs a shell hook that records the current directory on each prompt.
-Both shells initialise it **right after Starship**, so zoxide's prompt hook
-wraps Starship's prompt instead of clobbering it:
+Each shell initialises it after the prompt is set up, so zoxide's prompt hook
+wraps the prompt instead of clobbering it:
 
-- **zsh** (`zsh/.zshrc`):
+- **zsh** (`zsh/.zshrc`) — initialised right after Starship:
 
   ```sh
   command -v zoxide >/dev/null && eval "$(zoxide init zsh)"
   ```
 
-- **PowerShell** (`pwsh/profile.ps1`): initialised through the shared
-  `Initialize-Cached` helper (same disk-cache trick as Starship — the generated
-  init script is cached and only regenerated when the `zoxide` binary is newer):
+- **PowerShell** (`pwsh/profile.ps1`): `zoxide init powershell` spawns the binary,
+  so its output is cached to disk and dot-sourced — a new WezTerm pane then pays no
+  subprocess. `setup\update.ps1` deletes the cache after a zoxide upgrade so the
+  next shell regenerates it:
 
   ```powershell
-  Initialize-Cached zoxide
+  $zoxideCache = Join-Path ([IO.Path]::GetTempPath()) 'zoxide_init.ps1'
+  if (-not (Test-Path $zoxideCache)) { zoxide init powershell | Out-File $zoxideCache }
+  . $zoxideCache
   ```
 
 This adds the `z` and `zi` commands. Your normal `cd` (and the `..`/`...`
@@ -70,7 +73,7 @@ just works. Change the init line to pass `--cmd cd`:
 eval "$(zoxide init zsh --cmd cd)"          # zsh
 ```
 ```powershell
-Initialize-Cached zoxide @('init', 'powershell', '--cmd', 'cd')   # pwsh
+zoxide init powershell --cmd cd | Out-File $zoxideCache   # pwsh: add --cmd cd, then delete the old cache once
 ```
 
 Then `cd dot` jumps the zoxide way and `cdi` is the interactive picker.

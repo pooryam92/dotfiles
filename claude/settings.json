@@ -12,5 +12,5 @@
   },
   "skipWorkflowUsageWarning": true,
   "theme": "dark-ansi",
-  "editorMode": "vim"
+  "editorMode": "normal"
 }

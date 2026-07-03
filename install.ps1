@@ -1,4 +1,4 @@
-# Dotfiles installer for Windows (WezTerm + PowerShell 7 + Starship + Neovim).
+# Dotfiles installer for Windows (WezTerm + PowerShell 7 + Neovim).
 # Counterpart of install.sh. Idempotent: safe to re-run. Existing files are backed up
 # before linking. The managed apps live in setup\tools.tsv (+ a base list in lib.ps1)
 # and the config-link targets in setup\links.tsv; shared actions/helpers in setup\lib.ps1.
@@ -27,20 +27,6 @@ Ensure-Scoop
 Info "Installing packages via scoop…"
 scoop install @(Get-ScoopApps)
 
-# PSFzf — wires fzf into PSReadLine (Ctrl+r/Ctrl+t/Alt+c), matching zsh's fzf keys.
-# It's a PSGallery module, not a scoop app.
-Info "Installing PSFzf module (fzf key-bindings for PSReadLine)…"
-if (-not (Get-Module -ListAvailable PSFzf)) {
-  try {
-    if (-not (Get-PackageProvider -ListAvailable -Name NuGet -ErrorAction SilentlyContinue)) {
-      Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force -Scope CurrentUser | Out-Null
-    }
-    Install-Module PSFzf -Scope CurrentUser -Force -AllowClobber
-  } catch {
-    Warn "PSFzf install failed ($_). Fuzzy Ctrl+r/Ctrl+t/Alt+c stay off until: Install-Module PSFzf"
-  }
-}
-
 # Claude Code — Anthropic's CLI. Not a scoop app; the official installer self-updates
 # afterwards (or .\update.ps1), so only run it when absent. Config linked below.
 Info "Installing Claude Code…"
@@ -60,5 +46,5 @@ Invoke-Links $profilePath
 
 # ---------------------------------------------------------------------------
 Info "Done. Open WezTerm to start using the new setup."
-Info "It launches pwsh with the Starship prompt; Alt+\\ splits, Ctrl+p = pane mode."
+Info "It launches pwsh with the native prompt; Alt+\\ splits, Ctrl+p = pane mode."
 Warn "If configs were COPIED (not linked), enable Developer Mode and re-run for live edits."

@@ -1,8 +1,9 @@
 # Claude Code
 
 [Claude Code](https://docs.claude.com/en/docs/claude-code) is Anthropic's
-terminal coding agent. This repo configures one piece of it: the **status line**
-— the single line shown under the prompt while Claude is working.
+terminal coding agent. This repo version-controls its `settings.json` and adds a
+custom **status line** — the single line shown under the prompt while Claude is
+working.
 
 ```
 4.8    dotfiles    main *   ctx 84k/200k   5h 24%   wk 81%
@@ -46,6 +47,30 @@ forward slashes on Windows and Linux alike, and `statusline.js` lives at the sam
 change in-app with `/config` write *through* it into this repo — so your Claude
 settings are version-controlled and synced across machines, just like every other
 config here. (Claude Code is the source of truth, so commit the changes it makes.)
+
+---
+
+## Input line editing
+
+The prompt where you type to Claude has its own editor mode, set by `editorMode`
+in `settings.json`. We keep it on **`normal`** (readline/emacs-style, always-on
+keys) rather than `vim` — same reasoning as the shell in
+[shell-editing.md](shell-editing.md#why-emacs-mode-not-vi-mode): the input is
+short, and no-mode-to-track beats modal editing over a line or two. Toggle live
+in-session with the `/vim` command; that write persists back into `settings.json`.
+
+The keys are the same emacs bindings as the shell — the ones you'll reach for most:
+
+| Key                 | Action                                   |
+| ------------------- | ---------------------------------------- |
+| `Ctrl+U`            | Delete from cursor to **start** of line  |
+| `Ctrl+K`            | Delete from cursor to **end** of line    |
+| `Ctrl+A` / `Ctrl+E` | Jump to **start** / **end** of line      |
+| `Ctrl+W`            | Delete the word **behind** the cursor    |
+
+To **delete a whole line**: `Ctrl+A` then `Ctrl+K` (or just `Ctrl+U` when the
+cursor is already at the end). See [shell-editing.md](shell-editing.md) for the
+full cheatsheet — it carries over here.
 
 ---
 

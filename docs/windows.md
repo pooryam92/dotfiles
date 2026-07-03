@@ -8,13 +8,20 @@ with two substitutions:
 | Terminal     | WezTerm          | WezTerm *(same config)*          |
 | Multiplexer  | WezTerm built-in | WezTerm built-in *(same config)* |
 | Shell        | zsh              | **PowerShell 7 (pwsh)**          |
-| Prompt       | Starship         | Starship *(same config)*         |
+| Prompt       | Starship         | **native pwsh prompt** *(see below)* |
 | Editor       | Neovim           | Neovim *(same config)*           |
 | IDE editing  | IdeaVim          | IdeaVim *(same `.ideavimrc`)*    |
 
 The **shell is the only real difference** — `pwsh/profile.ps1` is the Windows
 counterpart of `zsh/.zshrc`. Everything else is the identical config file linked
 to a Windows path.
+
+> **Windows prompt is native, not Starship.** Starship shells out to `starship.exe`
+> on *every* prompt draw (~200ms of lag after each command on Windows) plus ~180ms
+> at launch. To keep pwsh fast, the profile uses a small native `prompt` function
+> instead — path + git branch (read from `.git/HEAD`, no `git` subprocess) + a `>`
+> that turns red on failure. zsh on Pop!_OS still uses Starship; mirror the native
+> prompt into `.zshrc` if you want the two shells identical again.
 
 ---
 
@@ -50,16 +57,16 @@ Developer Mode to upgrade copies to links. (The `nvim/` directory uses a
 1. Sets `ExecutionPolicy` for the current user to `RemoteSigned` (so the profile
    loads on future launches).
 2. Bootstraps **scoop** if missing; adds the `extras` and `nerd-fonts` buckets.
-3. Installs: `pwsh`, `neovim`, `starship`, `wezterm`, `fzf` (fuzzy finder —
-   powers `zi` and the PSFzf keys), `win32yank` (nvim clipboard), `zoxide`
-   (smarter `cd`), the **JetBrainsMono Nerd Font**, and the **PSFzf** module.
+3. Installs: `pwsh`, `neovim`, `wezterm`, `fzf` (fuzzy finder — powers `zi`),
+   `win32yank` (nvim clipboard), `zoxide` (smarter `cd`), and the
+   **JetBrainsMono Nerd Font**. (No `starship` on Windows — the profile uses a
+   native prompt — and no `PSFzf`.)
 4. Links the configs to their Windows paths (see below).
 
 ### Config paths on Windows
 
 ```
 wezterm/wezterm.lua    ->  %USERPROFILE%\.config\wezterm\wezterm.lua
-starship/starship.toml ->  %USERPROFILE%\.config\starship.toml
 intellij/.ideavimrc    ->  %USERPROFILE%\.ideavimrc
 nvim/                  ->  %LOCALAPPDATA%\nvim                  (junction)
 pwsh/profile.ps1       ->  $PROFILE.CurrentUserAllHosts         (resolved from pwsh)
@@ -79,16 +86,15 @@ pwsh/profile.ps1       ->  $PROFILE.CurrentUserAllHosts         (resolved from p
 | zsh feature              | PowerShell                                            |
 | ------------------------ | ---------------------------------------------------- |
 | autosuggestions          | `Set-PSReadLineOption -PredictionSource History` (inline ghost text) |
-| accept suggestion        | `Ctrl+E` (whole) / `Ctrl+F` (next word); `End` also works — matches zsh |
+| accept suggestion        | `Ctrl+E` (whole) / `Alt+F` (next word); `End` also works — matches zsh |
 | syntax highlighting      | PSReadLine inline command coloring (built in)        |
 | history dedup            | `-HistoryNoDuplicates -MaximumHistoryCount 50000`    |
 | Up/Down history search   | `HistorySearchBackward/Forward` key handlers         |
-| vi keybindings           | `-EditMode Vi` (matches zsh `bindkey -v`)            |
+| emacs keybindings        | `-EditMode Emacs` (matches zsh `bindkey -e`); `Ctrl+X Ctrl+E` edits the line in `$EDITOR`, `Alt+.` yanks the last arg |
 | `menu select` completion | `Tab` → `MenuComplete`                               |
 | aliases (`ll`,`..`)      | `Set-Alias` + functions                              |
-| starship                 | `Initialize-Cached starship` (cached `init`)         |
-| zoxide (`z`/`zi`)        | `Initialize-Cached zoxide` — see [zoxide.md](zoxide.md) |
-| fzf `Ctrl+R`/`T`, `Alt+C`| **PSFzf** module (Ctrl+R history, Ctrl+T path, Alt+C cd) |
+| starship prompt          | **native `prompt` function** (no subprocess — path + git branch from `.git/HEAD` + red-on-error `>`) |
+| zoxide (`z`/`zi`)        | cached `zoxide init` — see [zoxide.md](zoxide.md)    |
 
 **No multiplexer auto-start.** Panes and tabs are WezTerm's job (direct Alt
 chords — see [wezterm.md](wezterm.md)), so the profile doesn't
@@ -120,7 +126,7 @@ After install, run `:checkhealth` and confirm the **Clipboard** section is green
 
 - **`install.ps1` won't run** — you skipped `-ExecutionPolicy Bypass`, or you're
   not in a real console. Use the exact first-run command above.
-- **Profile didn't load / no Starship prompt** — confirm the link target with
+- **Profile didn't load / no prompt** — confirm the link target with
   `pwsh -NoProfile -Command '$PROFILE.CurrentUserAllHosts'` and check a file is
   linked there. OneDrive redirection is the usual culprit.
 - **Tofu boxes (□)** — set WezTerm's font to `JetBrainsMono Nerd Font` and

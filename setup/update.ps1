@@ -29,8 +29,6 @@ if ($Versions) {
   scoop update | Out-Null
   Info "Installed scoop apps:"
   scoop list
-  $psfzf = Get-Module -ListAvailable PSFzf | Select-Object -First 1
-  if ($psfzf) { Info "PSFzf module: $($psfzf.Version)" }
   $null = Show-Claude
   Info "Claude Code self-updates, so it won't show as outdated in scoop."
   Info "Zed is installed separately (zed\install-zed.ps1) and self-updates too."
@@ -75,19 +73,12 @@ if ([Environment]::UserInteractive -and -not $env:CI) {
 Info "Upgrading managed scoop apps to the latest…"
 scoop update @(Get-ScoopApps)
 
-# Bust the cached shell-init scripts. starship/zoxide cache their `init` output to disk
-# and the profile's warm path (Initialize-Cached in pwsh/profile.ps1) treats that cache
-# as DURABLE — it never re-checks the binary, so an upgraded starship/zoxide would keep
-# running the OLD init shim across restarts until a manual refresh. Deleting the caches
-# here makes the next shell regenerate them from the just-upgraded binaries.
+# Bust the cached zoxide init. The profile caches `zoxide init` output to disk and
+# treats it as DURABLE (it never re-checks the binary), so an upgraded zoxide would
+# keep running the OLD init across restarts. Deleting the cache makes the next shell
+# regenerate it from the just-upgraded binary.
 $tmp = [IO.Path]::GetTempPath()
-Remove-Item (Join-Path $tmp 'starship_init.ps1'), (Join-Path $tmp 'zoxide_init.ps1') -Force -ErrorAction SilentlyContinue
-
-# PSFzf is a PSGallery module, not a scoop app — update it separately.
-if (Get-Module -ListAvailable PSFzf) {
-  Info "Updating PSFzf module…"
-  try { Update-Module PSFzf -Force } catch { Warn "PSFzf update failed ($_)" }
-}
+Remove-Item (Join-Path $tmp 'zoxide_init.ps1') -Force -ErrorAction SilentlyContinue
 
 # Claude Code — native installer, self-updating. `claude update` forces it now.
 if (Get-Command claude -ErrorAction SilentlyContinue) {

@@ -42,15 +42,13 @@ style = "bold red"
 [git_state]
 style = "bold yellow"
 
-# The typed-at symbol. Both shells run in vi mode (zsh `bindkey -v`,
-# PSReadLine `EditMode=Vi`), so the mode cue matters: insert mode is a green/red
-# ❯ (green = last command ok, red = it failed); normal/command mode (after Esc)
-# is a bold-yellow ❮ — the COLOR change, not just the flipped arrow, is what
-# makes the mode switch visible at a glance.
+# The typed-at symbol. Both shells now use emacs-style editing (zsh `bindkey -e`,
+# PSReadLine `EditMode=Emacs`) — no modes — so the arrow only encodes the last exit
+# code: green ❯ = the last command succeeded, red ❯ = it failed. (No `vimcmd_symbol`
+# here anymore: with emacs editing there's no vi normal mode for it to signal.)
 [character]
 success_symbol = "[❯](bold green)"
 error_symbol = "[❯](bold red)"
-vimcmd_symbol = "[❮](bold yellow)"
 
 # Exit code of the last command, shown only on failure, right before the ❯.
 # The red ❯ already flags that something failed; this adds the actual code

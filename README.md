@@ -9,7 +9,7 @@ Windows).
 | ------------ | ------------------------------------------------- |
 | Terminal     | [WezTerm](https://wezfurlong.org/wezterm/) — runs natively on Linux & Windows; also the multiplexer (built-in panes/tabs/splits) |
 | Shell        | zsh (Linux) / [PowerShell 7](https://learn.microsoft.com/powershell/) (Windows) |
-| Prompt       | [Starship](https://starship.rs)                   |
+| Prompt       | [Starship](https://starship.rs) (zsh/Linux) — a native `prompt` function on Windows (kept subprocess-free for speed) |
 | Navigation   | [zoxide](https://github.com/ajeetdsouza/zoxide) — smarter `cd` (`z`/`zi`) |
 | Editor       | [Neovim](https://neovim.io) — minimal single-file config (Tokyo Night) |
 | GUI editor   | [Zed](https://zed.dev) — fast GPU editor, Vim mode + JetBrains Islands Dark (shared `settings.json`/`keymap.json`) |
@@ -27,6 +27,7 @@ in the actual config in this repo:
 
 - [WezTerm](docs/wezterm.md) — the terminal *and* multiplexer: fonts, themes, panes/tabs, the OS branch
 - [zsh](docs/zsh.md) — the shell: history, completion, plugins, aliases
+- [Shell line editing](docs/shell-editing.md) — the shared emacs-style editing keys (same on zsh & PowerShell) + `Ctrl+X Ctrl+E` to edit in nvim
 - [Starship](docs/starship.md) — the prompt: modules, format, styling
 - [zoxide](docs/zoxide.md) — smarter `cd`: jump to frecent dirs with `z`/`zi`
 - [Neovim](docs/nvim.md) — minimal single-file config: sensible defaults, keymaps, Tokyo Night
@@ -59,9 +60,9 @@ powershell -ExecutionPolicy Bypass -File install.ps1
 See [docs/windows.md](docs/windows.md) for prerequisites (Developer Mode for live
 symlinks) and details.
 
-Then open a fresh **WezTerm** window — it launches your shell with the Starship
-prompt. Split with `Alt+\` / `Alt+-`, hop panes with `Alt+h/j/k/l` (see
-[Keybindings](#keybindings) for the full set).
+Then open a fresh **WezTerm** window — it launches your shell (Starship prompt on
+Linux, a fast native prompt on Windows). Split with `Alt+\` / `Alt+-`, hop panes
+with `Alt+h/j/k/l` (see [Keybindings](#keybindings) for the full set).
 
 ## What the installers do
 
@@ -76,10 +77,11 @@ etc.), **WezTerm** (official Fury apt repo), and **Starship**, **zoxide**,
 `sudo` will prompt for your password.
 
 **`install.ps1` (Windows)** uses [scoop](https://scoop.sh) (user-scope, no admin)
-to install **PowerShell 7**, **WezTerm**, **Starship**, **zoxide**, **Neovim**,
-plus `fzf` (fuzzy finder) and `win32yank` (Neovim's clipboard), the Nerd
-Font, and the **PSFzf** module. It also installs **Claude Code** (its own native
-installer, not scoop), then links the configs (including Zed's). See
+to install **PowerShell 7**, **WezTerm**, **zoxide**, **Neovim**, plus `fzf`
+(fuzzy finder, for `zi`) and `win32yank` (Neovim's clipboard), and the Nerd
+Font. It also installs **Claude Code** (its own native installer, not scoop), then
+links the configs (including Zed's). The pwsh profile uses a native prompt rather
+than Starship (kept fast — no per-prompt subprocess). See
 [docs/windows.md](docs/windows.md).
 
 These install the **terminal/CLI stack** only. **Zed** (the GUI editor) is a
@@ -133,7 +135,7 @@ Only `install.sh` / `install.ps1` stay at the repo root as the entry points.
 | Repo file                | Linux target                  | Windows target                          |
 | ------------------------ | ----------------------------- | --------------------------------------- |
 | `wezterm/wezterm.lua`    | `~/.config/wezterm/wezterm.lua` | `%USERPROFILE%\.config\wezterm\wezterm.lua` |
-| `starship/starship.toml` | `~/.config/starship.toml`     | `%USERPROFILE%\.config\starship.toml`   |
+| `starship/starship.toml` | `~/.config/starship.toml`     | — (Windows uses the native pwsh prompt) |
 | `nvim/`                  | `~/.config/nvim`              | `%LOCALAPPDATA%\nvim` (junction)        |
 | `zed/settings.json`      | `~/.config/zed/settings.json` | `%APPDATA%\Zed\settings.json`           |
 | `zed/keymap.json`        | `~/.config/zed/keymap.json`   | `%APPDATA%\Zed\keymap.json`             |
@@ -201,10 +203,16 @@ Almost everything is `Alt+<key>`, because `Alt` is free whereas `Ctrl+h`
 
 ### Shell
 
+Both shells use **emacs-style line editing** (always-on keys, no modes) — same
+bindings on zsh and PowerShell: `Ctrl+A`/`Ctrl+E` (line start/end), `Ctrl+W` (kill
+word), `Alt+.` (last arg), and **`Ctrl+X Ctrl+E`** to edit the command in nvim. Full
+list: [docs/shell-editing.md](docs/shell-editing.md).
+
 Aliases: `ll`/`la`, `..`/`...` (defined in both `zsh/.zshrc` and
 `pwsh/profile.ps1`). Directory jumping: `z <dir>` / `zi <dir>` via
-[zoxide](docs/zoxide.md). Fuzzy keys on both shells: **`Ctrl+R`** history ·
-**`Ctrl+T`** file path · **`Alt+C`** cd (fzf / PSFzf).
+[zoxide](docs/zoxide.md). Fuzzy keys (zsh/Linux): **`Ctrl+R`** history ·
+**`Ctrl+T`** file path · **`Alt+C`** cd (fzf). On Windows, PSReadLine's `Ctrl+R`
+reverse-search covers history; `zi` gives fuzzy dir-jumping.
 
 ## How it fits together
 
@@ -225,7 +233,7 @@ Aliases: `ll`/`la`, `..`/`...` (defined in both `zsh/.zshrc` and
 | ---------------------------- | --------------------------------------------------- |
 | Change font / size / opacity | `wezterm/wezterm.lua`                               |
 | Change pane/tab keybinds     | the `config.keys` block in `wezterm/wezterm.lua`    |
-| Change the prompt            | `starship/starship.toml` (see starship.rs/config)   |
+| Change the prompt            | `starship/starship.toml` (Linux) / the `prompt` function in `pwsh/profile.ps1` (Windows) |
 | Change the Claude status line| `claude/statusline.js` (see [docs/claude.md](docs/claude.md)) |
 | Add aliases / env            | `zsh/.zshrc` (Linux) / `pwsh/profile.ps1` (Windows) |
 | Switch theme                 | `color_scheme` in WezTerm + palette in Starship     |

@@ -19,19 +19,30 @@ autoload -Uz compinit && compinit -d "$HOME/.cache/zcompdump"
 zstyle ':completion:*' menu select
 zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'
 
-# ---- Keybindings (vi) ----
-# `bindkey -v` makes the main keymap vi-insert; Esc -> normal mode. Mode shows in
-# the prompt via starship's vimcmd_symbol. The arrow bindings below run after -v so
-# they bind in the (now vi-insert) keymap and keep working in insert mode.
-bindkey -v
-bindkey '^[[A' history-search-backward
-bindkey '^[[B' history-search-forward
-# Accept the autosuggestion without the arrow keys. end-of-line and forward-word
-# are zsh-autosuggestions' default accept / partial-accept widgets, so binding keys
-# to them is all that's needed: Ctrl+E takes the whole suggestion, Ctrl+F the next
-# word. (vi-insert doesn't bind ^E/^F by default.) Mirrors the PSReadLine keys.
-bindkey '^E' end-of-line
-bindkey '^F' forward-word
+# ---- Keybindings (emacs) ----
+# `bindkey -e` selects emacs-style line editing: every motion/edit key is always on
+# with no mode to track — Ctrl+A/E (start/end), Ctrl+W (kill word back), Ctrl+U
+# (kill line), Ctrl+R (history). It's zsh's default, but we set it explicitly to
+# mirror pwsh's EditMode='Emacs'. For anything long/multi-line, Ctrl+X Ctrl+E drops
+# into $EDITOR (below): instant edits here, full nvim when you actually need it.
+bindkey -e
+bindkey '^[[A' history-search-backward   # Up:   prefix-search history
+bindkey '^[[B' history-search-forward    # Down: prefix-search history
+
+# Ctrl+X Ctrl+E: edit the current command line in $EDITOR (nvim); save+quit runs it.
+# `^X^E` is the readline/bash convention, mirrored on pwsh as ViEditVisually.
+autoload -Uz edit-command-line
+zle -N edit-command-line
+bindkey '^X^E' edit-command-line
+
+# Alt+.: insert the last argument of the previous command (repeat to walk older
+# ones) — readline's classic "reuse that path" key. Mirrors pwsh's YankLastArg.
+bindkey '^[.' insert-last-word
+
+# Accepting autosuggestions needs no extra bindings in emacs mode: Ctrl+E
+# (end-of-line) accepts the whole suggestion and Alt+F (forward-word) the next word
+# — both are zsh-autosuggestions' default accept widgets and the same keys on pwsh.
+# That's why we DON'T rebind Ctrl+F: it stays emacs forward-char (move right).
 
 # ---- Aliases ----
 alias ls='ls --color=auto'
