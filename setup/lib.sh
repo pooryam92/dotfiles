@@ -48,6 +48,24 @@ link() {
   info "linked $dst -> $src"
 }
 
+# Copy a repo file to a target (not a symlink), overwriting whatever is there but
+# backing up a real existing file first. Used for settings.json: the app rewrites it
+# in place (e.g. /model persists to it), and a symlink would push that churn back
+# into the repo. A copy seeds our defaults, then lets the live file diverge locally.
+copy_config() {
+  local src="$1" dst="$2"
+  [ -e "$src" ] || { warn "source missing, skipping: $src"; return; }
+  mkdir -p "$(dirname "$dst")"
+  if [ -L "$dst" ]; then
+    rm "$dst"                               # old symlink into the repo — no data to keep
+  elif [ -e "$dst" ]; then
+    mv "$dst" "$dst.bak.$(date +%s)"
+    warn "backed up existing $dst"
+  fi
+  cp "$src" "$dst"
+  info "copied $dst <- $src"
+}
+
 # Expand the links.tsv destination tokens to real Linux paths.
 expand_dst() {
   local p="$1"
@@ -58,7 +76,9 @@ expand_dst() {
 }
 
 # Link every config in links.tsv (the linux_dst column; "-" means skip on Linux).
-# Linking claude's settings.json means /config edits land in the repo.
+# The `type` column picks the strategy: dir/file symlink live, `copy` seeds a file the
+# app owns afterward (claude's settings.json — kept a copy so /model edits don't churn
+# the repo).
 do_links() {
   info "Linking config files…"
   local src type ldst _w dst
@@ -67,7 +87,11 @@ do_links() {
     [ -z "$src" ] && continue
     [ "$ldst" = '-' ] && continue         # not linked on Linux (e.g. pwsh profile)
     dst="$(expand_dst "$ldst")"
-    link "$DOTFILES/$src" "$dst"
+    if [ "$type" = copy ]; then
+      copy_config "$DOTFILES/$src" "$dst"
+    else
+      link "$DOTFILES/$src" "$dst"
+    fi
   done < "$LIBDIR/links.tsv"
 }
 

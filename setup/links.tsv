@@ -8,4 +8,4 @@ zed/settings.json	file	{CONFIG}/zed/settings.json	{APPDATA}/Zed/settings.json
 zed/keymap.json	file	{CONFIG}/zed/keymap.json	{APPDATA}/Zed/keymap.json
 pwsh/profile.ps1	file	-	{PROFILE}
 claude/statusline.js	file	{CLAUDE}/statusline.js	{CLAUDE}/statusline.js
-claude/settings.json	file	{CLAUDE}/settings.json	{CLAUDE}/settings.json
+claude/settings.json	copy	{CLAUDE}/settings.json	{CLAUDE}/settings.json

@@ -92,6 +92,33 @@ function Link-Config {
   }
 }
 
+# Copy a repo file to a target (not a symlink), overwriting whatever is there but
+# backing up a real existing file first. Used for settings.json: the app rewrites it
+# in place (e.g. /model persists to it), and a symlink would push that churn back into
+# the repo. A copy seeds our defaults, then lets the live file diverge locally.
+function Copy-Config {
+  param(
+    [Parameter(Mandatory)] [string] $Src,
+    [Parameter(Mandatory)] [string] $Dst
+  )
+  if (-not (Test-Path -LiteralPath $Src)) { Warn "source missing, skipping: $Src"; return }
+  $parent = Split-Path -Parent $Dst
+  if (-not (Test-Path $parent)) { New-Item -ItemType Directory -Force -Path $parent | Out-Null }
+
+  $existing = Get-Item -LiteralPath $Dst -Force -ErrorAction SilentlyContinue
+  if ($existing) {
+    if ($existing.LinkType) {
+      Remove-Item -LiteralPath $Dst -Force   # old symlink into the repo — no data to keep
+    } else {
+      $backup = "$Dst.bak." + (Get-Date -Format 'yyyyMMddHHmmss')
+      Move-Item -LiteralPath $Dst -Destination $backup
+      Warn "backed up existing $Dst -> $backup"
+    }
+  }
+  Copy-Item -LiteralPath $Src -Destination $Dst -Force
+  Info "copied $Dst <- $Src"
+}
+
 # Expand the links.tsv destination tokens to real Windows paths. {PROFILE} is the
 # dynamically-resolved pwsh profile path, passed in (see Resolve-ProfilePath).
 function Expand-Dst([string] $p, [string] $ProfilePath) {
@@ -107,15 +134,18 @@ function Expand-Dst([string] $p, [string] $ProfilePath) {
 }
 
 # Link every config in links.tsv (windows_dst column; "-" means skip on Windows).
-# Linking claude's settings.json means /config edits land in the repo.
+# The `type` column picks the strategy: dir/file symlink live, `copy` seeds a file the
+# app owns afterward (claude's settings.json — kept a copy so /model edits don't churn
+# the repo).
 function Invoke-Links([string] $ProfilePath) {
   Info "Linking config files…"
   foreach ($row in Read-Links) {
     if ($row.windows_dst -eq '-') { continue }   # not linked on Windows (e.g. .zshrc)
     $src = Join-Path $DOT ($row.src -replace '/', '\')
     $dst = Expand-Dst $row.windows_dst $ProfilePath
-    if ($row.type -eq 'dir') { Link-Config $src $dst -Directory }
-    else                     { Link-Config $src $dst }
+    if     ($row.type -eq 'dir')  { Link-Config $src $dst -Directory }
+    elseif ($row.type -eq 'copy') { Copy-Config $src $dst }
+    else                          { Link-Config $src $dst }
   }
 }
 
