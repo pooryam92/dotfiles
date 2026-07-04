@@ -1,6 +1,5 @@
 src	type	linux_dst	windows_dst
 wezterm/wezterm.lua	file	{CONFIG}/wezterm/wezterm.lua	{CONFIG}/wezterm/wezterm.lua
-starship/starship.toml	file	{CONFIG}/starship.toml	-
 zsh/.zshrc	file	{HOME}/.zshrc	-
 intellij/.ideavimrc	file	{HOME}/.ideavimrc	{HOME}/.ideavimrc
 nvim	dir	{CONFIG}/nvim	{LOCALAPPDATA}/nvim

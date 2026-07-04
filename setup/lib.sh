@@ -119,7 +119,19 @@ gh_latest() {
     "https://github.com/$1/releases/latest" 2>/dev/null)" || return 0
   printf '%s' "${url##*/tag/}"
 }
-apt_candidate() { apt-cache policy "$1" 2>/dev/null | awk '/Candidate:/{print $2}'; }
+# Build date (YYYYMMDD) of a repo's latest nightly — nightly is a rolling tag that
+# /releases/latest never redirects to, so read the newest asset timestamp instead.
+gh_nightly_date() {
+  curl -fsSL "https://api.github.com/repos/$1/releases/tags/nightly" 2>/dev/null \
+    | grep -o '"updated_at": *"[^"]*"' | grep -oE '[0-9]{4}-[0-9]{2}-[0-9]{2}' \
+    | sort | tail -1 | tr -d '-'
+}
+# Strip the epoch and Debian revision ("1:14.1.0-1build1" → "14.1.0") so the apt
+# candidate compares against what the binary's --version reports.
+apt_candidate() {
+  apt-cache policy "$1" 2>/dev/null | awk '/Candidate:/{print $2}' \
+    | sed 's/^[0-9]*://; s/-.*$//'
+}
 npm_latest() {
   curl -fsSL "https://registry.npmjs.org/$1/latest" 2>/dev/null \
     | grep -o '"version":"[^"]*"' | head -1 | cut -d'"' -f4
@@ -130,7 +142,7 @@ norm() { printf '%s' "${1#v}"; }
 
 # Generic version reader: from line 1 of `<bin> --version`, take the first
 # whitespace-delimited token containing a digit. Works across every format we have —
-# starship/zoxide "tool 1.2.3", nvim "NVIM v0.12.3",
+# zoxide/fd/rg/bat "tool 1.2.3", nvim "NVIM v0.12.3",
 # wezterm "wezterm 20240203-110809-…" (date-based), claude "2.1.195 (Claude Code)".
 detect_version() {
   "$1" --version 2>/dev/null | head -1 \
@@ -147,9 +159,10 @@ installed_version() {
 latest_version() {
   local src; src="$(tool_col "$1" 2)"
   case "$src" in
-    apt:*) apt_candidate "${src#apt:}" ;;
-    gh:*)  gh_latest    "${src#gh:}" ;;
-    npm:*) npm_latest   "${src#npm:}" ;;
+    apt:*)     apt_candidate   "${src#apt:}" ;;
+    gh:*)      gh_latest       "${src#gh:}" ;;
+    nightly:*) gh_nightly_date "${src#nightly:}" ;;
+    npm:*)     npm_latest      "${src#npm:}" ;;
   esac
 }
 changelog_url() { tool_col "$1" 4; }
@@ -175,6 +188,12 @@ is_behind() {
   [ -z "$3" ]        && return 1   # couldn't fetch latest
   [ "$2" = present ] && return 1   # font: version not detectable
   [ "$2" = "$3" ]    && return 1   # same version
+  # Nightly tools: latest is a bare build date (YYYYMMDD); compare it against the
+  # date prefix of the installed version (wezterm: "20260703-110809-<sha>").
+  case "$3" in
+    [0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9])
+      [ "${2%%-*}" -ge "$3" ] 2>/dev/null && return 1 ;;
+  esac
   return 0
 }
 
@@ -182,29 +201,35 @@ is_behind() {
 # Each fetch_* forces the tool to its latest (used by `update`). Each install_*
 # is the install-once guard around it (used by `install`).
 
-# WezTerm via the official Fury APT repo (handles future updates via apt; amd64 +
-# arm64). See https://wezfurlong.org/wezterm/install/linux.html
+# WezTerm — nightly .deb from GitHub. Upstream hasn't tagged a release since 20240203
+# (the Fury APT repo is frozen there), and that build has an initial-configure bug
+# under niri that needed a window-rule workaround; nightly is the maintained channel.
+# Windows mirrors this with scoop's wezterm-nightly. Asset names track the Ubuntu
+# base, which Pop!_OS VERSION_ID matches (24.04 → Ubuntu24.04).
 fetch_wezterm() {
-  curl -fsSL https://apt.fury.io/wez/gpg.key \
-    | sudo gpg --yes --dearmor -o /usr/share/keyrings/wezterm-fury.gpg
-  sudo chmod 644 /usr/share/keyrings/wezterm-fury.gpg
-  echo 'deb [signed-by=/usr/share/keyrings/wezterm-fury.gpg] https://apt.fury.io/wez/ * *' \
-    | sudo tee /etc/apt/sources.list.d/wezterm.list >/dev/null
-  sudo apt-get update -y
-  sudo apt-get install -y wezterm
+  local os_ver suffix deb
+  os_ver="$(. /etc/os-release && printf '%s' "$VERSION_ID")"
+  case "$ARCH" in
+    amd64) suffix="" ;;
+    arm64) suffix=".arm64" ;;
+    *) warn "No WezTerm nightly build for arch '$ARCH'; skipping (see https://github.com/wezterm/wezterm/releases)"; return ;;
+  esac
+  deb="$(mktemp --suffix=.deb)"   # unpredictable temp name, like fetch_nvim
+  curl -fL "https://github.com/wezterm/wezterm/releases/download/nightly/wezterm-nightly.Ubuntu${os_ver}${suffix}.deb" \
+    -o "$deb"
+  sudo apt-get install -y "$deb"  # local-file install; resolves deps unlike dpkg -i
+  rm -f "$deb"
+  # One-time cleanup: drop the Fury APT source earlier installs used, so apt stops
+  # polling a repo that's frozen at 20240203.
+  sudo rm -f /etc/apt/sources.list.d/wezterm.list /usr/share/keyrings/wezterm-fury.gpg
 }
 install_wezterm() {
   if command -v wezterm >/dev/null; then info "wezterm already installed ($(wezterm --version))"
   else info "Installing WezTerm…"; fetch_wezterm; fi
 }
 
-# Starship / zoxide — official installers always fetch latest and overwrite, so the
+# zoxide — the official installer always fetches latest and overwrites, so the
 # same fetch doubles as the upgrade path.
-fetch_starship() { curl -fsSL https://starship.rs/install.sh | sh -s -- -y -b "$BIN"; }
-install_starship() {
-  if command -v starship >/dev/null; then info "starship already installed ($(starship --version | head -1))"
-  else info "Installing Starship…"; fetch_starship; fi
-}
 fetch_zoxide() {
   curl -fsSL https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh \
     | sh -s -- --bin-dir "$BIN"
@@ -212,6 +237,27 @@ fetch_zoxide() {
 install_zoxide() {
   if command -v zoxide >/dev/null; then info "zoxide already installed ($(zoxide --version))"
   else info "Installing zoxide…"; fetch_zoxide; fi
+}
+
+# fd / ripgrep / bat — apt-packaged and current enough on 24.04, so no GitHub
+# downloads. Ubuntu renames two of the binaries to dodge old name clashes
+# (fd→fdfind, bat→batcat); symlink the real names into ~/.local/bin so the shell
+# config (fzf wiring) and muscle memory can use `fd`/`bat` like everywhere else.
+# Updates ride the apt --only-upgrade line in install.sh's do_upgrades.
+fetch_fd()  { sudo apt-get install -y fd-find; ln -sf "$(command -v fdfind)" "$BIN/fd"; }
+install_fd() {
+  if command -v fd >/dev/null; then info "fd already installed ($(fd --version))"
+  else info "Installing fd…"; fetch_fd; fi
+}
+fetch_rg()  { sudo apt-get install -y ripgrep; }
+install_rg() {
+  if command -v rg >/dev/null; then info "ripgrep already installed ($(rg --version | head -1))"
+  else info "Installing ripgrep…"; fetch_rg; fi
+}
+fetch_bat() { sudo apt-get install -y bat; ln -sf "$(command -v batcat)" "$BIN/bat"; }
+install_bat() {
+  if command -v bat >/dev/null; then info "bat already installed ($(bat --version))"
+  else info "Installing bat…"; fetch_bat; fi
 }
 
 # Neovim — apt ships an old build (0.9.x); the nvim config needs 0.12+ (vim.pack), so
@@ -246,13 +292,14 @@ install_nvim() {
     info "Installing Neovim…"; fetch_nvim
   fi
 }
-# NOTE: the nvim config is colorscheme-only (no treesitter/Telescope), so the
-# tree-sitter CLI, ripgrep and fd are intentionally NOT installed — add them back if
-# you grow the nvim config (see docs/nvim.md). install.ps1 mirrors this.
+# NOTE: the nvim config is colorscheme-only (no treesitter/Telescope) and stays that
+# way by design — nvim's job here is quick edits, commit messages, and Ctrl+X Ctrl+E;
+# Zed/JetBrains carry project editing (see nvim/README.md). fd/rg/bat above are for the
+# SHELL (fzf wiring), not nvim; only the tree-sitter CLI remains uninstalled.
 
 # keyd — remaps keys at the evdev layer, so it works under any compositor (niri,
 # cosmic-comp), X11, and the TTY. Used for CapsLock→Esc/Ctrl and LeftCtrl→Super (this
-# laptop's Super key is physically dead — see docs/keyd.md). Not packaged for Pop!_OS
+# laptop's Super key is physically dead — see keyd/README.md). Not packaged for Pop!_OS
 # 24.04, so build from source like Neovim. In tools.tsv it's manage=install,
 # platform=linux: install-once (never force-updated) and skipped on Windows (PowerToys
 # Keyboard Manager covers it there).

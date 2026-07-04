@@ -30,7 +30,7 @@ function Read-Tools { Import-Csv -Delimiter "`t" -Path (Join-Path $LIB 'tools.ts
 function Read-Links { Import-Csv -Delimiter "`t" -Path (Join-Path $LIB 'links.tsv') }
 
 # Scoop app list = base apps + every tool with a scoop_pkg ("-" = native, e.g. claude).
-# Skip Linux-only tools (platform=linux, e.g. starship — Windows uses a native prompt).
+# Skip Linux-only tools (platform=linux, e.g. keyd — PowerToys covers remapping).
 function Get-ScoopApps {
   $toolPkgs = Read-Tools |
               Where-Object { $_.scoop_pkg -and $_.scoop_pkg -ne '-' -and $_.platform -ne 'linux' } |

@@ -9,8 +9,9 @@ Windows).
 | ------------ | ------------------------------------------------- |
 | Terminal     | [WezTerm](https://wezfurlong.org/wezterm/) — runs natively on Linux & Windows; also the multiplexer (built-in panes/tabs/splits) |
 | Shell        | zsh (Linux) / [PowerShell 7](https://learn.microsoft.com/powershell/) (Windows) |
-| Prompt       | [Starship](https://starship.rs) (zsh/Linux) — a native `prompt` function on Windows (kept subprocess-free for speed) |
+| Prompt       | native prompt functions on **both** shells — same layout/colors, zero subprocesses per draw (path + git branch + red-on-error `>`) |
 | Navigation   | [zoxide](https://github.com/ajeetdsouza/zoxide) — smarter `cd` (`z`/`zi`) |
+| Search       | [fzf](https://github.com/junegunn/fzf) (fuzzy picker: `Ctrl+R/T`, `Alt+C`) + [fd](https://github.com/sharkdp/fd) (fast `find`) + [ripgrep](https://github.com/BurntSushi/ripgrep) (search file contents) + [bat](https://github.com/sharkdp/bat) (previews) |
 | Editor       | [Neovim](https://neovim.io) — minimal single-file config (Tokyo Night) |
 | GUI editor   | [Zed](https://zed.dev) — fast GPU editor, Vim mode + JetBrains Islands Dark (shared `settings.json`/`keymap.json`) |
 | IDE editing  | [IdeaVim](https://github.com/JetBrains/ideavim) — Vim plugin for JetBrains IDEs (`.ideavimrc`) |
@@ -25,16 +26,16 @@ Windows).
 In-depth, beginner-friendly guides to using and configuring each tool — grounded
 in the actual config in this repo:
 
-- [WezTerm](docs/wezterm.md) — the terminal *and* multiplexer: fonts, themes, panes/tabs, the OS branch
-- [zsh](docs/zsh.md) — the shell: history, completion, plugins, aliases
+- [WezTerm](wezterm/README.md) — the terminal *and* multiplexer: fonts, themes, panes/tabs, the OS branch
+- [zsh](zsh/README.md) — the shell: history, completion, plugins, aliases
 - [Shell line editing](docs/shell-editing.md) — the shared emacs-style editing keys (same on zsh & PowerShell) + `Ctrl+X Ctrl+E` to edit in nvim
-- [Starship](docs/starship.md) — the prompt: modules, format, styling
+- [fzf + fd + rg + bat](docs/fzf.md) — fuzzy finding: `Ctrl+R` history, `Ctrl+T` files (with previews), `Alt+C` cd, `rg` content search
 - [zoxide](docs/zoxide.md) — smarter `cd`: jump to frecent dirs with `z`/`zi`
-- [Neovim](docs/nvim.md) — minimal single-file config: sensible defaults, keymaps, Tokyo Night
-- [Zed](docs/zed.md) — the GUI editor: Vim mode, JetBrains Islands Dark theme, fonts, keymap (**opt-in install**: `zed/install-zed.{sh,ps1}`)
-- [IdeaVim](docs/ideavim.md) — Vim in JetBrains IDEs: leader maps, IDE actions
-- [Claude Code](docs/claude.md) — the AI agent: themed status line, synced settings
-- [COSMIC on niri](docs/niri.md) — **opt-in, Linux-only**: COSMIC's shell on a scrollable-tiling compositor (`niri/install-cosmic-niri.sh`)
+- [Neovim](nvim/README.md) — minimal single-file config: sensible defaults, keymaps, Tokyo Night
+- [Zed](zed/README.md) — the GUI editor: Vim mode, JetBrains Islands Dark theme, fonts, keymap (**opt-in install**: `zed/install-zed.{sh,ps1}`)
+- [IdeaVim](intellij/README.md) — Vim in JetBrains IDEs: leader maps, IDE actions
+- [Claude Code](claude/README.md) — the AI agent: themed status line, synced settings
+- [COSMIC on niri](niri/README.md) — **opt-in, Linux-only**: COSMIC's shell on a scrollable-tiling compositor (`niri/install-cosmic-niri.sh`)
 - [Windows](docs/windows.md) — **native Windows setup**: scoop, PowerShell profile, paths
 
 ## Quick start
@@ -60,8 +61,8 @@ powershell -ExecutionPolicy Bypass -File install.ps1
 See [docs/windows.md](docs/windows.md) for prerequisites (Developer Mode for live
 symlinks) and details.
 
-Then open a fresh **WezTerm** window — it launches your shell (Starship prompt on
-Linux, a fast native prompt on Windows). Split with `Alt+\` / `Alt+-`, hop panes
+Then open a fresh **WezTerm** window — it launches your shell with the same fast
+native prompt on both OSes. Split with `Alt+\` / `Alt+-`, hop panes
 with `Alt+h/j/k/l` (see [Keybindings](#keybindings) for the full set).
 
 ## What the installers do
@@ -69,19 +70,18 @@ with `Alt+h/j/k/l` (see [Keybindings](#keybindings) for the full set).
 Both are **idempotent** — safe to re-run. Anything already at a target path is
 backed up to `<file>.bak.<timestamp>` before linking.
 
-**`install.sh` (Linux)** installs apt packages (`zsh`, `git`, `fzf`, plugins,
-etc.), **WezTerm** (official Fury apt repo), and **Starship**, **zoxide**,
+**`install.sh` (Linux)** installs apt packages (`zsh`, `git`, `fzf`, `fd`,
+`ripgrep`, `bat`, plugins, etc.), **WezTerm** (nightly .deb), and **zoxide**,
 **Neovim**, and **Claude Code** (official installers) as user binaries in
 `~/.local/bin`. It installs the **JetBrainsMono Nerd Font**, symlinks the configs
 (including Zed's), and sets **zsh** as the login shell (`chsh`). Steps using
 `sudo` will prompt for your password.
 
 **`install.ps1` (Windows)** uses [scoop](https://scoop.sh) (user-scope, no admin)
-to install **PowerShell 7**, **WezTerm**, **zoxide**, **Neovim**, plus `fzf`
-(fuzzy finder, for `zi`) and `win32yank` (Neovim's clipboard), and the Nerd
-Font. It also installs **Claude Code** (its own native installer, not scoop), then
-links the configs (including Zed's). The pwsh profile uses a native prompt rather
-than Starship (kept fast — no per-prompt subprocess). See
+to install **PowerShell 7**, **WezTerm**, **zoxide**, **Neovim**, **fd**,
+**ripgrep**, **bat**, plus `fzf` (fuzzy finder) and `win32yank` (Neovim's
+clipboard), and the Nerd Font. It also installs **Claude Code** (its own native
+installer, not scoop), then links the configs (including Zed's). See
 [docs/windows.md](docs/windows.md).
 
 These install the **terminal/CLI stack** only. **Zed** (the GUI editor) is a
@@ -111,15 +111,16 @@ updater via subcommands:
 ```
 
 `check` answers "what needs updating?" at a glance. A plain `update` first **shows
-you the jump** (`starship 1.25.1 → 1.26.0`) with a **release-notes link** for each
+you the jump** (`zoxide 0.9.6 → 0.9.8`) with a **release-notes link** for each
 tool, flags **major / 0.x-minor bumps with ⚠** (the ones most likely to break
 something), and asks before changing anything — so you can read the changelog
 first. Afterwards it prints a summary of exactly what moved.
 
 These track *latest* rather than pinning versions (goal: stay simple) — the preview
-lets you eyeball drift and breaking changes first. WezTerm (Linux) and Claude Code
-self-update on their own (as does Zed, installed separately); Neovim's plugins
-update from inside nvim with `:lua vim.pack.update()`.
+lets you eyeball drift and breaking changes first. WezTerm tracks the **nightly**
+channel on both OSes (upstream hasn't tagged a release since 2024; nightly is the
+maintained one). Claude Code self-updates on its own (as does Zed, installed
+separately); Neovim's plugins update from inside nvim with `:lua vim.pack.update()`.
 
 ## Layout
 
@@ -136,7 +137,6 @@ Only `install.sh` / `install.ps1` stay at the repo root as the entry points.
 | Repo file                | Linux target                  | Windows target                          |
 | ------------------------ | ----------------------------- | --------------------------------------- |
 | `wezterm/wezterm.lua`    | `~/.config/wezterm/wezterm.lua` | `%USERPROFILE%\.config\wezterm\wezterm.lua` |
-| `starship/starship.toml` | `~/.config/starship.toml`     | — (Windows uses the native pwsh prompt) |
 | `nvim/`                  | `~/.config/nvim`              | `%LOCALAPPDATA%\nvim` (junction)        |
 | `zed/settings.json`      | `~/.config/zed/settings.json` | `%APPDATA%\Zed\settings.json`           |
 | `zed/keymap.json`        | `~/.config/zed/keymap.json`   | `%APPDATA%\Zed\keymap.json`             |
@@ -151,7 +151,6 @@ After editing:
 
 - **WezTerm** – auto-reloads on save (`ctrl+shift+r` forces it).
 - **zsh** – `exec zsh` (or open a new shell). **PowerShell** – `. $PROFILE`.
-- **Starship** – picked up on the next prompt.
 - **Neovim** – restart `nvim` (plugins via `:lua vim.pack.update()`).
 - **Zed** – applies settings/keymap edits on save; no reload.
 
@@ -211,9 +210,10 @@ list: [docs/shell-editing.md](docs/shell-editing.md).
 
 Aliases: `ll`/`la`, `..`/`...` (defined in both `zsh/.zshrc` and
 `pwsh/profile.ps1`). Directory jumping: `z <dir>` / `zi <dir>` via
-[zoxide](docs/zoxide.md). Fuzzy keys (zsh/Linux): **`Ctrl+R`** history ·
-**`Ctrl+T`** file path · **`Alt+C`** cd (fzf). On Windows, PSReadLine's `Ctrl+R`
-reverse-search covers history; `zi` gives fuzzy dir-jumping.
+[zoxide](docs/zoxide.md). Fuzzy keys on **both** shells: **`Ctrl+T`** insert a
+file path (fd-fed, bat preview) · **`Alt+C`** fuzzy-cd · **`Ctrl+R`** history
+(fzf on zsh, PSReadLine's reverse-search on pwsh). Search file contents with
+`rg <pattern>`. Details: [docs/fzf.md](docs/fzf.md).
 
 ## How it fits together
 
@@ -225,8 +225,8 @@ reverse-search covers history; `zi` gives fuzzy dir-jumping.
   by direct `Alt` chords in `wezterm.lua`. There's no separate multiplexer
   process to start, and the same keybinds work identically on both platforms.
 - Tokyo Night is configured natively in WezTerm (built-in scheme); Neovim uses
-  `folke/tokyonight.nvim` and Starship uses ANSI named colors that follow the
-  terminal palette — no theme files to install.
+  `folke/tokyonight.nvim`, and the shell prompts use ANSI named colors that follow
+  the terminal palette — no theme files to install.
 
 ## Customizing
 
@@ -234,10 +234,10 @@ reverse-search covers history; `zi` gives fuzzy dir-jumping.
 | ---------------------------- | --------------------------------------------------- |
 | Change font / size / opacity | `wezterm/wezterm.lua`                               |
 | Change pane/tab keybinds     | the `config.keys` block in `wezterm/wezterm.lua`    |
-| Change the prompt            | `starship/starship.toml` (Linux) / the `prompt` function in `pwsh/profile.ps1` (Windows) |
-| Change the Claude status line| `claude/statusline.js` (see [docs/claude.md](docs/claude.md)) |
+| Change the prompt            | the prompt block in `zsh/.zshrc` (Linux) / the `prompt` function in `pwsh/profile.ps1` (Windows) |
+| Change the Claude status line| `claude/statusline.js` (see [claude/README.md](claude/README.md)) |
 | Add aliases / env            | `zsh/.zshrc` (Linux) / `pwsh/profile.ps1` (Windows) |
-| Switch theme                 | `color_scheme` in WezTerm + palette in Starship     |
+| Switch theme                 | `color_scheme` in WezTerm (prompts follow the terminal palette) |
 
 ## Troubleshooting
 

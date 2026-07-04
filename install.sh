@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Dotfiles front door for Pop!_OS / Ubuntu — installs AND updates the terminal/CLI
-# stack (WezTerm + zsh + Starship + Neovim + zoxide + Claude Code + font + keyd).
+# stack (WezTerm + zsh + Neovim + zoxide + fd/rg/bat + Claude Code + font + keyd).
 # Windows uses install.ps1 instead. The managed tools live in setup/tools.tsv, the
 # config-link targets in setup/links.tsv, and the shared actions/helpers in setup/lib.sh.
 #
@@ -105,15 +105,16 @@ cmd_versions() {
 }
 
 do_upgrades() {
-  # apt-managed (includes WezTerm via its Fury repo). --only-upgrade so we don't
-  # newly pull anything install chose to leave out.
+  # apt-managed. --only-upgrade so we don't newly pull anything install chose to
+  # leave out.
   info "Upgrading apt packages (needs sudo)…"
   sudo apt-get update -y
-  sudo apt-get install --only-upgrade -y "${BASE_APT[@]}" wezterm
+  sudo apt-get install --only-upgrade -y "${BASE_APT[@]}" fd-find ripgrep bat
 
-  # Starship / zoxide / Neovim / font — official installers / tarball always fetch
+  # WezTerm / zoxide / Neovim / font — installers / release downloads always fetch
   # latest and overwrite (the fetch_* helpers in lib.sh, shared with install).
-  info "Upgrading Starship…"; fetch_starship
+  # WezTerm tracks the nightly channel — see fetch_wezterm for why.
+  info "Upgrading WezTerm…";  fetch_wezterm
   info "Upgrading zoxide…";   fetch_zoxide
   info "Upgrading Neovim…";   fetch_nvim
   info "Upgrading JetBrainsMono Nerd Font…"; fetch_font

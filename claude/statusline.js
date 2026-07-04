@@ -9,11 +9,11 @@
 // itself runs on it), so a single script serves every OS — no shell fork.
 //
 // Why ANSI *named* colors (\x1b[36m) instead of Tokyo Night hex codes? Same
-// reason starship.toml uses "bold cyan" rather than "#7aa2f7": named colors
-// resolve against the terminal's own palette, which WezTerm sets to Tokyo
-// Night. Switch the terminal theme and this bar follows automatically — no
-// color values to keep in sync. Glyphs/colors mirror starship.toml so the
-// status line reads as an extension of the shell prompt.
+// reason the shell prompts use named colors: they resolve against the
+// terminal's own palette, which WezTerm sets to Tokyo Night. Switch the
+// terminal theme and this bar follows automatically — no color values to keep
+// in sync. Glyphs/colors mirror the shell prompts so the status line reads as
+// an extension of them.
 
 const { execFileSync } = require('node:child_process');
 const os = require('node:os');
@@ -40,7 +40,7 @@ function fmtTokens(n) {
 
 // --- path display ----------------------------------------------------------
 // Show the directory relative to the project root (its basename as the head),
-// mirroring starship's truncate_to_repo. Outside the project, collapse $HOME
+// (truncate-to-repo style). Outside the project, collapse $HOME
 // to ~ and keep the last few segments.
 const norm = (p) => (p || '').replace(/\\/g, '/').replace(/\/+$/, '');
 function dirSegment(current, project, home) {
@@ -67,7 +67,7 @@ function gitInfo(cwd) {
       cwd,
       encoding: 'utf8',
       stdio: ['ignore', 'pipe', 'ignore'],
-      timeout: 1000, // mirror starship.toml command_timeout so both bars agree on slow repos
+      timeout: 1000, // keep the bar snappy on slow repos
     });
     const lines = out.split('\n');
     const head = lines[0] || '';
@@ -119,10 +119,10 @@ function render(input) {
   }
   segments.push(model);
 
-  // Directory — project-relative, cyan (matches starship [directory]).
+  // Directory — project-relative, cyan (matches the shell prompts).
   segments.push(cyan(dirSegment(cwd, ws.project_dir, home)));
 
-  // Git —  branch in purple (matches starship git_branch), red * if dirty.
+  // Git — branch in purple, red * if dirty.
   const git = gitInfo(cwd);
   if (git) {
     segments.push(purple(' ' + git.branch) + (git.dirty ? red(' *') : ''));

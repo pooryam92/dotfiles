@@ -1,7 +1,9 @@
 name	linux_source	scoop_pkg	changelog_url	desc	manage	platform
-wezterm	apt:wezterm	wezterm	https://wezfurlong.org/wezterm/changelog.html	terminal; apt via Fury repo	both	both
-starship	gh:starship/starship	starship	https://github.com/starship/starship/releases	prompt (Linux/zsh only; Windows uses a native pwsh prompt)	both	linux
+wezterm	nightly:wezterm/wezterm	wezterm-nightly	https://wezfurlong.org/wezterm/changelog.html	terminal; nightly channel (GitHub .deb / scoop extras)	both	both
 zoxide	gh:ajeetdsouza/zoxide	zoxide	https://github.com/ajeetdsouza/zoxide/releases	smarter cd	both	both
+fd	apt:fd-find	fd	https://github.com/sharkdp/fd/releases	modern find; feeds fzf Ctrl+T/Alt+C	both	both
+rg	apt:ripgrep	ripgrep	https://github.com/BurntSushi/ripgrep/releases	search inside files (grep, but fast + .gitignore-aware)	both	both
+bat	apt:bat	bat	https://github.com/sharkdp/bat/releases	cat with syntax highlighting; fzf preview pane	both	both
 nvim	gh:neovim/neovim	neovim	https://github.com/neovim/neovim/releases	editor; needs 0.12+	both	both
 font	gh:ryanoasis/nerd-fonts	JetBrainsMono-NF	https://github.com/ryanoasis/nerd-fonts/releases	Nerd Font; version not detectable	both	both
 claude	npm:@anthropic-ai/claude-code	-	https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md	Anthropic CLI; native, self-updates	both	both

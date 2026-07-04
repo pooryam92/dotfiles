@@ -64,5 +64,5 @@ Wired on both shells (zsh via `fzf --zsh`; Windows PSReadLine ships `Ctrl+R`):
   runs PSReadLine's `ViEditVisually`, which honors `$env:EDITOR`.
 - Reload after editing a config: **zsh** `exec zsh` · **pwsh** `. $PROFILE`.
 
-See also: [zsh.md](zsh.md) (Linux shell in full), [windows.md](windows.md) (the
-PowerShell profile), and the WezTerm pane/tab keys in [wezterm.md](wezterm.md).
+See also: [zsh.md](../zsh/README.md) (Linux shell in full), [windows.md](windows.md) (the
+PowerShell profile), and the WezTerm pane/tab keys in [wezterm.md](../wezterm/README.md).

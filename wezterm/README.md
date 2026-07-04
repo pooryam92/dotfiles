@@ -5,7 +5,7 @@ window that draws text, handles fonts/colors, and runs your shell. It's
 GPU-accelerated, cross-platform (Linux, macOS, **Windows**), and configured with
 a single Lua file. It's also the **multiplexer**: panes, tabs, and splits are
 built in (driven by the `Alt` chords below — no modes, no leader), so there's no
-separate Zellij/tmux layer. Everything else in this setup (your shell, Starship)
+separate Zellij/tmux layer. Everything else in this setup (your shell, the prompt)
 runs *inside* WezTerm.
 
 > This replaces Ghostty. WezTerm was chosen because it runs natively on **both
@@ -16,6 +16,13 @@ runs *inside* WezTerm.
 - Config reference: <https://wezfurlong.org/wezterm/config/files.html>
 - Your config: `wezterm/wezterm.lua` → linked to `~/.config/wezterm/wezterm.lua`
   (same path on Linux and Windows; on Windows `~` is `%USERPROFILE%`).
+
+> **Version channel: nightly, on both OSes.** Upstream hasn't tagged a stable
+> release since `20240203`, and that build had Wayland bugs under niri (it needed
+> a window-rule workaround in `niri/config.kdl`, since removed). Linux installs
+> the nightly `.deb` from GitHub (`fetch_wezterm` in `setup/lib.sh`); Windows uses
+> scoop's `wezterm-nightly`. `install.sh update` / `install.ps1 update` move both
+> forward.
 
 ---
 
@@ -45,8 +52,9 @@ config.font = wezterm.font 'JetBrainsMono Nerd Font'
 config.font_size = 11.0
 ```
 
-A [Nerd Font](https://www.nerdfonts.com) is required so the glyphs/icons in
-Starship render (otherwise you get tofu boxes □). The installers
+A [Nerd Font](https://www.nerdfonts.com) is required so the glyphs/icons used
+across the setup (nvim, Zed, the Claude status line) render (otherwise you get tofu
+boxes □). The installers
 (`install.sh` / `install.ps1`) install JetBrainsMono Nerd Font for this reason.
 
 ### Theme
@@ -156,7 +164,8 @@ boundaries read as visible borders.
 > **Want seamless Neovim ↔ WezTerm splits?** [smart-splits.nvim](https://github.com/mrjones2014/smart-splits.nvim)
 > makes one set of `Ctrl+hjkl` keys cross both WezTerm panes *and* Neovim splits.
 > It's a Neovim plugin (so a dependency), must not be lazy-loaded, and pane
-> *resize* across the boundary needs a recent WezTerm. Not wired up here yet.
+> *resize* across the boundary needs a recent WezTerm (nightly qualifies, so
+> this is now unblocked). Not wired up here yet.
 
 ---
 

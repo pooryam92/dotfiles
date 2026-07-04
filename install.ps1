@@ -37,7 +37,7 @@ function Invoke-Install {
   # a separate winget/MSI Neovim shadows scoop on PATH — the guard below warns if so.
   # NOTE: the nvim config is colorscheme-only (no treesitter/Telescope), so zig, the
   # tree-sitter CLI, ripgrep and fd are intentionally NOT installed — add them back if
-  # you grow the nvim config (see docs/nvim.md). install.sh mirrors this.
+  # you grow the nvim config (see nvim/README.md). install.sh mirrors this.
   Info "Installing packages via scoop…"
   scoop install @(Get-ScoopApps)
 

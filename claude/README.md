@@ -55,7 +55,7 @@ config here. (Claude Code is the source of truth, so commit the changes it makes
 The prompt where you type to Claude has its own editor mode, set by `editorMode`
 in `settings.json`. We keep it on **`normal`** (readline/emacs-style, always-on
 keys) rather than `vim` — same reasoning as the shell in
-[shell-editing.md](shell-editing.md#why-emacs-mode-not-vi-mode): the input is
+[shell-editing.md](../docs/shell-editing.md#why-emacs-mode-not-vi-mode): the input is
 short, and no-mode-to-track beats modal editing over a line or two. Toggle live
 in-session with the `/vim` command; that write persists back into `settings.json`.
 
@@ -69,7 +69,7 @@ The keys are the same emacs bindings as the shell — the ones you'll reach for 
 | `Ctrl+W`            | Delete the word **behind** the cursor    |
 
 To **delete a whole line**: `Ctrl+A` then `Ctrl+K` (or just `Ctrl+U` when the
-cursor is already at the end). See [shell-editing.md](shell-editing.md) for the
+cursor is already at the end). See [shell-editing.md](../docs/shell-editing.md) for the
 full cheatsheet — it carries over here.
 
 ---
@@ -90,11 +90,11 @@ priced, so what matters there is attention as it fills, not a cap.
 **Why Node?** It's the one runtime guaranteed on both machines — Claude Code runs
 on it — so a single script serves every OS with no shell fork (goal #3).
 
-**Why ANSI _named_ colors, not Tokyo Night hex?** Same reason `starship.toml`
-says `bold cyan` instead of `#7aa2f7`: named colors resolve against the terminal's
-own palette, which WezTerm sets to Tokyo Night. Re-theme the terminal and the bar
-follows automatically — no color values to keep in sync. The glyphs and colors
-mirror Starship so the bar reads as an extension of the shell prompt.
+**Why ANSI _named_ colors, not Tokyo Night hex?** Named colors resolve against
+the terminal's own palette, which WezTerm sets to Tokyo Night. Re-theme the
+terminal and the bar follows automatically — no color values to keep in sync.
+The glyphs and colors mirror the shell prompts so the bar reads as an extension
+of them.
 
 ---
 

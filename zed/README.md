@@ -126,5 +126,5 @@ This config keeps keymaps minimal on purpose. The natural next step — if you w
 Zed to feel like the IdeaVim setup — is to port the **`<leader>` namespace**
 (Space-prefixed maps grouped by area: `f` files, `g` goto/git, `c` code, …) into
 `keymap.json` using Zed's Vim leader support. See the
-[IdeaVim guide](ideavim.md#the-leader-namespace) for the namespace to mirror and
+[IdeaVim guide](../intellij/README.md#the-leader-namespace) for the namespace to mirror and
 <https://zed.dev/docs/vim> for how Zed expresses multi-key Vim bindings.

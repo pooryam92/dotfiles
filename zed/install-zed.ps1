@@ -10,7 +10,7 @@
 # Zed self-updates afterwards, so `install.ps1 update` never touches it. Re-running is safe:
 # `scoop install` no-ops when zed is already present.
 #
-# Linux counterpart: zed/install-zed.sh. See docs/zed.md.
+# Linux counterpart: zed/install-zed.sh. See zed/README.md.
 $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot '..\setup\lib.ps1')
 
@@ -22,4 +22,4 @@ if (Get-Command zed -ErrorAction SilentlyContinue) {
   Info "Installing Zed via scoop…"
   scoop install zed
 }
-Info "Config is linked by install.ps1 (zed/settings.json, zed/keymap.json). See docs/zed.md."
+Info "Config is linked by install.ps1 (zed/settings.json, zed/keymap.json). See zed/README.md."

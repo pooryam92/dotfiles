@@ -60,18 +60,54 @@ for f in \
   [ -r "$f" ] && source "$f"
 done
 
-# ---- Starship prompt ----
-command -v starship >/dev/null && eval "$(starship init zsh)"
+# ---- Prompt (native — mirrors the pwsh prompt in pwsh/profile.ps1) ----
+# Blue ~-abbreviated path + cyan git branch, then a `>` on its own line that turns
+# red after a failed command. The branch is read straight from .git/HEAD instead of
+# shelling out to `git` on every prompt draw — zero subprocesses, same trick as the
+# pwsh prompt. (Plain repos only; a worktree/submodule .git-file just shows no
+# branch, which is fine here.)
+_prompt_git_branch() {
+  local dir=$PWD ref
+  psvar[1]=''
+  while :; do
+    if [[ -f $dir/.git/HEAD ]]; then
+      ref="$(<"$dir/.git/HEAD")"
+      case $ref in
+        'ref: refs/heads/'*) psvar[1]=${ref#ref: refs/heads/} ;;  # branch name
+        ?*)                  psvar[1]=${ref[1,7]} ;;              # detached: short sha
+      esac
+      return
+    fi
+    [[ $dir == / || -z $dir ]] && return
+    dir=${dir:h}   # step up to the parent directory
+  done
+}
+autoload -Uz add-zsh-hook
+add-zsh-hook precmd _prompt_git_branch
+# %~ = path with ~ abbreviation · %1v = psvar[1] (branch), shown only when set
+# (%(1V…)) · %(?…) switches the > color on the last command's exit status.
+PROMPT=$'%F{blue}%~%f%(1V. %F{cyan}%1v%f.)\n%(?.%F{green}.%F{red})>%f '
 
 # ---- zoxide (smarter cd) ----
 # `z <dir>` jumps to the most "frecent" matching directory; `zi` picks one
-# interactively (needs fzf). Must init after starship so its prompt hook chains.
+# interactively (needs fzf).
 command -v zoxide >/dev/null && eval "$(zoxide init zsh)"
 
 # ---- fzf key-bindings ----
 # Ctrl+R fuzzy history · Ctrl+T insert a file path · Alt+C fuzzy-cd. `fzf --zsh`
 # emits all three (fzf 0.48+); older apt builds ship them as a script we source
-# instead. Mirrors the PSFzf keys in pwsh/profile.ps1 (same keys on both shells).
+# instead. Same keys on pwsh via hand-rolled handlers in pwsh/profile.ps1.
+#
+# fd feeds Ctrl+T / Alt+C so they respect .gitignore, skip .git, and run fast;
+# bat gives Ctrl+T a syntax-highlighted preview of the highlighted file.
+# (rg needs no wiring — it's a command: `rg <pattern>` searches file CONTENTS.)
+if command -v fd >/dev/null; then
+  export FZF_DEFAULT_COMMAND='fd --type f --hidden --exclude .git'
+  export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
+  export FZF_ALT_C_COMMAND='fd --type d --hidden --exclude .git'
+fi
+command -v bat >/dev/null && \
+  export FZF_CTRL_T_OPTS="--preview 'bat --color=always --style=numbers --line-range=:200 {}'"
 if command -v fzf >/dev/null; then
   if fzf --zsh >/dev/null 2>&1; then
     source <(fzf --zsh)

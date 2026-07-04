@@ -2,8 +2,8 @@
 
 [zsh](https://www.zsh.org) is the **shell** — the program that reads what you
 type, runs commands, and manages history/completion/aliases. It's the glue of
-this setup: it loads the plugins and starts Starship. (Panes/tabs are WezTerm's
-job now — see [wezterm.md](wezterm.md) — not the shell's.)
+this setup: it loads the plugins and draws the prompt. (Panes/tabs are WezTerm's
+job now — see [wezterm.md](../wezterm/README.md) — not the shell's.)
 
 This config is **plugin-manager-free** — it uses the two plugins packaged by
 apt and sources them directly, so there's nothing extra to update.
@@ -26,8 +26,8 @@ export PATH="$HOME/.local/bin:$PATH"
 export EDITOR="nvim"
 ```
 
-- Puts `~/.local/bin` first on `PATH` — that's where `install.sh` puts Starship,
-  Neovim, and zoxide, so user binaries win over system ones.
+- Puts `~/.local/bin` first on `PATH` — that's where `install.sh` puts Neovim,
+  zoxide, and the `fd`/`bat` symlinks, so user binaries win over system ones.
 - `EDITOR` is what tools open when they need you to edit something (git commit
   messages, `fc`, etc.).
 
@@ -101,7 +101,7 @@ bindkey '^[.' insert-last-word
 - Accepting autosuggestions needs no extra bindings here: `Ctrl+E` (`end-of-line`)
   takes the **whole** suggestion and `Alt+F` (`forward-word`) the **next word** —
   both are zsh-autosuggestions' default accept widgets, and the same keys work on
-  Windows (see [windows.md](windows.md)). `Ctrl+F` stays `forward-char` (move right).
+  Windows (see [windows.md](../docs/windows.md)). `Ctrl+F` stays `forward-char` (move right).
 
 ### Aliases
 
@@ -139,14 +139,16 @@ done
   is why it's the second entry.
 - The `[ -r "$f" ]` guard means it silently skips if a plugin isn't installed.
 
-### Starship prompt
+### Prompt (native)
 
-```sh
-command -v starship >/dev/null && eval "$(starship init zsh)"
-```
-
-Hands prompt rendering over to Starship if it's installed. See
-[starship.md](starship.md).
+The prompt is a small native block in `.zshrc` — no Starship, no subprocess per
+draw. A `precmd` hook reads the git branch straight from `.git/HEAD` (walking up
+from `$PWD`), and the `PROMPT` string does the rest with zsh's built-in escapes:
+`%~` (path with `~` abbreviation), `%1v` (the branch, via `psvar`), and
+`%(?.…green….…red…)` to color the `>` by the last command's exit status. It
+renders identically to the pwsh `prompt` function on Windows — same layout, same
+colors, same `.git/HEAD` trick (goal #3), and both shells stay subprocess-free
+per prompt draw.
 
 ### zoxide (smarter cd)
 
@@ -155,8 +157,7 @@ command -v zoxide >/dev/null && eval "$(zoxide init zsh)"
 ```
 
 Adds the `z` command — `z dot` jumps to the most "frecent" directory matching
-`dot`. Initialised after Starship so its prompt hook chains rather than clobbers.
-See [zoxide.md](zoxide.md).
+`dot`. See [zoxide.md](../docs/zoxide.md).
 
 ### fzf key-bindings
 
@@ -172,11 +173,12 @@ fi
 Wires three fuzzy keys: **`Ctrl+R`** fuzzy history search, **`Ctrl+T`** insert a
 file/dir path at the cursor, **`Alt+C`** fuzzy-cd into a subdirectory. `fzf --zsh`
 emits all three on fzf 0.48+; older apt builds ship them as a script, so we fall
-back to sourcing that. The same three keys are wired in `pwsh/profile.ps1` via the
-PSFzf module, so the muscle memory is identical on both shells.
+back to sourcing that. `Ctrl+T`/`Alt+C` are fed by `fd` (fast, `.gitignore`-aware)
+with a `bat` preview — see [fzf.md](../docs/fzf.md). The same keys are hand-wired in
+`pwsh/profile.ps1`, so the muscle memory is identical on both shells.
 
 > **No multiplexer here.** Panes, tabs, and splits are handled by WezTerm itself
-> (direct Alt chords — see [wezterm.md](wezterm.md)), so the
+> (direct Alt chords — see [wezterm.md](../wezterm/README.md)), so the
 > shell doesn't launch Zellij or tmux. Opening a WezTerm window drops you straight
 > at the prompt.
 
@@ -210,18 +212,18 @@ mkcd() { mkdir -p "$1" && cd "$1"; }
 ```
 
 **Add a tool that needs shell init** (e.g. nvm, direnv) — add its init line near
-the Starship line, e.g.:
+the zoxide line, e.g.:
 ```sh
 command -v direnv >/dev/null && eval "$(direnv hook zsh)"
 ```
-(zoxide and fzf are already wired in this way — see [zoxide.md](zoxide.md).)
+(zoxide and fzf are already wired in this way — see [zoxide.md](../docs/zoxide.md).)
 
 ---
 
 ## Cheatsheet
 
 These are the shell-shared editing keys — identical on PowerShell (see the
-cross-shell reference in [shell-editing.md](shell-editing.md)).
+cross-shell reference in [shell-editing.md](../docs/shell-editing.md)).
 
 | Key            | Action                            |
 | -------------- | --------------------------------- |
