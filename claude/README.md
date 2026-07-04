@@ -26,12 +26,12 @@ session.
 
 ## How it's wired in this repo
 
-Two files are symlinked into `~/.claude/`:
+Two files land in `~/.claude/` (rows in `setup/links.tsv`):
 
-| Repo file              | Target                      | What it is                                  |
-| ---------------------- | --------------------------- | ------------------------------------------- |
-| `claude/statusline.js` | `~/.claude/statusline.js`   | the status line itself — all the logic      |
-| `claude/settings.json` | `~/.claude/settings.json`   | your Claude settings; points at the script  |
+| Repo file              | Target                      | How                                            |
+| ---------------------- | --------------------------- | ---------------------------------------------- |
+| `claude/statusline.js` | `~/.claude/statusline.js`   | **symlink** — edits in the repo are live       |
+| `claude/settings.json` | `~/.claude/settings.json`   | **copy** — seeds defaults, then the app owns it |
 
 The only status-line-specific thing in `settings.json` is a one-line pointer:
 
@@ -43,10 +43,11 @@ That command is identical on both machines — Claude Code expands `~` and accep
 forward slashes on Windows and Linux alike, and `statusline.js` lives at the same
 `~/.claude/` path on both. So there's no per-machine config to generate.
 
-**Why link the whole `settings.json`?** Because it's a symlink, settings you
-change in-app with `/config` write *through* it into this repo — so your Claude
-settings are version-controlled and synced across machines, just like every other
-config here. (Claude Code is the source of truth, so commit the changes it makes.)
+**Why is `settings.json` copied, not symlinked?** Claude Code rewrites it in
+place — `/model`, `/config`, and friends persist into it — and through a symlink
+that churn would land straight in the repo. The copy seeds the defaults on a
+fresh machine and then lets the live file diverge; to adopt a live change into
+the repo, copy it back deliberately and commit.
 
 ---
 
@@ -59,18 +60,10 @@ keys) rather than `vim` — same reasoning as the shell in
 short, and no-mode-to-track beats modal editing over a line or two. Toggle live
 in-session with the `/vim` command; that write persists back into `settings.json`.
 
-The keys are the same emacs bindings as the shell — the ones you'll reach for most:
-
-| Key                 | Action                                   |
-| ------------------- | ---------------------------------------- |
-| `Ctrl+U`            | Delete from cursor to **start** of line  |
-| `Ctrl+K`            | Delete from cursor to **end** of line    |
-| `Ctrl+A` / `Ctrl+E` | Jump to **start** / **end** of line      |
-| `Ctrl+W`            | Delete the word **behind** the cursor    |
-
-To **delete a whole line**: `Ctrl+A` then `Ctrl+K` (or just `Ctrl+U` when the
-cursor is already at the end). See [shell-editing.md](../docs/shell-editing.md) for the
-full cheatsheet — it carries over here.
+The keys are the same emacs bindings as the shell — the cheatsheet in
+[shell-editing.md](../docs/shell-editing.md) carries over here. (One worth
+calling out: `Ctrl+U` here deletes to the **start** of the line, so it clears
+the whole prompt when the cursor is at the end.)
 
 ---
 

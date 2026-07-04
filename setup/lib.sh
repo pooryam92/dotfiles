@@ -1,9 +1,8 @@
 #!/usr/bin/env bash
 # Shared helpers for install.sh (and the standalone zed/niri installers) — sourced,
-# never run directly. Holds logging, path constants, the symlink helper, the
-# version-report machinery, and the per-tool install/upgrade actions. The DATA (which
-# tools, where they come from, where configs link to) lives in tools.tsv / links.tsv;
-# this file holds the ACTIONS.
+# never run directly. Holds logging, path constants, the symlink helper, and the
+# per-tool install/upgrade actions. Which configs link where lives in links.tsv;
+# which tools get installed is the explicit install_* calls in install.sh.
 
 # This lib lives in setup/ alongside the manifests; the config sources it links live
 # one level up at the repo root.
@@ -95,108 +94,6 @@ do_links() {
   done < "$LIBDIR/links.tsv"
 }
 
-# --- tool manifest (tools.tsv) ---------------------------------------------
-# Columns: 1 name  2 linux_source  3 scoop_pkg  4 changelog_url  5 desc
-#   6 manage    both    = `install` installs it, `update` force-updates it, version-tracked
-#               self    = installed, but it self-updates — `update` only reports it
-#               install = install-once only; never force-updated, not version-tracked (keyd)
-#   7 platform  both | linux | windows — which OS this tool exists on
-# Read column $2 of the row named $1.
-tool_col() { awk -F'\t' -v n="$1" -v c="$2" 'NR>1 && $1==n {print $c}' "$LIBDIR/tools.tsv"; }
-
-# Tools install.sh installs on Linux, in manifest order (platform both or linux). This
-# drives the install loop, so adding a tool = a tools.tsv row + a matching install_<name>.
-mapfile -t INSTALL_TOOLS < <(awk -F'\t' 'NR>1 && $1!="" && ($7=="both"||$7=="linux"){print $1}' "$LIBDIR/tools.tsv")
-
-# Version-tracked tools (manage != install) — the installed-vs-latest views in `update`
-# skip install-only tools like keyd, which have no comparable/detectable version.
-mapfile -t TOOLS < <(awk -F'\t' 'NR>1 && $1!="" && $6!="install"{print $1}' "$LIBDIR/tools.tsv")
-
-# Latest GitHub release tag via the /releases/latest redirect — no API token, no jq.
-gh_latest() {
-  local url
-  url="$(curl -fsSLI -o /dev/null -w '%{url_effective}' \
-    "https://github.com/$1/releases/latest" 2>/dev/null)" || return 0
-  printf '%s' "${url##*/tag/}"
-}
-# Build date (YYYYMMDD) of a repo's latest nightly — nightly is a rolling tag that
-# /releases/latest never redirects to, so read the newest asset timestamp instead.
-gh_nightly_date() {
-  curl -fsSL "https://api.github.com/repos/$1/releases/tags/nightly" 2>/dev/null \
-    | grep -o '"updated_at": *"[^"]*"' | grep -oE '[0-9]{4}-[0-9]{2}-[0-9]{2}' \
-    | sort | tail -1 | tr -d '-'
-}
-# Strip the epoch and Debian revision ("1:14.1.0-1build1" → "14.1.0") so the apt
-# candidate compares against what the binary's --version reports.
-apt_candidate() {
-  apt-cache policy "$1" 2>/dev/null | awk '/Candidate:/{print $2}' \
-    | sed 's/^[0-9]*://; s/-.*$//'
-}
-npm_latest() {
-  curl -fsSL "https://registry.npmjs.org/$1/latest" 2>/dev/null \
-    | grep -o '"version":"[^"]*"' | head -1 | cut -d'"' -f4
-}
-
-# Drop a leading "v" so installed ("1.2.3") and GitHub tags ("v1.2.3") compare.
-norm() { printf '%s' "${1#v}"; }
-
-# Generic version reader: from line 1 of `<bin> --version`, take the first
-# whitespace-delimited token containing a digit. Works across every format we have —
-# zoxide/fd/rg/bat "tool 1.2.3", nvim "NVIM v0.12.3",
-# wezterm "wezterm 20240203-110809-…" (date-based), claude "2.1.195 (Claude Code)".
-detect_version() {
-  "$1" --version 2>/dev/null | head -1 \
-    | grep -oE '[^[:space:]]*[0-9][^[:space:]]*' | head -1
-}
-
-installed_version() {
-  case "$1" in
-    nvim)  detect_version "$BIN/nvim" ;;
-    font)  ls "$FONT_DIR"/*.ttf >/dev/null 2>&1 && echo present || echo missing ;;
-    *)     detect_version "$1" ;;        # binary name == tool name (wezterm, zed, …)
-  esac
-}
-latest_version() {
-  local src; src="$(tool_col "$1" 2)"
-  case "$src" in
-    apt:*)     apt_candidate   "${src#apt:}" ;;
-    gh:*)      gh_latest       "${src#gh:}" ;;
-    nightly:*) gh_nightly_date "${src#nightly:}" ;;
-    npm:*)     npm_latest      "${src#npm:}" ;;
-  esac
-}
-changelog_url() { tool_col "$1" 4; }
-
-# "⚠" when old→new crosses a major (or, for 0.x, a minor) — the bump most likely to
-# carry breaking changes. Patch bumps and no-change stay quiet.
-bump_flag() {
-  local o n; o="$(norm "$1")"; n="$(norm "$2")"
-  [ -n "$o" ] && [ -n "$n" ] && [ "$o" != "$n" ] || { echo ' '; return; }
-  # Dotless / date-based versions (e.g. wezterm "20240203-110809-…") have no semver
-  # major.minor to compare — there's nothing to call "breaking", so don't flag them.
-  case "$o" in *.*) ;; *) echo ' '; return ;; esac
-  local oM="${o%%.*}" nM="${n%%.*}" oRest="${o#*.}" nRest="${n#*.}"
-  local oMin="${oRest%%.*}" nMin="${nRest%%.*}"
-  if [ "$oM" != "$nM" ]; then echo '⚠'; return; fi
-  if [ "$oM" = 0 ] && [ "$oMin" != "$nMin" ]; then echo '⚠'; return; fi
-  echo ' '
-}
-
-# Is tool $1 (installed $2, latest $3) actually behind? 0 (yes) / 1 (no).
-# "present" = font installed but version not readable from the .ttf — don't nag.
-is_behind() {
-  [ -z "$3" ]        && return 1   # couldn't fetch latest
-  [ "$2" = present ] && return 1   # font: version not detectable
-  [ "$2" = "$3" ]    && return 1   # same version
-  # Nightly tools: latest is a bare build date (YYYYMMDD); compare it against the
-  # date prefix of the installed version (wezterm: "20260703-110809-<sha>").
-  case "$3" in
-    [0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9])
-      [ "${2%%-*}" -ge "$3" ] 2>/dev/null && return 1 ;;
-  esac
-  return 0
-}
-
 # --- install / upgrade actions ---------------------------------------------
 # Each fetch_* forces the tool to its latest (used by `update`). Each install_*
 # is the install-once guard around it (used by `install`).
@@ -243,7 +140,7 @@ install_zoxide() {
 # downloads. Ubuntu renames two of the binaries to dodge old name clashes
 # (fd→fdfind, bat→batcat); symlink the real names into ~/.local/bin so the shell
 # config (fzf wiring) and muscle memory can use `fd`/`bat` like everywhere else.
-# Updates ride the apt --only-upgrade line in install.sh's do_upgrades.
+# Updates ride the apt --only-upgrade line in install.sh's cmd_update.
 fetch_fd()  { sudo apt-get install -y fd-find; ln -sf "$(command -v fdfind)" "$BIN/fd"; }
 install_fd() {
   if command -v fd >/dev/null; then info "fd already installed ($(fd --version))"
@@ -300,9 +197,8 @@ install_nvim() {
 # keyd — remaps keys at the evdev layer, so it works under any compositor (niri,
 # cosmic-comp), X11, and the TTY. Used for CapsLock→Esc/Ctrl and LeftCtrl→Super (this
 # laptop's Super key is physically dead — see keyd/README.md). Not packaged for Pop!_OS
-# 24.04, so build from source like Neovim. In tools.tsv it's manage=install,
-# platform=linux: install-once (never force-updated) and skipped on Windows (PowerToys
-# Keyboard Manager covers it there).
+# 24.04, so build from source like Neovim. Linux-only (PowerToys Keyboard Manager covers
+# remapping on Windows) and install-once: `update` never rebuilds it.
 install_keyd() {
   if command -v keyd >/dev/null; then
     info "keyd already installed ($(keyd --version 2>/dev/null | head -1))"

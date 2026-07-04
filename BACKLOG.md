@@ -3,7 +3,7 @@
 Small, deferred tasks. One line each — link details where useful.
 
 - [x] **CLI batch 1: `fd` + `ripgrep` + `bat`, wired into fzf on both OSes.**
-  Done — apt/scoop rows in `tools.tsv`, fzf wiring in `zsh/.zshrc`, hand-rolled
+  Done — installed by both installers, fzf wiring in `zsh/.zshrc`, hand-rolled
   `Ctrl+T`/`Alt+C` PSReadLine handlers in `pwsh/profile.ps1`, guide in
   [docs/fzf.md](docs/fzf.md). Still to do: spend a few days building the muscle
   memory — `Ctrl+R` history, `Ctrl+T` files, `Alt+C` cd, `z`/`zi`, `rg <pattern>`.
@@ -13,9 +13,9 @@ Small, deferred tasks. One line each — link details where useful.
   OSes. Identity must stay per-person: no user.name/email in the repo — include
   `~/.gitconfig.local` LAST (last value wins) and have the installers promote an
   existing real `~/.gitconfig` to `.local` so other users of this repo never lose
-  their identity. Then set `delta` as git's pager (tools.tsv row
-  `gh:dandavison/delta`; scoop `delta`). Deferred 2026-07-04 — decided to land
-  the fzf/fd batch first.
+  their identity. Then set `delta` as git's pager (an `install_delta` in
+  `setup/lib.sh`; scoop `delta` on Windows). Deferred 2026-07-04 — decided to
+  land the fzf/fd batch first.
 
 - [ ] **Maybe later: `lazygit`.** Keyboard-driven git TUI (stage hunks, browse
   history, rebase with single keys). Biggest workflow upgrade of the bunch but

@@ -5,6 +5,8 @@ export PATH="$HOME/.local/bin:$PATH"
 export EDITOR="nvim"   # matches pwsh/profile.ps1; both installers provide nvim
 
 # ---- History ----
+# 50k lines, shared live across shells, written per-command, deduped.
+# HIST_IGNORE_SPACE: a leading space keeps a command out of history (secrets).
 HISTFILE="$HOME/.zsh_history"
 HISTSIZE=50000
 SAVEHIST=50000
@@ -12,12 +14,13 @@ setopt APPEND_HISTORY SHARE_HISTORY INC_APPEND_HISTORY EXTENDED_HISTORY
 setopt HIST_IGNORE_DUPS HIST_IGNORE_ALL_DUPS HIST_IGNORE_SPACE HIST_REDUCE_BLANKS
 
 # ---- Options ----
+# AUTO_CD: a bare directory name cd's into it (`/tmp` ≡ `cd /tmp`).
 setopt AUTO_CD INTERACTIVE_COMMENTS GLOB_DOTS NO_BEEP
 
 # ---- Completion ----
 autoload -Uz compinit && compinit -d "$HOME/.cache/zcompdump"
-zstyle ':completion:*' menu select
-zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'
+zstyle ':completion:*' menu select                       # Tab opens an arrow-key menu
+zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'  # case-insensitive matching
 
 # ---- Keybindings (emacs) ----
 # `bindkey -e` selects emacs-style line editing: every motion/edit key is always on
