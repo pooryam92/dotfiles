@@ -4,13 +4,18 @@
 //
 // Linked to:  Linux ~/.config/zed/keymap.json  ·  Windows %APPDATA%\Zed\keymap.json
 //
-// This file only ADDS to Zed's built-in bindings; it doesn't replace them. Zed
-// already maps Vim's `Ctrl-w h/j/k/l` for split navigation — the block below
-// adds the bare `Ctrl-h/j/k/l` form used by the Neovim and IdeaVim configs in
-// this repo, so moving between splits feels identical across all three editors
-// (goal #1 keyboard-first, goal #3 one experience on both OSes).
+// This file only ADDS to Zed's built-in bindings; it doesn't replace them. Its
+// job is to make the keys that matter feel identical across all three editors in
+// this repo — Neovim, IdeaVim, and Zed (goal #1 keyboard-first, goal #3 one
+// experience on both OSes). Zed's own vim defaults already match the IdeaVim
+// config for `gd` (definition), `gD` (declaration) and `gy` (type) — those need
+// no help here; the two blocks below fill the remaining gaps.
 [
   {
+    // --- Split navigation ---
+    // Zed already maps Vim's `Ctrl-w h/j/k/l`; this adds the bare `Ctrl-h/j/k/l`
+    // form the Neovim and IdeaVim configs use, so moving between splits matches.
+    //
     // VimControl = any Vim mode that isn't insert (normal, visual, …).
     // `!menu` yields the keys to a completion/popup menu while one is open.
     "context": "VimControl && !menu",
@@ -19,6 +24,23 @@
       "ctrl-l": "workspace::ActivatePaneRight",
       "ctrl-j": "workspace::ActivatePaneDown",
       "ctrl-k": "workspace::ActivatePaneUp"
+    }
+  },
+  {
+    // --- Code navigation ---
+    // IdeaVim (see ../intellij/.ideavimrc) uses lowercase `gi` for implementation
+    // and bare `gr` for usages/references. Zed's defaults put those on `gI` and
+    // `grr` instead, so we remap to the IdeaVim spellings for shared muscle
+    // memory. Normal mode only, matching IdeaVim's `nmap`.
+    //
+    // Trade-off: binding bare `gr` shadows Zed's default `gr`-prefixed maps
+    // (`grn` rename, `gra` code action). Those stay reachable via Zed's other
+    // defaults — `space r` (rename) and `space a` / `g .` (code action) — and in
+    // IdeaVim they live under `<leader>c` (`cr` / `ca`) anyway, not under `g`.
+    "context": "vim_mode == normal && !menu",
+    "bindings": {
+      "g i": "editor::GoToImplementation", // IdeaVim gi  → GotoImplementation
+      "g r": "editor::FindAllReferences"   // IdeaVim gr  → FindUsages
     }
   }
 ]
