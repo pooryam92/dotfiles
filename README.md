@@ -70,12 +70,15 @@ with `Alt+h/j/k/l` (see the [Cheat sheet](#cheat-sheet) for the full set).
 Both are **idempotent** — safe to re-run. Anything already at a target path is
 backed up to `<file>.bak.<timestamp>` before linking.
 
-**`install.sh` (Linux)** installs apt packages (`zsh`, `git`, `fzf`, `fd`,
-`ripgrep`, `bat`, plugins, etc.), **WezTerm** (nightly .deb), and **zoxide**,
-**Neovim**, and **Claude Code** (official installers) as user binaries in
-`~/.local/bin`. It installs the **JetBrainsMono Nerd Font**, symlinks the configs
-(including Zed's), and sets **zsh** as the login shell (`chsh`). Steps using
-`sudo` will prompt for your password.
+**`install.sh` (Linux)** installs these apt packages: `zsh`, `git`, `curl`,
+`unzip`, `ca-certificates`, `fontconfig`, `wl-clipboard`, `fzf`, `fd`,
+`ripgrep`, `bat`, and the zsh plugins `zsh-autosuggestions` /
+`zsh-syntax-highlighting`. It installs **WezTerm** (nightly .deb) and — as user
+binaries in `~/.local/bin` via their official installers — **zoxide**,
+**Neovim**, and **Claude Code**, and builds **keyd** from source. It installs the
+**JetBrainsMono Nerd Font**, symlinks the configs (including Zed's), and sets
+**zsh** as the login shell (`chsh`). Steps using `sudo` will prompt for your
+password.
 
 **`install.ps1` (Windows)** uses [scoop](https://scoop.sh) (user-scope, no admin)
 to install **PowerShell 7**, **WezTerm**, **zoxide**, **Neovim**, **fd**,
