@@ -142,20 +142,80 @@ documented inline:
 
 ### Keys worth knowing (all stock niri)
 
+`Mod` is **Super** in a real session. The mental model: **columns** run left↔right
+in an infinite strip, **windows** stack top↕bottom inside a column, and
+**workspaces** stack up↕down. Add **`Ctrl`** to a focus bind to *move* instead of
+focus; add **`Shift`** to reach *monitors* (and `Shift+Ctrl` to move across them).
+
+**Focus & move**
+
 | Bind | Action |
 |------|--------|
 | `Mod+H/J/K/L` or arrows | focus column left / window down / up / column right |
-| `Mod+Ctrl+H/J/K/L` | move the window/column |
-| `Mod+R` | cycle column width presets (½ · ⅔ · 80%) |
-| `Mod+F` / `Mod+Shift+F` | maximize column / fullscreen |
-| `Print` / `Ctrl+Print` | COSMIC screenshot: interactive picker / full screen |
-| `Alt+Print` | niri single-window grab |
-| `Mod+,` / `Mod+.` | consume / expel window into-or-out-of a column |
+| `Mod+Ctrl+H/J/K/L` | move the window/column in that direction |
+| `Mod+Home` / `Mod+End` | focus first / last column |
+| `Mod+Ctrl+Home` / `Mod+Ctrl+End` | move column to first / last |
+
+**Monitors** (multi-display)
+
+| Bind | Action |
+|------|--------|
+| `Mod+Shift+H/J/K/L` or arrows | focus monitor left / down / up / right |
+| `Mod+Shift+Ctrl+H/J/K/L` | move column to the monitor in that direction |
+
+**Workspaces** (stacked up/down; `1…9` are permanent slots)
+
+| Bind | Action |
+|------|--------|
+| `Mod+U` / `Mod+I` (or `PageDn` / `PageUp`) | focus workspace down / up |
+| `Mod+Ctrl+U/I` (or `Ctrl+PageDn/Up`) | move column to workspace down / up |
+| `Mod+Shift+U/I` (or `Shift+PageDn/Up`) | reorder the workspace itself down / up |
 | `Mod+1…9` | focus workspace N |
-| `Mod+O` | overview (zoomed-out workspaces) |
+| `Mod+Ctrl+1…9` | move column to workspace N |
+| `Mod+scroll` / `Mod+Ctrl+scroll` | scroll workspaces / drag column with you |
+
+**Columns: combine, size, arrange**
+
+| Bind | Action |
+|------|--------|
+| `Mod+[` / `Mod+]` | consume-or-expel window to the left / right column |
+| `Mod+,` / `Mod+.` | pull window into / push window out of the bottom of the column |
+| `Mod+R` / `Mod+Shift+R` | cycle column width presets (½ · ⅔ · 80%) forward / back |
+| `Mod+-` / `Mod+=` | shrink / grow column width by 10% |
+| `Mod+Shift+-` / `Mod+Shift+=` | shrink / grow window height by 10% |
+| `Mod+Ctrl+Shift+R` / `Mod+Ctrl+R` | cycle / reset window height |
+| `Mod+Ctrl+F` | expand column to fill free width |
+| `Mod+C` / `Mod+Ctrl+C` | center focused column / all visible columns |
+
+**Window state**
+
+| Bind | Action |
+|------|--------|
+| `Mod+F` / `Mod+Shift+F` | maximize column / fullscreen window |
+| `Mod+M` | maximize window to screen edges (no gaps) |
+| `Mod+V` / `Mod+Shift+V` | toggle window floating / jump between floating and tiling |
+| `Mod+W` | toggle tabbed display for the column |
 | `Mod+Q` | close window |
-| `Mod+Shift+Slash` | the full hotkey overlay (cheat sheet) |
-| `Mod+Shift+E` | quit the session (with confirmation) |
+| `Mod+O` | overview (zoomed-out workspaces) |
+
+**Screenshots**
+
+| Bind | Action |
+|------|--------|
+| `Print` / `Ctrl+Print` | COSMIC screenshot: interactive picker / full screen |
+| `Alt+Print` | niri single-window grab (saves to `~/Pictures/Screenshots`) |
+
+**Session**
+
+| Bind | Action |
+|------|--------|
+| `Mod+Shift+Slash` (`Mod+?`) | the full hotkey overlay (cheat sheet) |
+| `Mod+Escape` | toggle keyboard-shortcuts inhibit (hand keys back from a KVM/RDP app) |
+| `Mod+Shift+P` | power off the monitors |
+| `Mod+Shift+E` / `Ctrl+Alt+Delete` | quit the session (with confirmation) |
+
+Media, volume, and brightness ride the hardware `XF86*` keys (see §2 above) and
+work even on the lock screen.
 
 Press `Mod+Shift+/` (i.e. `Mod+?`) in-session any time for the complete,
 always-correct list. The config is **live-reloaded** on save — tweak
