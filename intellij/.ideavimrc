@@ -117,13 +117,10 @@ nmap <leader>sa <Action>(GotoAction)
 nmap <leader>ss <Action>(GotoSymbol)
 nmap <leader>sc <Action>(GotoClass)
 nmap <leader>sr <Action>(IdeaVim.ReloadVimRc.reload)
+" Show tip (install the "Vim Coach" plugin from JetBrains Marketplace)
+nmap <leader>st <Action>(com.github.pooryam92.vimcoach.actions.ShowVimTipAction)
 
 " =========================================================
 " a — AI
 " =========================================================
 nmap <leader>a <Action>(AIAssistant.Editor.AskAiAssistantInEditor)
-
-" =========================================================
-" v — Vim Coach (install the "Vim Coach" plugin from JetBrains Marketplace)
-" =========================================================
-nmap <leader>vt <Action>(com.github.pooryam92.vimcoach.actions.ShowVimTipAction)
