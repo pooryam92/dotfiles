@@ -1,9 +1,8 @@
 #!/usr/bin/env bash
 # Shared helpers for install.sh (and the standalone zed/niri installers) — sourced,
-# never run directly. Holds logging, path constants, the symlink helper, the
-# version-report machinery, and the per-tool install/upgrade actions. The DATA (which
-# tools, where they come from, where configs link to) lives in tools.tsv / links.tsv;
-# this file holds the ACTIONS.
+# never run directly. Holds logging, path constants, the symlink helper, and the
+# per-tool install/upgrade actions. Which configs link where lives in links.tsv;
+# which tools get installed is the explicit install_* calls in install.sh.
 
 # This lib lives in setup/ alongside the manifests; the config sources it links live
 # one level up at the repo root.
@@ -95,116 +94,39 @@ do_links() {
   done < "$LIBDIR/links.tsv"
 }
 
-# --- tool manifest (tools.tsv) ---------------------------------------------
-# Columns: 1 name  2 linux_source  3 scoop_pkg  4 changelog_url  5 desc
-#   6 manage    both    = `install` installs it, `update` force-updates it, version-tracked
-#               self    = installed, but it self-updates — `update` only reports it
-#               install = install-once only; never force-updated, not version-tracked (keyd)
-#   7 platform  both | linux | windows — which OS this tool exists on
-# Read column $2 of the row named $1.
-tool_col() { awk -F'\t' -v n="$1" -v c="$2" 'NR>1 && $1==n {print $c}' "$LIBDIR/tools.tsv"; }
-
-# Tools install.sh installs on Linux, in manifest order (platform both or linux). This
-# drives the install loop, so adding a tool = a tools.tsv row + a matching install_<name>.
-mapfile -t INSTALL_TOOLS < <(awk -F'\t' 'NR>1 && $1!="" && ($7=="both"||$7=="linux"){print $1}' "$LIBDIR/tools.tsv")
-
-# Version-tracked tools (manage != install) — the installed-vs-latest views in `update`
-# skip install-only tools like keyd, which have no comparable/detectable version.
-mapfile -t TOOLS < <(awk -F'\t' 'NR>1 && $1!="" && $6!="install"{print $1}' "$LIBDIR/tools.tsv")
-
-# Latest GitHub release tag via the /releases/latest redirect — no API token, no jq.
-gh_latest() {
-  local url
-  url="$(curl -fsSLI -o /dev/null -w '%{url_effective}' \
-    "https://github.com/$1/releases/latest" 2>/dev/null)" || return 0
-  printf '%s' "${url##*/tag/}"
-}
-apt_candidate() { apt-cache policy "$1" 2>/dev/null | awk '/Candidate:/{print $2}'; }
-npm_latest() {
-  curl -fsSL "https://registry.npmjs.org/$1/latest" 2>/dev/null \
-    | grep -o '"version":"[^"]*"' | head -1 | cut -d'"' -f4
-}
-
-# Drop a leading "v" so installed ("1.2.3") and GitHub tags ("v1.2.3") compare.
-norm() { printf '%s' "${1#v}"; }
-
-# Generic version reader: from line 1 of `<bin> --version`, take the first
-# whitespace-delimited token containing a digit. Works across every format we have —
-# starship/zoxide "tool 1.2.3", nvim "NVIM v0.12.3",
-# wezterm "wezterm 20240203-110809-…" (date-based), claude "2.1.195 (Claude Code)".
-detect_version() {
-  "$1" --version 2>/dev/null | head -1 \
-    | grep -oE '[^[:space:]]*[0-9][^[:space:]]*' | head -1
-}
-
-installed_version() {
-  case "$1" in
-    nvim)  detect_version "$BIN/nvim" ;;
-    font)  ls "$FONT_DIR"/*.ttf >/dev/null 2>&1 && echo present || echo missing ;;
-    *)     detect_version "$1" ;;        # binary name == tool name (wezterm, zed, …)
-  esac
-}
-latest_version() {
-  local src; src="$(tool_col "$1" 2)"
-  case "$src" in
-    apt:*) apt_candidate "${src#apt:}" ;;
-    gh:*)  gh_latest    "${src#gh:}" ;;
-    npm:*) npm_latest   "${src#npm:}" ;;
-  esac
-}
-changelog_url() { tool_col "$1" 4; }
-
-# "⚠" when old→new crosses a major (or, for 0.x, a minor) — the bump most likely to
-# carry breaking changes. Patch bumps and no-change stay quiet.
-bump_flag() {
-  local o n; o="$(norm "$1")"; n="$(norm "$2")"
-  [ -n "$o" ] && [ -n "$n" ] && [ "$o" != "$n" ] || { echo ' '; return; }
-  # Dotless / date-based versions (e.g. wezterm "20240203-110809-…") have no semver
-  # major.minor to compare — there's nothing to call "breaking", so don't flag them.
-  case "$o" in *.*) ;; *) echo ' '; return ;; esac
-  local oM="${o%%.*}" nM="${n%%.*}" oRest="${o#*.}" nRest="${n#*.}"
-  local oMin="${oRest%%.*}" nMin="${nRest%%.*}"
-  if [ "$oM" != "$nM" ]; then echo '⚠'; return; fi
-  if [ "$oM" = 0 ] && [ "$oMin" != "$nMin" ]; then echo '⚠'; return; fi
-  echo ' '
-}
-
-# Is tool $1 (installed $2, latest $3) actually behind? 0 (yes) / 1 (no).
-# "present" = font installed but version not readable from the .ttf — don't nag.
-is_behind() {
-  [ -z "$3" ]        && return 1   # couldn't fetch latest
-  [ "$2" = present ] && return 1   # font: version not detectable
-  [ "$2" = "$3" ]    && return 1   # same version
-  return 0
-}
-
 # --- install / upgrade actions ---------------------------------------------
 # Each fetch_* forces the tool to its latest (used by `update`). Each install_*
 # is the install-once guard around it (used by `install`).
 
-# WezTerm via the official Fury APT repo (handles future updates via apt; amd64 +
-# arm64). See https://wezfurlong.org/wezterm/install/linux.html
+# WezTerm — nightly .deb from GitHub. Upstream hasn't tagged a release since 20240203
+# (the Fury APT repo is frozen there), and that build has an initial-configure bug
+# under niri that needed a window-rule workaround; nightly is the maintained channel.
+# Windows mirrors this with scoop's wezterm-nightly. Asset names track the Ubuntu
+# base, which Pop!_OS VERSION_ID matches (24.04 → Ubuntu24.04).
 fetch_wezterm() {
-  curl -fsSL https://apt.fury.io/wez/gpg.key \
-    | sudo gpg --yes --dearmor -o /usr/share/keyrings/wezterm-fury.gpg
-  sudo chmod 644 /usr/share/keyrings/wezterm-fury.gpg
-  echo 'deb [signed-by=/usr/share/keyrings/wezterm-fury.gpg] https://apt.fury.io/wez/ * *' \
-    | sudo tee /etc/apt/sources.list.d/wezterm.list >/dev/null
-  sudo apt-get update -y
-  sudo apt-get install -y wezterm
+  local os_ver suffix deb
+  os_ver="$(. /etc/os-release && printf '%s' "$VERSION_ID")"
+  case "$ARCH" in
+    amd64) suffix="" ;;
+    arm64) suffix=".arm64" ;;
+    *) warn "No WezTerm nightly build for arch '$ARCH'; skipping (see https://github.com/wezterm/wezterm/releases)"; return ;;
+  esac
+  deb="$(mktemp --suffix=.deb)"   # unpredictable temp name, like fetch_nvim
+  curl -fL "https://github.com/wezterm/wezterm/releases/download/nightly/wezterm-nightly.Ubuntu${os_ver}${suffix}.deb" \
+    -o "$deb"
+  sudo apt-get install -y "$deb"  # local-file install; resolves deps unlike dpkg -i
+  rm -f "$deb"
+  # One-time cleanup: drop the Fury APT source earlier installs used, so apt stops
+  # polling a repo that's frozen at 20240203.
+  sudo rm -f /etc/apt/sources.list.d/wezterm.list /usr/share/keyrings/wezterm-fury.gpg
 }
 install_wezterm() {
   if command -v wezterm >/dev/null; then info "wezterm already installed ($(wezterm --version))"
   else info "Installing WezTerm…"; fetch_wezterm; fi
 }
 
-# Starship / zoxide — official installers always fetch latest and overwrite, so the
+# zoxide — the official installer always fetches latest and overwrites, so the
 # same fetch doubles as the upgrade path.
-fetch_starship() { curl -fsSL https://starship.rs/install.sh | sh -s -- -y -b "$BIN"; }
-install_starship() {
-  if command -v starship >/dev/null; then info "starship already installed ($(starship --version | head -1))"
-  else info "Installing Starship…"; fetch_starship; fi
-}
 fetch_zoxide() {
   curl -fsSL https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh \
     | sh -s -- --bin-dir "$BIN"
@@ -212,6 +134,27 @@ fetch_zoxide() {
 install_zoxide() {
   if command -v zoxide >/dev/null; then info "zoxide already installed ($(zoxide --version))"
   else info "Installing zoxide…"; fetch_zoxide; fi
+}
+
+# fd / ripgrep / bat — apt-packaged and current enough on 24.04, so no GitHub
+# downloads. Ubuntu renames two of the binaries to dodge old name clashes
+# (fd→fdfind, bat→batcat); symlink the real names into ~/.local/bin so the shell
+# config (fzf wiring) and muscle memory can use `fd`/`bat` like everywhere else.
+# Updates ride the apt --only-upgrade line in install.sh's cmd_update.
+fetch_fd()  { sudo apt-get install -y fd-find; ln -sf "$(command -v fdfind)" "$BIN/fd"; }
+install_fd() {
+  if command -v fd >/dev/null; then info "fd already installed ($(fd --version))"
+  else info "Installing fd…"; fetch_fd; fi
+}
+fetch_rg()  { sudo apt-get install -y ripgrep; }
+install_rg() {
+  if command -v rg >/dev/null; then info "ripgrep already installed ($(rg --version | head -1))"
+  else info "Installing ripgrep…"; fetch_rg; fi
+}
+fetch_bat() { sudo apt-get install -y bat; ln -sf "$(command -v batcat)" "$BIN/bat"; }
+install_bat() {
+  if command -v bat >/dev/null; then info "bat already installed ($(bat --version))"
+  else info "Installing bat…"; fetch_bat; fi
 }
 
 # Neovim — apt ships an old build (0.9.x); the nvim config needs 0.12+ (vim.pack), so
@@ -246,16 +189,16 @@ install_nvim() {
     info "Installing Neovim…"; fetch_nvim
   fi
 }
-# NOTE: the nvim config is colorscheme-only (no treesitter/Telescope), so the
-# tree-sitter CLI, ripgrep and fd are intentionally NOT installed — add them back if
-# you grow the nvim config (see docs/nvim.md). install.ps1 mirrors this.
+# NOTE: the nvim config is colorscheme-only (no treesitter/Telescope) and stays that
+# way by design — nvim's job here is quick edits, commit messages, and Ctrl+X Ctrl+E;
+# Zed/JetBrains carry project editing (see nvim/README.md). fd/rg/bat above are for the
+# SHELL (fzf wiring), not nvim; only the tree-sitter CLI remains uninstalled.
 
 # keyd — remaps keys at the evdev layer, so it works under any compositor (niri,
 # cosmic-comp), X11, and the TTY. Used for CapsLock→Esc/Ctrl and LeftCtrl→Super (this
-# laptop's Super key is physically dead — see docs/keyd.md). Not packaged for Pop!_OS
-# 24.04, so build from source like Neovim. In tools.tsv it's manage=install,
-# platform=linux: install-once (never force-updated) and skipped on Windows (PowerToys
-# Keyboard Manager covers it there).
+# laptop's Super key is physically dead — see keyd/README.md). Not packaged for Pop!_OS
+# 24.04, so build from source like Neovim. Linux-only (PowerToys Keyboard Manager covers
+# remapping on Windows) and install-once: `update` never rebuilds it.
 install_keyd() {
   if command -v keyd >/dev/null; then
     info "keyd already installed ($(keyd --version 2>/dev/null | head -1))"

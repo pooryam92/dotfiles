@@ -1,8 +1,0 @@
-name	linux_source	scoop_pkg	changelog_url	desc	manage	platform
-wezterm	apt:wezterm	wezterm	https://wezfurlong.org/wezterm/changelog.html	terminal; apt via Fury repo	both	both
-starship	gh:starship/starship	starship	https://github.com/starship/starship/releases	prompt (Linux/zsh only; Windows uses a native pwsh prompt)	both	linux
-zoxide	gh:ajeetdsouza/zoxide	zoxide	https://github.com/ajeetdsouza/zoxide/releases	smarter cd	both	both
-nvim	gh:neovim/neovim	neovim	https://github.com/neovim/neovim/releases	editor; needs 0.12+	both	both
-font	gh:ryanoasis/nerd-fonts	JetBrainsMono-NF	https://github.com/ryanoasis/nerd-fonts/releases	Nerd Font; version not detectable	both	both
-claude	npm:@anthropic-ai/claude-code	-	https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md	Anthropic CLI; native, self-updates	both	both
-keyd	src:rvaiya/keyd	-	https://github.com/rvaiya/keyd/releases	key remapper; source build, Linux-only	install	linux

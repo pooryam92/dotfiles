@@ -26,12 +26,12 @@ session.
 
 ## How it's wired in this repo
 
-Two files are symlinked into `~/.claude/`:
+Two files land in `~/.claude/` (rows in `setup/links.tsv`):
 
-| Repo file              | Target                      | What it is                                  |
-| ---------------------- | --------------------------- | ------------------------------------------- |
-| `claude/statusline.js` | `~/.claude/statusline.js`   | the status line itself — all the logic      |
-| `claude/settings.json` | `~/.claude/settings.json`   | your Claude settings; points at the script  |
+| Repo file              | Target                      | How                                            |
+| ---------------------- | --------------------------- | ---------------------------------------------- |
+| `claude/statusline.js` | `~/.claude/statusline.js`   | **symlink** — edits in the repo are live       |
+| `claude/settings.json` | `~/.claude/settings.json`   | **copy** — seeds defaults, then the app owns it |
 
 The only status-line-specific thing in `settings.json` is a one-line pointer:
 
@@ -43,10 +43,11 @@ That command is identical on both machines — Claude Code expands `~` and accep
 forward slashes on Windows and Linux alike, and `statusline.js` lives at the same
 `~/.claude/` path on both. So there's no per-machine config to generate.
 
-**Why link the whole `settings.json`?** Because it's a symlink, settings you
-change in-app with `/config` write *through* it into this repo — so your Claude
-settings are version-controlled and synced across machines, just like every other
-config here. (Claude Code is the source of truth, so commit the changes it makes.)
+**Why is `settings.json` copied, not symlinked?** Claude Code rewrites it in
+place — `/model`, `/config`, and friends persist into it — and through a symlink
+that churn would land straight in the repo. The copy seeds the defaults on a
+fresh machine and then lets the live file diverge; to adopt a live change into
+the repo, copy it back deliberately and commit.
 
 ---
 
@@ -55,22 +56,14 @@ config here. (Claude Code is the source of truth, so commit the changes it makes
 The prompt where you type to Claude has its own editor mode, set by `editorMode`
 in `settings.json`. We keep it on **`normal`** (readline/emacs-style, always-on
 keys) rather than `vim` — same reasoning as the shell in
-[shell-editing.md](shell-editing.md#why-emacs-mode-not-vi-mode): the input is
+[shell-editing.md](../docs/shell-editing.md#why-emacs-mode-not-vi-mode): the input is
 short, and no-mode-to-track beats modal editing over a line or two. Toggle live
 in-session with the `/vim` command; that write persists back into `settings.json`.
 
-The keys are the same emacs bindings as the shell — the ones you'll reach for most:
-
-| Key                 | Action                                   |
-| ------------------- | ---------------------------------------- |
-| `Ctrl+U`            | Delete from cursor to **start** of line  |
-| `Ctrl+K`            | Delete from cursor to **end** of line    |
-| `Ctrl+A` / `Ctrl+E` | Jump to **start** / **end** of line      |
-| `Ctrl+W`            | Delete the word **behind** the cursor    |
-
-To **delete a whole line**: `Ctrl+A` then `Ctrl+K` (or just `Ctrl+U` when the
-cursor is already at the end). See [shell-editing.md](shell-editing.md) for the
-full cheatsheet — it carries over here.
+The keys are the same emacs bindings as the shell — the cheatsheet in
+[shell-editing.md](../docs/shell-editing.md) carries over here. (One worth
+calling out: `Ctrl+U` here deletes to the **start** of the line, so it clears
+the whole prompt when the cursor is at the end.)
 
 ---
 
@@ -90,11 +83,11 @@ priced, so what matters there is attention as it fills, not a cap.
 **Why Node?** It's the one runtime guaranteed on both machines — Claude Code runs
 on it — so a single script serves every OS with no shell fork (goal #3).
 
-**Why ANSI _named_ colors, not Tokyo Night hex?** Same reason `starship.toml`
-says `bold cyan` instead of `#7aa2f7`: named colors resolve against the terminal's
-own palette, which WezTerm sets to Tokyo Night. Re-theme the terminal and the bar
-follows automatically — no color values to keep in sync. The glyphs and colors
-mirror Starship so the bar reads as an extension of the shell prompt.
+**Why ANSI _named_ colors, not Tokyo Night hex?** Named colors resolve against
+the terminal's own palette, which WezTerm sets to Tokyo Night. Re-theme the
+terminal and the bar follows automatically — no color values to keep in sync.
+The glyphs and colors mirror the shell prompts so the bar reads as an extension
+of them.
 
 ---
 

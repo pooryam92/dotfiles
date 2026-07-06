@@ -8,7 +8,7 @@ with two substitutions:
 | Terminal     | WezTerm          | WezTerm *(same config)*          |
 | Multiplexer  | WezTerm built-in | WezTerm built-in *(same config)* |
 | Shell        | zsh              | **PowerShell 7 (pwsh)**          |
-| Prompt       | Starship         | **native pwsh prompt** *(see below)* |
+| Prompt       | native zsh prompt | **native pwsh prompt** *(same layout — see below)* |
 | Editor       | Neovim           | Neovim *(same config)*           |
 | IDE editing  | IdeaVim          | IdeaVim *(same `.ideavimrc`)*    |
 
@@ -16,12 +16,12 @@ The **shell is the only real difference** — `pwsh/profile.ps1` is the Windows
 counterpart of `zsh/.zshrc`. Everything else is the identical config file linked
 to a Windows path.
 
-> **Windows prompt is native, not Starship.** Starship shells out to `starship.exe`
-> on *every* prompt draw (~200ms of lag after each command on Windows) plus ~180ms
-> at launch. To keep pwsh fast, the profile uses a small native `prompt` function
-> instead — path + git branch (read from `.git/HEAD`, no `git` subprocess) + a `>`
-> that turns red on failure. zsh on Pop!_OS still uses Starship; mirror the native
-> prompt into `.zshrc` if you want the two shells identical again.
+> **Why the prompt is native (a Starship history note).** This setup used to run
+> Starship, which shells out to `starship.exe` on *every* prompt draw (~200ms of
+> lag after each command on Windows) plus ~180ms at launch. Both shells now use a
+> small native `prompt` function instead — path + git branch (read from
+> `.git/HEAD`, no `git` subprocess) + a `>` that turns red on failure. Identical
+> layout and colors on zsh and pwsh (goal #3), zero subprocesses on both.
 
 ---
 
@@ -57,10 +57,17 @@ Developer Mode to upgrade copies to links. (The `nvim/` directory uses a
 1. Sets `ExecutionPolicy` for the current user to `RemoteSigned` (so the profile
    loads on future launches).
 2. Bootstraps **scoop** if missing; adds the `extras` and `nerd-fonts` buckets.
-3. Installs: `pwsh`, `neovim`, `wezterm`, `fzf` (fuzzy finder — powers `zi`),
-   `win32yank` (nvim clipboard), `zoxide` (smarter `cd`), and the
-   **JetBrainsMono Nerd Font**. (No `starship` on Windows — the profile uses a
-   native prompt — and no `PSFzf`.)
+3. Installs: `pwsh`, `neovim`, `wezterm-nightly` (WezTerm's maintained channel —
+   matches Linux; see below), `fzf` (fuzzy finder — powers `zi`),
+   `win32yank` (nvim clipboard), `zoxide` (smarter `cd`), `fd`/`ripgrep`/`bat`
+   (fuzzy-finding + content search — see [fzf.md](fzf.md)), and the
+   **JetBrainsMono Nerd Font**. (No `starship` — both shells use native prompts —
+   and no `PSFzf`: the `Ctrl+T`/`Alt+C` handlers are hand-rolled in the profile so
+   startup stays instant.)
+
+   > **Migrating from the old stable `wezterm` scoop package?** Uninstall it
+   > first so the two don't fight over the `wezterm` shim:
+   > `scoop uninstall wezterm`, then re-run `.\install.ps1`.
 4. Links the configs to their Windows paths (see below).
 
 ### Config paths on Windows
@@ -93,11 +100,12 @@ pwsh/profile.ps1       ->  $PROFILE.CurrentUserAllHosts         (resolved from p
 | emacs keybindings        | `-EditMode Emacs` (matches zsh `bindkey -e`); `Ctrl+X Ctrl+E` edits the line in `$EDITOR`, `Alt+.` yanks the last arg |
 | `menu select` completion | `Tab` → `MenuComplete`                               |
 | aliases (`ll`,`..`)      | `Set-Alias` + functions                              |
-| starship prompt          | **native `prompt` function** (no subprocess — path + git branch from `.git/HEAD` + red-on-error `>`) |
+| native prompt            | **native `prompt` function** (no subprocess — path + git branch from `.git/HEAD` + red-on-error `>`; same on both shells) |
+| fzf `Ctrl+T` / `Alt+C`   | hand-rolled PSReadLine handlers (fd-fed, bat preview) — see [fzf.md](fzf.md) |
 | zoxide (`z`/`zi`)        | cached `zoxide init` — see [zoxide.md](zoxide.md)    |
 
 **No multiplexer auto-start.** Panes and tabs are WezTerm's job (direct Alt
-chords — see [wezterm.md](wezterm.md)), so the profile doesn't
+chords — see [wezterm.md](../wezterm/README.md)), so the profile doesn't
 launch Zellij or anything else; opening a WezTerm window drops you straight at the
 pwsh prompt. The
 pane/tab keybinds are identical to Linux because they live in the shared
@@ -118,7 +126,7 @@ After install, run `:checkhealth` and confirm the **Clipboard** section is green
 > The bare config is colorscheme-only, so it needs no parser toolchain — `zig`,
 > the `tree-sitter` CLI, `ripgrep` and `fd` are deliberately **not** installed.
 > If you grow the nvim config back (treesitter + Telescope), add them then; see
-> [nvim.md](nvim.md).
+> [nvim.md](../nvim/README.md).
 
 ---
 

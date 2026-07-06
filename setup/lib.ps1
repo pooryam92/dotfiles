@@ -1,59 +1,24 @@
 # Shared helpers for install.ps1 (and the standalone zed installer) — dot-sourced,
-# never run directly. Holds logging, the link helper, manifest readers, the scoop app
-# list, changelogs, and the per-tool setup steps. The DATA (which tools, scoop ids,
-# changelogs, link targets) lives in tools.tsv / links.tsv; this file holds the
-# ACTIONS. Counterpart of lib.sh.
+# never run directly. Holds logging, the link helper, the scoop app list, and the
+# per-tool setup steps. Which configs link where lives in links.tsv; this file holds
+# the ACTIONS. Counterpart of lib.sh.
 
-$LIB = $PSScriptRoot                       # …\setup — this lib + the manifests live here
+$LIB = $PSScriptRoot                       # …\setup — this lib + links.tsv live here
 $DOT = Split-Path -Parent $LIB             # repo root — where the config sources live
 
-# Base scoop apps that aren't version-tracked tools (the Linux side keeps the same
-# split: base apt packages vs. the tools in tools.tsv). Joined with the tools' scoop
-# ids by Get-ScoopApps. pwsh=target shell, fzf=fuzzy finder (zoxide `zi`),
-# win32yank=Neovim clipboard provider.
-$BASE_SCOOP = @('pwsh', 'fzf', 'win32yank')
-
-# Release-notes for the base apps; the tools' changelogs come from tools.tsv.
-$BaseChangelog = [ordered]@{
-  pwsh      = 'https://github.com/PowerShell/PowerShell/releases'
-  fzf       = 'https://github.com/junegunn/fzf/releases'
-  win32yank = 'https://github.com/equalsraf/win32yank/releases'
-}
+# Everything installed (and updated) via scoop — mirrors the install_* calls in
+# install.sh, minus Linux-only keyd (PowerToys covers remapping) and claude (native
+# installer, not a scoop app). pwsh=target shell, fzf=fuzzy finder (Ctrl+T, zoxide
+# `zi`), win32yank=Neovim clipboard provider.
+$SCOOP_APPS = @('pwsh', 'fzf', 'win32yank',
+                'wezterm-nightly', 'zoxide', 'fd', 'ripgrep', 'bat',
+                'neovim', 'JetBrainsMono-NF')
 
 function Info($msg) { Write-Host "==> $msg" -ForegroundColor Cyan }
 function Warn($msg) { Write-Host "!!  $msg" -ForegroundColor Yellow }
 
-# --- manifest readers ------------------------------------------------------
-# Import-Csv keys by header name, so new tools.tsv columns are picked up automatically.
-# Columns used here: scoop_pkg ("-" = not a scoop app) and platform (linux = skip on Windows).
-function Read-Tools { Import-Csv -Delimiter "`t" -Path (Join-Path $LIB 'tools.tsv') }
+# --- config links (links.tsv) ------------------------------------------------
 function Read-Links { Import-Csv -Delimiter "`t" -Path (Join-Path $LIB 'links.tsv') }
-
-# Scoop app list = base apps + every tool with a scoop_pkg ("-" = native, e.g. claude).
-# Skip Linux-only tools (platform=linux, e.g. starship — Windows uses a native prompt).
-function Get-ScoopApps {
-  $toolPkgs = Read-Tools |
-              Where-Object { $_.scoop_pkg -and $_.scoop_pkg -ne '-' -and $_.platform -ne 'linux' } |
-              ForEach-Object { $_.scoop_pkg }
-  return @($BASE_SCOOP + $toolPkgs)
-}
-
-# Merged release-notes map (base apps + tools, keyed by app/tool name).
-function Get-Changelogs {
-  $map = [ordered]@{}
-  foreach ($k in $BaseChangelog.Keys) { $map[$k] = $BaseChangelog[$k] }
-  # Skip Linux-only tools (platform=linux, e.g. keyd) — they don't exist on Windows.
-  foreach ($t in Read-Tools | Where-Object { $_.platform -ne 'linux' }) {
-    $key = if ($t.scoop_pkg -and $t.scoop_pkg -ne '-') { $t.scoop_pkg } else { $t.name }
-    $map[$key] = $t.changelog_url
-  }
-  return $map
-}
-function Show-Changelogs {
-  Info "Release notes (check for breaking changes):"
-  $map = Get-Changelogs
-  foreach ($k in $map.Keys) { Write-Host ("   {0,-18} {1}" -f $k, $map[$k]) }
-}
 
 # --- config links ----------------------------------------------------------
 # Link a repo file (symlink) or directory (junction) to a target path. Junctions
@@ -194,18 +159,4 @@ function Resolve-ProfilePath {
     Warn "could not resolve pwsh profile path; defaulting to $p"
   }
   return $p
-}
-
-# Claude Code isn't a scoop app — report it separately (installed vs npm latest).
-# Returns $true when behind (so -Check can fold it into its exit code).
-function Show-Claude {
-  if (-not (Get-Command claude -ErrorAction SilentlyContinue)) { return $false }
-  $latest = try { (Invoke-RestMethod 'https://registry.npmjs.org/@anthropic-ai/claude-code/latest').version } catch { '?' }
-  $cur = (claude --version 2>$null)
-  $clog = (Get-Changelogs)['claude']
-  # Escape the version so its dots match literally, not as regex wildcards.
-  if ($latest -ne '?' -and $cur -match [regex]::Escape($latest)) {
-    Info "Claude Code: $cur (up to date)"; return $false
-  }
-  Info "Claude Code: $cur  →  $latest    $clog"; return $true
 }

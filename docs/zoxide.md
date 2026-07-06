@@ -26,7 +26,7 @@ zoxide needs a shell hook that records the current directory on each prompt.
 Each shell initialises it after the prompt is set up, so zoxide's prompt hook
 wraps the prompt instead of clobbering it:
 
-- **zsh** (`zsh/.zshrc`) — initialised right after Starship:
+- **zsh** (`zsh/.zshrc`) — initialised near the end of the file:
 
   ```sh
   command -v zoxide >/dev/null && eval "$(zoxide init zsh)"

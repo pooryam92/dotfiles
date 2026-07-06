@@ -7,9 +7,11 @@ been deliberately stripped back to a bare base — good defaults, a few keymaps,
 and a colorscheme — so there's nothing in it you can't yet explain.
 
 Everything heavier (treesitter, a fuzzy finder, LSP, autocompletion, formatting,
-snippets, git signs, which-key) was **removed on purpose**. It's all recoverable
-from git history when you're ready to grow into it; until then it's not config
-you're driving blind.
+snippets, git signs, which-key) was **removed on purpose** — and staying out.
+**This config is complete for its job**: quick file edits, git commit messages,
+and `Ctrl+X Ctrl+E` from the shell. Project editing belongs to Zed and the
+JetBrains IDEs, so nvim doesn't need to grow into a second IDE. (If that decision
+is ever revisited, the fuller configs live in git history.)
 
 - Your config: `nvim/init.lua` → symlinked to `~/.config/nvim` (Linux) /
   `%LOCALAPPDATA%\nvim` (Windows)
@@ -70,11 +72,10 @@ everything else is stock Neovim:
 
 That's the lot — few enough to keep in your head. The `<leader>-` / `<leader>|`
 split maps match the IdeaVim config so split-create feels the same across editors;
-**file-find and AI leader maps are deliberately left out** here (IdeaVim and Zed
-have them) until this config grows a fuzzy finder back. For finding/opening files
-without one, the built-ins are `:e <path>` (Tab-completes), `:find`, and
-`:b <name>` to switch buffers. Adding [Telescope](https://github.com/nvim-telescope/telescope.nvim)
-back is the natural first upgrade when you want frecency/grep search.
+**file-find and AI leader maps are deliberately left out** here — IdeaVim and Zed
+have them, and that's where project editing happens. For finding/opening files
+in nvim, the built-ins are `:e <path>` (Tab-completes), `:find`, and
+`:b <name>` to switch buffers — plenty for the quick-edit role this config plays.
 
 ---
 
@@ -89,11 +90,12 @@ vim.pack.add { 'https://github.com/tpope/vim-fugitive' }
 ```
 Restart, or run `:lua vim.pack.update()`.
 
-**Want treesitter, a fuzzy finder, LSP, completion, or formatting back?** Those
-are the natural next steps once the basics feel automatic. Fuller versions are in
-this repo's git history — `git log -- nvim/init.lua` — or pull the relevant section from
-[kickstart upstream](https://github.com/nvim-lua/kickstart.nvim/blob/master/init.lua).
-Re-add it one section at a time so you understand each piece.
+**Want treesitter, a fuzzy finder, LSP, completion, or formatting back?** The
+standing decision is *no* — Zed/JetBrains cover project editing. If that ever
+changes, fuller versions are in this repo's git history
+(`git log -- nvim/init.lua`) or in
+[kickstart upstream](https://github.com/nvim-lua/kickstart.nvim/blob/master/init.lua);
+re-add one section at a time so you understand each piece.
 
 ---
 

@@ -15,7 +15,7 @@
 #   4. links this repo's niri/config.kdl → ~/.config/niri/config.kdl
 #
 # After it finishes: log out and pick "COSMIC on niri" on the greeter.
-# See docs/niri.md for the full write-up, keybinds, and troubleshooting.
+# See niri/README.md for the full write-up, keybinds, and troubleshooting.
 #
 # There is no Windows counterpart: COSMIC and niri are Linux-only, so this lives
 # outside the cross-platform install.{sh,ps1} pair by design.
@@ -102,4 +102,4 @@ link "$DOTFILES/niri/config.kdl" "$HOME/.config/niri/config.kdl"
 
 # ---------------------------------------------------------------------------
 info "Done. Log out, then pick \"COSMIC on niri\" on the greeter's session menu."
-info "Mod is Super. Mod+T terminal · Mod+D launcher · Mod+Shift+E quit. See docs/niri.md."
+info "Mod is Super. Mod+T terminal · Mod+D launcher · Mod+Shift+E quit. See niri/README.md."

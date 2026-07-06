@@ -1,5 +1,5 @@
 // niri config — COSMIC-on-niri session. KDL format; "/-" comments out a node.
-// Full reference: https://yalter.github.io/niri/  ·  see also docs/niri.md
+// Full reference: https://yalter.github.io/niri/  ·  see also niri/README.md
 // Live-reloaded on save. Validate with: niri validate -c niri/config.kdl
 
 input {
@@ -41,19 +41,13 @@ layout {
 // REQUIRED for the COSMIC-on-niri session: this helper connects niri to
 // cosmic-session's API once the sockets are up, so cosmic-panel, cosmic-bg,
 // notifications, etc. start. Without it you get a black screen. (No bar here —
-// COSMIC provides its own panel.) See docs/niri.md for the full write-up.
+// COSMIC provides its own panel.) See niri/README.md for the full write-up.
 spawn-at-startup "cosmic-ext-alternative-startup"
 
 // Where niri's built-in screenshot action (Alt+Print) saves files.
 screenshot-path "~/Pictures/Screenshots/Screenshot from %Y-%m-%d %H-%M-%S.png"
 
 // Window rules ----------------------------------------------------------------
-
-// WezTerm needs an empty default width to avoid an initial-configure bug.
-window-rule {
-    match app-id=r#"^org\.wezfurlong\.wezterm$"#
-    default-column-width {}
-}
 
 // Float Firefox's picture-in-picture player.
 window-rule {

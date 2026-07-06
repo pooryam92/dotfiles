@@ -5,10 +5,8 @@
 # starship, which shelled out to starship.exe on EVERY prompt draw (~200ms of lag
 # after each command) plus ~180ms at launch. This profile uses a native prompt
 # function instead — no subprocess, ~2ms — so launches and every keystroke stay fast.
-#
-# NOTE (goal #3, deferred): zsh/.zshrc still uses starship on Pop!_OS, so the two
-# shells look different for now. Mirror this native prompt into .zshrc when you want
-# them identical again.
+# zsh/.zshrc mirrors the same native prompt on Linux (goal #3): same layout, colors,
+# and .git/HEAD branch-reading trick on both shells.
 
 # ---- Editor ----
 $env:EDITOR = 'nvim'
@@ -59,7 +57,7 @@ if (Get-Module PSReadLine) {
   }.GetNewClosure())
 }
 
-# ---- Native prompt (replaces starship — no subprocess, ~2ms) ----
+# ---- Native prompt (no subprocess, ~2ms; mirrored in zsh/.zshrc) ----
 # Shows a ~-abbreviated path, the current git branch, and a > that turns red after a
 # failed command. The branch is read straight from .git/HEAD rather than shelling out
 # to `git` on every draw — that's what keeps the prompt instant. (Plain repos only; a
@@ -108,6 +106,32 @@ function ll { Get-ChildItem -Force @args }         # long listing incl. hidden (
 function la { Get-ChildItem -Force -Name @args }   # names only, incl. hidden (== zsh `ls -A`)
 function .. { Set-Location .. }
 function ... { Set-Location ../.. }
+
+# ---- fzf + fd + bat: fuzzy file/dir pickers (mirrors zsh's Ctrl+T / Alt+C) ----
+# Hand-rolled instead of PSFzf on purpose: these handlers shell out to fzf only when
+# the key is PRESSED, so profile startup stays at ~0ms (PSFzf's module import was why
+# it got dropped). Ctrl+R stays PSReadLine's built-in reverse-search.
+# fd feeds the pickers so they respect .gitignore; bat draws the Ctrl+T preview.
+if ((Get-Module PSReadLine) -and
+    (Get-Command fzf -ErrorAction SilentlyContinue) -and
+    (Get-Command fd  -ErrorAction SilentlyContinue)) {
+  # Ctrl+T: fuzzy-pick a file, insert its path at the cursor (== zsh Ctrl+T).
+  Set-PSReadLineKeyHandler -Key Ctrl+t -ScriptBlock {
+    $fzfArgs = @('--height', '40%', '--reverse')
+    if (Get-Command bat -ErrorAction SilentlyContinue) {
+      $fzfArgs += @('--preview', 'bat --color=always --style=numbers --line-range=:200 {}')
+    }
+    $sel = fd --type f --hidden --exclude .git | fzf @fzfArgs
+    [Microsoft.PowerShell.PSConsoleReadLine]::InvokePrompt()   # fzf scrolled the screen; redraw
+    if ($sel) { [Microsoft.PowerShell.PSConsoleReadLine]::Insert($sel) }
+  }
+  # Alt+C: fuzzy-pick a directory and cd into it (== zsh Alt+C).
+  Set-PSReadLineKeyHandler -Key Alt+c -ScriptBlock {
+    $sel = fd --type d --hidden --exclude .git | fzf --height 40% --reverse
+    if ($sel) { Set-Location $sel }
+    [Microsoft.PowerShell.PSConsoleReadLine]::InvokePrompt()
+  }
+}
 
 # ---- zoxide (smarter cd: `z <dir>` frecency jump, `zi` fuzzy pick via fzf) ----
 # `zoxide init` spawns the binary, so cache its output to disk and dot-source the cache;

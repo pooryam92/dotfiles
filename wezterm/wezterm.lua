@@ -9,7 +9,7 @@ local config = wezterm.config_builder()
 local is_windows = wezterm.target_triple:find 'windows' ~= nil
 
 -- ---- Font ----
-config.font = wezterm.font 'JetBrainsMono Nerd Font' -- Nerd Font: renders Starship glyphs
+config.font = wezterm.font 'JetBrainsMono Nerd Font' -- Nerd Font: renders prompt/statusline glyphs
 config.font_size = 11.0
 
 -- ---- Theme ----

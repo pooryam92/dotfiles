@@ -3,9 +3,11 @@
 Neovim configuration — minimal base
 =====================================================================
 A bare, single-file config: sensible defaults, a few keymaps, and a
-colorscheme. Everything heavier — treesitter, fuzzy finder, LSP,
-autocompletion, formatting — is intentionally left out. Add pieces
-back as you grow into them; richer configs live in git history.
+colorscheme. This is COMPLETE for its job — quick file edits, git
+commit messages, and Ctrl+X Ctrl+E from the shell. Project editing
+belongs to Zed / JetBrains, so treesitter, fuzzy finder, LSP,
+autocompletion and formatting stay out by design (richer configs
+live in git history if that decision is ever revisited).
 
 Organized into numbered `do ... end` blocks so locals stay scoped to
 the section that uses them:
@@ -111,8 +113,6 @@ do
 
   -- Create splits: <leader>- below, <leader>| right. Mirrors the IdeaVim maps so
   -- split-create muscle memory matches across editors. Built-in :wincmd, no plugin.
-  -- (File-find / AI leader maps are intentionally deferred until this config grows
-  -- a fuzzy finder back — see docs/nvim.md.)
   vim.keymap.set('n', '<leader>-', '<C-w>s', { desc = 'Split window below' })
   vim.keymap.set('n', '<leader>|', '<C-w>v', { desc = 'Split window right' })
 
@@ -129,7 +129,7 @@ end
 -- ============================================================
 do
   -- `vim.pack` is Neovim's built-in plugin manager (0.12+). tokyonight is the
-  -- only plugin for now — Night style, matching WezTerm / Starship.
+  -- only plugin for now — Night style, matching WezTerm.
   -- Variants: tokyonight-storm, tokyonight-moon, tokyonight-day (light).
   --   :lua vim.pack.update()    update installed plugins
   -- See `:help vim.pack`.

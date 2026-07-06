@@ -2,18 +2,32 @@
 
 Small, deferred tasks. One line each — link details where useful.
 
-- [ ] **Add `fd` and point fzf at it.** `fd` isn't installed (lib.sh line ~225
-  intentionally skips it + ripgrep since the nvim config is colorscheme-only).
-  Adding it would mostly help the *shell*: set `FZF_DEFAULT_COMMAND='fd --type f
-  --hidden --exclude .git'` (+ `FZF_CTRL_T_COMMAND`) in both `zsh/.zshrc` and
-  `pwsh/profile.ps1` so Ctrl+T / fzf respect `.gitignore` and run faster. Needs a
-  `tools.tsv` row (`gh:sharkdp/fd` for a clean `fd` binary name; `scoop_pkg=fd`) +
-  a `fetch_fd`/`install_fd` in lib.sh, and update the line-225 note. Optional
-  follow-ons: `delta` (git diffs), `bat`/`eza`. (Goal #2: weigh against staying small.)
+- [x] **CLI batch 1: `fd` + `ripgrep` + `bat`, wired into fzf on both OSes.**
+  Done — installed by both installers, fzf wiring in `zsh/.zshrc`, hand-rolled
+  `Ctrl+T`/`Alt+C` PSReadLine handlers in `pwsh/profile.ps1`, guide in
+  [docs/fzf.md](docs/fzf.md). Still to do: spend a few days building the muscle
+  memory — `Ctrl+R` history, `Ctrl+T` files, `Alt+C` cd, `z`/`zi`, `rg <pattern>`.
 
-- [ ] **Drop the WezTerm window rule once on WezTerm nightly.** The
-  `default-column-width {}` rule in `niri/config.kdl` works around a WezTerm
-  initial-configure bug that only shows up on stable (`20240203`). It's fixed in
-  WezTerm nightly. After upgrading: remove the rule, launch WezTerm under niri,
-  confirm it appears and resizes (also re-check the `prefer-no-csd` tiled-size
-  bug). See [docs/niri.md](docs/niri.md).
+- [ ] **CLI batch 2: shared gitconfig + `delta`.** Add `git/gitconfig` (aliases,
+  pull/rebase/push defaults, zdiff3 conflicts) linked to `~/.gitconfig` on both
+  OSes. Identity must stay per-person: no user.name/email in the repo — include
+  `~/.gitconfig.local` LAST (last value wins) and have the installers promote an
+  existing real `~/.gitconfig` to `.local` so other users of this repo never lose
+  their identity. Then set `delta` as git's pager (an `install_delta` in
+  `setup/lib.sh`; scoop `delta` on Windows). Deferred 2026-07-04 — decided to
+  land the fzf/fd batch first.
+
+- [ ] **Maybe later: `lazygit`.** Keyboard-driven git TUI (stage hunks, browse
+  history, rebase with single keys). Biggest workflow upgrade of the bunch but
+  also the most to learn — try it only after the fzf keys and git aliases have
+  settled.
+
+- Considered, skipped for now (goal #2 — no real itch yet): `eza` (prettier `ls`
+  — cosmetic; the `ls --color` aliases are fine), `atuin` (synced shell history —
+  daemon + sync account is too heavy; fzf `Ctrl+R` first), `jq` (JSON processor —
+  only once APIs/JSON come up regularly).
+
+- [ ] **Try `prefer-no-csd` in `niri/config.kdl` now that WezTerm is on nightly.**
+  Stable WezTerm had a tiled-size bug with it (why it was left off). Nightly may
+  fix it: enable, launch WezTerm under niri, check windows still size correctly —
+  revert if not. Cosmetic win: no client-side title bars.
