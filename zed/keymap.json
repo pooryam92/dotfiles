@@ -23,7 +23,12 @@
       "ctrl-h": "workspace::ActivatePaneLeft",
       "ctrl-l": "workspace::ActivatePaneRight",
       "ctrl-j": "workspace::ActivatePaneDown",
-      "ctrl-k": "workspace::ActivatePaneUp"
+      "ctrl-k": "workspace::ActivatePaneUp",
+      // Zed's default `gi` is real-Vim's "insert at last insert position".
+      // Rebound to match IdeaVim's `gi` (see intellij/.ideavimrc) — go to
+      // implementation is the far more common jump, and `gri`/`g shift-i`
+      // still cover it too, so nothing is lost.
+      "g i": "editor::GoToImplementation"
     }
   },
   {
