@@ -90,16 +90,17 @@ function render(input) {
   const cwd = ws.current_dir || input.cwd || home;
   const segments = [];
 
-  // Model — just the version number to save space, e.g. "Opus 4.8" -> "4.8".
-  // The family is dropped: it's almost always Opus, and a bare initial only
-  // confuses (capital "O" reads as 0). Version-agnostic on purpose — nothing
-  // here is pinned to 4.x, so a future "Opus 5" or "Opus 4.10" just shows "5"
-  // / "4.10" automatically. The pattern matches a whole dotted version
-  // (digits and interior dots, no trailing dot); if a release ever ships a
-  // name with no parseable version we fall back to showing it in full.
+  // Model — family initial + version, e.g. "Opus 4.8" -> "O4.8", "Sonnet 5" ->
+  // "S5". Used to be just the version ("4.8"), but now that several families
+  // share version numbers (Sonnet 5, Fable 5, Haiku 4.5 vs Opus 4.8) a bare
+  // number no longer says which model is running — the initial disambiguates.
+  // Version-agnostic on purpose — nothing here is pinned to 4.x, so a future
+  // "Opus 5" or "Sonnet 4.10" just shows "O5" / "S4.10" automatically. If a
+  // release ever ships a name with no parseable version we fall back to
+  // showing it in full.
   const name = (input.model && input.model.display_name) || 'Claude';
-  const m = name.match(/\d+(?:\.\d+)*/);
-  let model = blue(m ? m[0] : name);
+  const m = name.match(/^(\w)\S*\s+(\d+(?:\.\d+)*)/);
+  let model = blue(m ? m[1] + m[2] : name);
 
   // Thinking effort — the reasoning level for the turn (set via /effort or the
   // Tab cycle). Claude Code reports it as `effort.level`, one of
