@@ -26,6 +26,7 @@ set hlsearch
 set backspace=indent,eol,start
 set timeoutlen=1000
 set clipboard+=unnamedplus
+set clipboard+=ideaput
 
 " =========================================================
 " Emulated plugins
@@ -58,7 +59,7 @@ nnoremap <leader>nh  :nohlsearch<CR>
 " e — Explorer / Project
 " =========================================================
 nnoremap <leader>e  :NERDTreeToggle<CR>
-nmap     <leader>ep <Action>(ActivateProjectToolWindow)
+n  The strongest part is 04-opportunities/opportunity-scorecard.md; it gives you a practical way to compare ideas instead of chasing whichever problem feels mostmap     <leader>ep <Action>(ActivateProjectToolWindow)
 
 " =========================================================
 " f — Files
@@ -69,12 +70,14 @@ nnoremap <leader>fc :e ~/.ideavimrc<CR>
 
 " =========================================================
 " g — Goto (bare g) + Git (<leader>g)
-" =========================================================
+t =========================================================
 nmap gd <Action>(GotoDeclaration)
 nmap gD <Action>(GotoSuperMethod)
 nmap gi <Action>(GotoImplementation)
 nmap gy <Action>(GotoTypeDeclaration)
 nmap gr <Action>(FindUsages)
+nmap ga <Action>(ShowIntentionActions)
+nmap gR <Action>(RenameElement)
 
 nmap <leader>gs <Action>(ActivateVersionControlToolWindow)
 nmap <leader>gb <Action>(Git.Branches)
@@ -124,3 +127,4 @@ nmap <leader>st <Action>(com.github.pooryam92.vimcoach.actions.ShowVimTipAction)
 " a — AI
 " =========================================================
 nmap <leader>a <Action>(AIAssistant.Editor.AskAiAssistantInEditor)
+
