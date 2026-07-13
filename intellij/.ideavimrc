@@ -59,7 +59,7 @@ nnoremap <leader>nh  :nohlsearch<CR>
 " e — Explorer / Project
 " =========================================================
 nnoremap <leader>e  :NERDTreeToggle<CR>
-n  The strongest part is 04-opportunities/opportunity-scorecard.md; it gives you a practical way to compare ideas instead of chasing whichever problem feels mostmap     <leader>ep <Action>(ActivateProjectToolWindow)
+nmap     <leader>ep <Action>(ActivateProjectToolWindow)
 
 " =========================================================
 " f — Files
