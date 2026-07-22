@@ -16,13 +16,13 @@ session, which fits the repo's "one experience" goal.
 |---|---|---|
 | **CapsLock** | Esc | Ctrl |
 | **Esc** | CapsLock | — |
-| **Left Ctrl** | Super (niri's `Mod`) | Super |
+| **Right Alt** | Super (niri's `Mod`) | Super |
 
 `overload(layer, key)` is keyd's tap-hold: holding activates the modifier
 instantly (no lag, so chords work), while a quick tap-and-release emits the other
-key. CapsLock uses it; Left Ctrl is a plain remap.
+key. CapsLock uses it; Right Alt is a plain remap.
 
-### Why Left Ctrl → Super
+### Why Right Alt → Super
 
 The laptop's physical **Super key is dead** — a failed switch. We confirmed it
 sends *no* event to Linux at all (checked with `keyd monitor` and
@@ -31,9 +31,16 @@ worked under Windows. It's not a software/driver issue and there's no firmware o
 BIOS "Windows-key lock" on this machine — so it's hardware, and not fixable in
 config.
 
-Remapping **Left Ctrl → Super** restores a working `Mod` key on the left, where
-muscle memory expects it. Nothing is lost: **Ctrl** is still available by
-**holding CapsLock**, and **Right Ctrl** is untouched.
+**Right Alt** is the donor because it's the least-used key still within easy
+reach. **Left Alt is untouched**, so every Alt chord keeps working; the only real
+cost is **AltGr**, which this setup doesn't use. If you ever adopt a layout whose
+third-level symbols live on AltGr, pick a different donor.
+
+This replaced an earlier **Left Ctrl → Super** remap. That one worked but stole a
+genuine Ctrl from *every* keyboard — including external ones, whose Super key is
+fine — which would have forced a per-keyboard config split. Moving the remap to a
+key nobody misses is what keeps this a **single config** matching `[ids] *`,
+which is the simpler thing to maintain.
 
 ## Build / install
 
