@@ -1,0 +1,70 @@
+// VS Code keybindings — shared across Linux and Windows.
+// Docs: https://code.visualstudio.com/docs/getstarted/keybindings
+// Defaults for reference: Ctrl+K Ctrl+S opens the keybindings UI, and its
+// "{}" button (top right) shows the full default list as JSON.
+//
+// Linked to:  Linux ~/.config/Code/User/keybindings.json
+//             Windows %APPDATA%\Code\User\keybindings.json
+//
+// This file only ADDS to VS Code's built-in bindings; it doesn't replace them,
+// and a binding only fires when its `when` clause is true.
+//
+// Almost everything keyboard-related in this repo is a VIM mapping, which lives
+// in settings.json under "vim.normalModeKeyBindingsNonRecursive" — that's the
+// file to edit for editing/navigation keys. This file is for the two kinds of
+// chord a Vim mapping can't express:
+//
+//   1. Chords that must work OUTSIDE a Vim buffer (the Markdown preview below).
+//   2. ALT chords. VSCodeVim only receives the keys it registers in its own
+//      package.json — 75 of them, and not one is alt+<letter>. So an `<A-j>` in
+//      vim.normalModeKeyBindings never fires: VS Code routes alt+j to its own
+//      keybinding table and the Vim extension never sees it. Alt maps belong here.
+//
+// User keybindings in this file BEAT extension-contributed ones, which matters
+// for the alt+k collision documented below.
+[
+  {
+    // --- Markdown: make Ctrl+Shift+V a real toggle ---
+    // settings.json opens .md files in the rendered preview by default, so the
+    // way back to the source needs a key. VS Code's default Ctrl+Shift+V only
+    // goes one way (source -> preview, `markdown.showPreview`); this adds the
+    // return trip, so the same chord flips between rendered and source.
+    //
+    // `markdownPreviewFocus` is true only while the preview pane itself has
+    // focus, so this never shadows the default binding in a text buffer. And
+    // because the preview isn't an editable buffer, Vim mode isn't involved —
+    // which is exactly why this can't live in settings.json.
+    "key": "ctrl+shift+v",
+    "command": "markdown.showSource",
+    "when": "markdownPreviewFocus"
+  },
+
+  // --- Move the current line up/down ---
+  // .ideavimrc maps <A-k>/<A-j> to MoveLineUp/MoveLineDown; VS Code ships this on
+  // Alt+Up/Down only. These add the Vim-letter spelling, so the same keys move a
+  // line in JetBrains and here. Not scoped to a Vim mode on purpose — in
+  // JetBrains it works while typing too.
+  {
+    "key": "alt+k",
+    "command": "editor.action.moveLinesUpAction",
+    "when": "editorTextFocus && !editorReadonly"
+  },
+  {
+    "key": "alt+j",
+    "command": "editor.action.moveLinesDownAction",
+    "when": "editorTextFocus && !editorReadonly"
+  },
+
+  // --- Claude Code: insert an @-mention file reference ---
+  // COLLISION, and why this binding exists: the Claude Code extension claims
+  // plain `alt+k` for this command, which the alt+k above now wins (user
+  // keybindings beat extension ones). Rather than lose the feature, it moves one
+  // key over. Its other chords are unaffected — though the extension's
+  // Cmd+Escape "focus" binding is the Windows key on Windows, so use <leader>a
+  // (settings.json) to open Claude instead.
+  {
+    "key": "alt+shift+k",
+    "command": "claude-vscode.insertAtMention",
+    "when": "editorTextFocus"
+  }
+]

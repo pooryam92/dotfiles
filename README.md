@@ -14,6 +14,7 @@ Windows).
 | Search       | [fzf](https://github.com/junegunn/fzf) (fuzzy picker: `Ctrl+R/T`, `Alt+C`) + [fd](https://github.com/sharkdp/fd) (fast `find`) + [ripgrep](https://github.com/BurntSushi/ripgrep) (search file contents) + [bat](https://github.com/sharkdp/bat) (previews) |
 | Editor       | [Neovim](https://neovim.io) — minimal single-file config (Tokyo Night) |
 | GUI editor   | [Zed](https://zed.dev) — fast GPU editor, Vim mode + JetBrains Islands Dark (shared `settings.json`/`keymap.json`) |
+| GUI editor   | [VS Code](https://code.visualstudio.com) — Vim mode + JetBrains Islands Dark; renders Markdown by default (shared `settings.json`/`keybindings.json`) |
 | IDE editing  | [IdeaVim](https://github.com/JetBrains/ideavim) — Vim plugin for JetBrains IDEs (`.ideavimrc`) |
 | AI coding    | [Claude Code](https://docs.claude.com/en/docs/claude-code) — themed status line + synced settings |
 
@@ -33,6 +34,7 @@ in the actual config in this repo:
 - [zoxide](docs/zoxide.md) — smarter `cd`: jump to frecent dirs with `z`/`zi`
 - [Neovim](nvim/README.md) — minimal single-file config: sensible defaults, keymaps, Tokyo Night
 - [Zed](zed/README.md) — the GUI editor: Vim mode, JetBrains Islands Dark theme, fonts, keymap (**opt-in install**: `zed/install-zed.{sh,ps1}`)
+- [VS Code](vscode/README.md) — the other GUI editor: Vim mode, JetBrains Islands Dark, Markdown rendered by default (**opt-in install**: `vscode/install-vscode.{sh,ps1}`)
 - [IdeaVim](intellij/README.md) — Vim in JetBrains IDEs: leader maps, IDE actions
 - [Claude Code](claude/README.md) — the AI agent: themed status line, synced settings
 - [COSMIC on niri](niri/README.md) — **opt-in, Linux-only**: COSMIC's shell on a scrollable-tiling compositor (`niri/install-cosmic-niri.sh`)
@@ -76,7 +78,8 @@ backed up to `<file>.bak.<timestamp>` before linking.
 `zsh-syntax-highlighting`. It installs **WezTerm** (nightly .deb) and — as user
 binaries in `~/.local/bin` via their official installers — **zoxide**,
 **Neovim**, and **Claude Code**, and builds **keyd** from source. It installs the
-**JetBrainsMono Nerd Font**, symlinks the configs (including Zed's), and sets
+**JetBrainsMono Nerd Font**, symlinks the configs (including Zed's and VS
+Code's), and sets
 **zsh** as the login shell (`chsh`). Steps using `sudo` will prompt for your
 password.
 
@@ -84,14 +87,18 @@ password.
 to install **PowerShell 7**, **WezTerm**, **zoxide**, **Neovim**, **fd**,
 **ripgrep**, **bat**, plus `fzf` (fuzzy finder) and `win32yank` (Neovim's
 clipboard), and the Nerd Font. It also installs **Claude Code** (its own native
-installer, not scoop), then links the configs (including Zed's). See
+installer, not scoop), then links the configs (including Zed's and VS Code's). See
 [docs/windows.md](docs/windows.md).
 
-These install the **terminal/CLI stack** only. **Zed** (the GUI editor) is a
-GUI app, so — like the niri session below — it installs from its own script
-(`zed/install-zed.sh` on Linux, `zed/install-zed.ps1` on Windows); the installers
-above still symlink Zed's config either way. Zed self-updates, so the update
-scripts don't track it.
+These install the **terminal/CLI stack** only. The **GUI editors — Zed and VS
+Code** — install from their own scripts, like the niri session below:
+`zed/install-zed.{sh,ps1}` and `vscode/install-vscode.{sh,ps1}`. The installers
+above still symlink both editors' configs either way. The VS Code script also
+installs the extensions its config needs, read from `vscode/extensions.txt` (Vim
+mode, the Islands Dark theme, Claude Code) — one list, both OSes.
+Zed self-updates, as does VS Code on Windows; VS Code on Linux is apt-managed via
+Microsoft's repo, so it rides a normal `sudo apt-get upgrade`. Either way the
+`update` commands below don't track them.
 
 ### Keeping things updated
 
@@ -133,6 +140,8 @@ the repo root as the entry points.
 | `nvim/`                  | `~/.config/nvim`              | `%LOCALAPPDATA%\nvim` (junction)        |
 | `zed/settings.json`      | `~/.config/zed/settings.json` | `%APPDATA%\Zed\settings.json`           |
 | `zed/keymap.json`        | `~/.config/zed/keymap.json`   | `%APPDATA%\Zed\keymap.json`             |
+| `vscode/settings.json`   | `~/.config/Code/User/settings.json` (**copied**, not linked — see [vscode/README.md](vscode/README.md)) | `%APPDATA%\Code\User\settings.json` |
+| `vscode/keybindings.json`| `~/.config/Code/User/keybindings.json` | `%APPDATA%\Code\User\keybindings.json` |
 | `intellij/.ideavimrc`    | `~/.ideavimrc`                | `%USERPROFILE%\.ideavimrc`              |
 | `zsh/.zshrc`             | `~/.zshrc`                    | —                                       |
 | `pwsh/profile.ps1`       | —                             | `$PROFILE.CurrentUserAllHosts`          |
@@ -146,13 +155,18 @@ After editing:
 - **zsh** – `exec zsh` (or open a new shell). **PowerShell** – `. $PROFILE`.
 - **Neovim** – restart `nvim` (plugins via `:lua vim.pack.update()`).
 - **Zed** – applies settings/keymap edits on save; no reload.
+- **VS Code** – keybinding edits apply on save. `vscode/settings.json` is a
+  **copy**, not a link (it would otherwise push work/machine settings into this
+  public repo), so editing it needs an installer re-run — see
+  [vscode/README.md](vscode/README.md).
 
 ## Cheat sheet
 
 The keys and commands that drive this setup **every day** — same on Linux and
 Windows unless noted. This is a curated subset; each block links to its canonical
 full table. (App-specific editor keys — [IdeaVim](intellij/README.md),
-[Zed](zed/README.md), [Neovim](nvim/README.md) — live in their own guides.)
+[Zed](zed/README.md), [VS Code](vscode/README.md), [Neovim](nvim/README.md) —
+live in their own guides.)
 
 **WezTerm — panes, tabs, terminal** · full table: [wezterm/README.md](wezterm/README.md)
 
@@ -224,6 +238,8 @@ Emacs-style, always-on (no modes) — identical on zsh and PowerShell.
 | Change pane/tab keybinds     | the `config.keys` block in `wezterm/wezterm.lua`    |
 | Change the prompt            | the prompt block in `zsh/.zshrc` (Linux) / the `prompt` function in `pwsh/profile.ps1` (Windows) |
 | Change the Claude status line| `claude/statusline.js` (see [claude/README.md](claude/README.md)) |
+| Stop `.md` opening rendered  | the `workbench.editorAssociations` block in `vscode/settings.json` |
+| Add a VS Code extension      | one line in `vscode/extensions.txt`, then re-run `vscode/install-vscode.{sh,ps1}` |
 | Add aliases / env            | `zsh/.zshrc` (Linux) / `pwsh/profile.ps1` (Windows) |
 | Switch theme                 | `color_scheme` in WezTerm (prompts follow the terminal palette) |
 

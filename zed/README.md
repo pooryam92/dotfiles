@@ -2,8 +2,9 @@
 
 [Zed](https://zed.dev) is a fast, GPU-accelerated GUI code editor. In this repo
 it's the **graphical** counterpart to the terminal Neovim setup: same modal
-Vim editing, same font, with its own theme (JetBrains Islands Dark — the one
-exception to the repo's Tokyo Night theme) — so reaching for a mouse-driven
+Vim editing, same font, with its own theme (JetBrains Islands Dark — the
+exception to the repo's Tokyo Night theme, shared with
+[VS Code](../vscode/README.md)) — so reaching for a mouse-driven
 editor doesn't mean leaving the keyboard-first workflow behind (goals #1, #3).
 
 - Docs: <https://zed.dev/docs/configuring-zed> · full settings list:

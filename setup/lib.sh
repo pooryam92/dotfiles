@@ -220,9 +220,13 @@ install_keyd() {
   sudo keyd reload 2>/dev/null || warn "keyd reload failed; run 'sudo keyd reload' once the service is up"
 }
 
-# Zed — the GUI editor — is NOT managed here. It's a GUI app, installed on its own
-# by zed/install-zed.sh (mirroring niri's standalone installer), so it stays out of
-# the CLI install/update loops. Its config is still symlinked via links.tsv.
+# Zed and VS Code — the GUI editors — are NOT managed here. They're GUI apps,
+# installed on their own by zed/install-zed.sh and vscode/install-vscode.sh
+# (mirroring niri's standalone installer), so they stay out of the CLI
+# install/update loops. Their configs are still symlinked via links.tsv.
+# NOTE: vscode/install-vscode.sh adds Microsoft's apt repo, so VS Code upgrades
+# with a plain `apt-get upgrade` — but NOT with `install.sh update`, which scopes
+# itself to BASE_APT. That's deliberate; keep it that way.
 
 # Claude Code — Anthropic's CLI. The native installer self-updates (or `claude
 # update`), so we only run it when absent. Its config is linked from this repo.

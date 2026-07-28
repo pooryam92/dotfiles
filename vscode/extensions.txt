@@ -1,0 +1,20 @@
+# VS Code extensions — the list BOTH installers read.
+#
+# One extension id per line; blank lines and #-comments ignored, and a trailing
+# `# comment` on a line is stripped (ids never contain '#').
+#
+# WHY THIS FILE EXISTS: the ids used to be hardcoded in install-vscode.ps1 AND
+# install-vscode.sh. Adding one meant editing two files, and forgetting one
+# silently forked Windows from Linux — exactly what goal #3 is about. Same trick
+# as setup/links.tsv: the list is data, the scripts are just the loop.
+#
+# Keep this SHORT. Anything listed here is something a clean install can't do
+# without; per-language tooling (Python, C#, SQL…) is machine/job-specific and
+# belongs on the machine, not in a public repo (goal #2).
+#
+# Find an id: Extensions view -> the extension -> "Unique Identifier" in the
+# details pane, or `code --list-extensions`.
+
+vscodevim.vim         # Vim mode — settings.json configures it (goal #1)
+kangsou.islands-theme # VS Code theme; without it VS Code falls back to Dark+
+anthropic.claude-code # Claude Code in-editor: diffs, selection context, @-mentions (goal #4)

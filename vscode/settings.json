@@ -1,0 +1,257 @@
+// VS Code settings — shared across Linux and Windows.
+// Docs: https://code.visualstudio.com/docs/getstarted/settings
+// Full key list: https://code.visualstudio.com/docs/reference/default-settings
+//
+// The installers COPY this file (they don't symlink it) to:
+//   Linux:    ~/.config/Code/User/settings.json
+//   Windows:  %APPDATA%\Code\User\settings.json
+//
+// WHY A COPY, when every other config here is a live symlink: VS Code rewrites
+// user settings.json whenever you change anything through its UI, and user
+// settings is where MACHINE-SPECIFIC and WORK state accumulates — mssql
+// connection profiles (server hostnames, usernames), Python interpreter paths,
+// Copilot toggles. This repo is public, so a symlink would push all of that into
+// it. A copy seeds these defaults, then lets the live file diverge locally —
+// exactly the strategy claude/settings.json uses, for the same reason.
+//
+// CONSEQUENCE: editing THIS file does not affect a running VS Code. Re-run the
+// main installer (install.sh / install.ps1) to re-copy it — that BACKS UP and
+// REPLACES your live settings, so anything you'd added there locally stops
+// applying until you merge it back from the .bak file.
+// So: put shared, machine-independent editor preferences here; keep anything
+// machine- or job-specific in the live file (or better, in per-project
+// .vscode/settings.json, which always wins over user settings).
+// vscode/keybindings.json IS a live symlink — it holds no machine state.
+//
+// Format is JSONC: // comments and trailing commas are allowed.
+//
+// Only settings that DIFFER from VS Code's (or the Vim extension's) defaults are
+// listed — anything already correct out of the box stays out, so this file reads
+// as "here is what we changed, and why" (goal #2).
+{
+  // ================================================================
+  // Markdown — open RENDERED, not as source
+  // ================================================================
+  // Opening a .md file gives you the rendered preview instead of the raw text.
+  // This is a built-in editor ("vscode.markdown.preview.editor"), not an
+  // extension. Applies everywhere a .md is opened: explorer, Ctrl+P, `code
+  // README.md` from the shell.
+  //
+  //   >>> TO EDIT THE SOURCE: press Ctrl+Shift+V. <<<
+  //
+  // That chord opens the preview from source (VS Code's default) and — via the
+  // `markdown.showSource` binding in keybindings.json — flips back from preview
+  // to source, so one key toggles both ways. `Ctrl+K V` still opens a preview in
+  // a side-by-side split, which is the nicer mode for writing.
+  //
+  // To turn this off, delete the "*.md" line; to make it apply only to READMEs,
+  // narrow the glob (e.g. "**/README.md").
+  "workbench.editorAssociations": {
+    "*.md": "vscode.markdown.preview.editor"
+  },
+
+  // ================================================================
+  // Editing model: Vim
+  // ================================================================
+  // Modal, keyboard-first editing on every editor in this repo (goal #1) — the
+  // same muscle memory as the Neovim, IdeaVim and Zed configs. Provided by the
+  // VSCodeVim extension, which the install script installs.
+  // Docs: https://github.com/VSCodeVim/Vim#-settings
+  //
+  // Disable it temporarily without editing this file: command palette
+  // (Ctrl+Shift+P) -> "Extensions: Disable" -> Vim.
+
+  // Space, matching nvim's mapleader and .ideavimrc's `let mapleader=" "`.
+  "vim.leader": "<space>",
+
+  // y/p use the OS clipboard, so copy/paste crosses the editor boundary like it
+  // does everywhere else here. Mirrors nvim's `clipboard = 'unnamedplus'` and
+  // .ideavimrc's `set clipboard+=unnamedplus`. Off by default in VSCodeVim.
+  "vim.useSystemClipboard": true,
+
+  // Keep matches highlighted after a search, like `set hlsearch`. Off by default
+  // in VSCodeVim. `<leader>nh` below clears the highlight.
+  "vim.hlsearch": true,
+
+  // Flash the text you just yanked — .ideavimrc's `set highlightedyank` and the
+  // TextYankPost autocmd in nvim/init.lua.
+  "vim.highlightedyank.enable": true,
+
+  // ---- Normal-mode maps ----------------------------------------------------
+  // "NonRecursive" = the right-hand side isn't re-expanded through other maps —
+  // Vim's `nnoremap`, and the safe default for every mapping here.
+  //
+  // Scope note: this deliberately mirrors the ZED keymap, not the full IdeaVim
+  // <leader> namespace — the `g` code-navigation keys plus the handful of
+  // navigation maps from .ideavimrc that VS Code has a direct command for.
+  // Porting the rest of the namespace (m run, t tests, c code, s settings…) is
+  // the documented next step; see vscode/README.md.
+  "vim.normalModeKeyBindingsNonRecursive": [
+    // --- Split navigation ---
+    // Bare Ctrl+h/j/k/l between editor groups, the form nvim, IdeaVim and Zed
+    // all use. VSCodeVim only ships the `Ctrl-w h/j/k/l` spelling.
+    { "before": ["<C-h>"], "commands": ["workbench.action.navigateLeft"] },
+    { "before": ["<C-l>"], "commands": ["workbench.action.navigateRight"] },
+    { "before": ["<C-j>"], "commands": ["workbench.action.navigateDown"] },
+    { "before": ["<C-k>"], "commands": ["workbench.action.navigateUp"] },
+
+    // --- Code navigation (bare `g`) ---
+    // The same letters as .ideavimrc's `g` block, so the jumps that matter are
+    // identical in JetBrains, Zed and here. VSCodeVim only defines `gd` itself.
+    { "before": ["g", "d"], "commands": ["editor.action.revealDefinition"] },      // IdeaVim gd
+    { "before": ["g", "D"], "commands": ["editor.action.revealDeclaration"] },     // IdeaVim gD
+    { "before": ["g", "i"], "commands": ["editor.action.goToImplementation"] },    // IdeaVim gi
+    { "before": ["g", "y"], "commands": ["editor.action.goToTypeDefinition"] },    // IdeaVim gy
+    // Find All References in the side panel (the built-in references-view), not
+    // the inline peek widget — closer to IdeaVim's FindUsages tool window.
+    { "before": ["g", "r"], "commands": ["references-view.findReferences"] },      // IdeaVim gr
+    { "before": ["g", "a"], "commands": ["editor.action.quickFix"] },              // IdeaVim ga
+    { "before": ["g", "R"], "commands": ["editor.action.rename"] },                // IdeaVim gR
+
+    // --- Leader: navigation ---
+    { "before": ["<leader>", "<space>"], "commands": ["workbench.action.quickOpen"] },   // goto file
+    { "before": ["<leader>", "/"], "commands": ["workbench.action.findInFiles"] },       // find in path
+    // IdeaVim toggles NERDTree here; the VS Code analogue is focusing the file
+    // explorer (Ctrl+B still toggles the sidebar itself).
+    { "before": ["<leader>", "e"], "commands": ["workbench.view.explorer"] },
+    { "before": ["<leader>", "n", "h"], "commands": [":nohl"] },
+    // Splits, matching nvim's <leader>- / <leader>| and the IdeaVim maps.
+    { "before": ["<leader>", "-"], "commands": ["workbench.action.splitEditorDown"] },
+    { "before": ["<leader>", "|"], "commands": ["workbench.action.splitEditor"] },
+
+    // ---- The <leader> NAMESPACE, ported from .ideavimrc --------------------
+    // Same letters, same grouping, so ONE map covers JetBrains and VS Code:
+    //   f Files   g Git   c Code/Refactor   m Make/Run/Debug   t Tests/Terminal
+    //   s Settings/Search/Symbols   a AI      (e Explorer is above)
+    //
+    // No which-key popup exists for VSCodeVim, so the groups are invisible until
+    // they're muscle memory — the table in vscode/README.md is the map. Nothing
+    // here shadows a bare-`g` jump above; those are a separate namespace.
+    //
+    // NOT PORTED, because VS Code has no equivalent: <leader>sr (reload vimrc —
+    // VS Code applies settings live), <leader>sc (GotoClass — no class-only
+    // picker; <leader>ss searches all symbols), <leader>st (Vim Coach plugin),
+    // <leader>ep (Project tool window — that IS the explorer here).
+
+    // --- f — Files ---
+    { "before": ["<leader>", "f", "r"], "commands": ["workbench.action.showAllEditorsByMostRecentlyUsed"] }, // IdeaVim RecentFiles
+    { "before": ["<leader>", "f", "n"], "commands": ["explorer.newFile"] },
+    // IdeaVim's <leader>fc opens ~/.ideavimrc; here the live settings file — note
+    // that's the COPY at %APPDATA%/~/.config, not this repo file (see header).
+    { "before": ["<leader>", "f", "c"], "commands": ["workbench.action.openSettingsJson"] },
+
+    // --- g — Git (bare `g` above is goto; <leader>g is git, as in .ideavimrc) ---
+    { "before": ["<leader>", "g", "s"], "commands": ["workbench.view.scm"] },      // status/staging
+    { "before": ["<leader>", "g", "b"], "commands": ["git.checkout"] },            // switch branch
+    { "before": ["<leader>", "g", "c"], "commands": ["git.commit"] },
+    { "before": ["<leader>", "g", "B"], "commands": ["git.blame.toggleEditorDecoration"] }, // IdeaVim Annotate
+    // IdeaVim opens a File History tab; VS Code's built-in analogue is the
+    // Timeline view (git commits touching this file), no extension needed.
+    { "before": ["<leader>", "g", "h"], "commands": ["timeline.focus"] },
+    { "before": ["<leader>", "g", "p"], "commands": ["git.pull"] },
+    { "before": ["<leader>", "g", "P"], "commands": ["git.push"] },
+
+    // --- c — Code / Refactor ---
+    // Deliberate overlap with gR/ga above: .ideavimrc has both spellings too.
+    { "before": ["<leader>", "c", "r"], "commands": ["editor.action.rename"] },
+    { "before": ["<leader>", "c", "a"], "commands": ["editor.action.quickFix"] },
+    { "before": ["<leader>", "c", "f"], "commands": ["editor.action.formatDocument"] },   // formatOnSave is off
+    { "before": ["<leader>", "c", "o"], "commands": ["editor.action.organizeImports"] },
+
+    // --- m — Make / Run / Debug ---
+    { "before": ["<leader>", "m", "r"], "commands": ["workbench.action.debug.run"] },    // run, no debugger
+    { "before": ["<leader>", "m", "d"], "commands": ["workbench.action.debug.start"] },  // run WITH debugger
+    { "before": ["<leader>", "m", "s"], "commands": ["workbench.action.debug.stop"] },
+    { "before": ["<leader>", "m", "b"], "commands": ["editor.debug.action.toggleBreakpoint"] },
+    { "before": ["<leader>", "m", "c"], "commands": ["workbench.action.debug.selectandstart"] }, // pick config
+
+    // --- t — Tests / Terminal ---
+    { "before": ["<leader>", "t", "r"], "commands": ["testing.runCurrentFile"] },  // IdeaVim RunClass
+    { "before": ["<leader>", "t", "f"], "commands": ["testing.reRunFailTests"] },
+    { "before": ["<leader>", "t", "l"], "commands": ["testing.reRunLastRun"] },
+    { "before": ["<leader>", "t", "t"], "commands": ["workbench.action.terminal.toggleTerminal"] },
+
+    // --- s — Settings / Search / Symbols ---
+    { "before": ["<leader>", "s", "o"], "commands": ["workbench.action.openSettings"] },
+    { "before": ["<leader>", "s", "a"], "commands": ["workbench.action.showCommands"] },   // command palette
+    { "before": ["<leader>", "s", "s"], "commands": ["workbench.action.showAllSymbols"] }, // symbol, whole project
+    // Not in .ideavimrc — VS Code splits project symbols from in-file ones and the
+    // in-file picker is too useful to leave unbound. `f` = this File.
+    { "before": ["<leader>", "s", "f"], "commands": ["workbench.action.gotoSymbol"] },
+
+    // --- a — AI (goal #4) ---
+    // Single key, like .ideavimrc's <leader>a. Opens the last Claude Code session
+    // in the editor (the extension's own Cmd/Win+Escape chord is unhelpful on
+    // Windows). Needs anthropic.claude-code from extensions.txt.
+    { "before": ["<leader>", "a"], "commands": ["claude-vscode.editor.openLast"] }
+  ],
+
+  // ================================================================
+  // Theme
+  // ================================================================
+  // Islands Dark — a direct port of JetBrains' "Islands" theme, the same one Zed
+  // uses (JetBrains Islands Dark). VS Code is the exception here (alongside Zed):
+  // Tokyo Night was too dark to read comfortably in this editor. WezTerm, Neovim,
+  // and the shell prompts still use Tokyo Night. Ships in the
+  // "kangsou.islands-theme" extension, which the install script installs;
+  // without it VS Code silently falls back to Dark+.
+  "workbench.colorTheme": "Islands Dark",
+
+  // ================================================================
+  // Font — the JetBrainsMono Nerd Font the installers install
+  // ================================================================
+  // Nerd Font so glyphs/ligatures match the terminal stack and Zed.
+  "editor.fontFamily": "'JetBrainsMono Nerd Font', 'JetBrains Mono', monospace",
+  "editor.fontSize": 14,
+  "editor.fontLigatures": true,
+  "terminal.integrated.fontFamily": "'JetBrainsMono Nerd Font'",
+
+  // ================================================================
+  // Editor behaviour — matched to nvim/init.lua
+  // ================================================================
+  // Keep context above/below the cursor while scrolling — nvim's `scrolloff`.
+  "editor.cursorSurroundingLines": 10,
+
+  // Show trailing whitespace, like nvim's `listchars = { trail = '·' }`.
+  "editor.renderWhitespace": "trailing",
+
+  // Off, matching Zed's "format_on_save": "off" (and nvim, where formatting is
+  // opt-in). Flip to true, or scope it per-language with a "[python]" block.
+  "editor.formatOnSave": false,
+
+  // The minimap is mouse-affordance for a keyboard-first setup (goal #1), and it
+  // costs horizontal space. Navigation is Ctrl+P / gd / `<leader>/` instead.
+  "editor.minimap.enabled": false,
+
+  // ================================================================
+  // On-save hygiene — both OFF by default in VS Code
+  // ================================================================
+  // We already SHOW trailing whitespace (above); these actually remove it, and
+  // guarantee the final newline POSIX tools and git expect. Independent of
+  // formatOnSave, so they apply even with no formatter installed.
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true,
+
+  // ================================================================
+  // Markdown source — this repo is mostly prose
+  // ================================================================
+  // Sixteen READMEs and guides live here, and .md opens rendered (see the top of
+  // this file), so the source view is specifically for *writing*.
+  "[markdown]": {
+    // Wrap long prose lines instead of scrolling sideways. Off globally, because
+    // for code the horizontal scroll is the useful signal that a line is too long.
+    "editor.wordWrap": "on",
+    // MUST override the global setting above: in Markdown, two trailing spaces
+    // are a hard line break — trimming them silently reflows your paragraphs.
+    "files.trimTrailingWhitespace": false
+  },
+
+  // ================================================================
+  // Integrated terminal — the same shell WezTerm launches
+  // ================================================================
+  // Matches wezterm.lua's `default_prog` so the in-editor terminal is the same
+  // shell as a real one: PowerShell 7 on Windows (the "PowerShell" profile is
+  // pwsh 7; "Windows PowerShell" is the old 5.1), zsh on Linux.
+  "terminal.integrated.defaultProfile.windows": "PowerShell",
+  "terminal.integrated.defaultProfile.linux": "zsh"
+}

@@ -5,6 +5,8 @@ intellij/.ideavimrc	file	{HOME}/.ideavimrc	{HOME}/.ideavimrc
 nvim	dir	{CONFIG}/nvim	{LOCALAPPDATA}/nvim
 zed/settings.json	file	{CONFIG}/zed/settings.json	{APPDATA}/Zed/settings.json
 zed/keymap.json	file	{CONFIG}/zed/keymap.json	{APPDATA}/Zed/keymap.json
+vscode/settings.json	copy	{CONFIG}/Code/User/settings.json	{APPDATA}/Code/User/settings.json
+vscode/keybindings.json	file	{CONFIG}/Code/User/keybindings.json	{APPDATA}/Code/User/keybindings.json
 pwsh/profile.ps1	file	-	{PROFILE}
 claude/statusline.js	file	{CLAUDE}/statusline.js	{CLAUDE}/statusline.js
 claude/settings.json	copy	{CLAUDE}/settings.json	{CLAUDE}/settings.json
