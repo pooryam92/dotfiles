@@ -37,6 +37,11 @@ set commentary               " gcc line, gc in visual
 set highlightedyank          " flash yanked text
 " set easymotion             " <leader><leader> motions (needs AceJump plugin)
 " set multiple-cursors       " <A-n> select next occurrence
+" set functextobj            " af/if function textobject (needs the "functextobj"
+"                              IdeaVim extension from JetBrains Marketplace).
+"                              NOT `Plug 'kana/vim-textobj-function'` — IdeaVim
+"                              doesn't emulate that plugin, it reimplements it
+"                              under this name, and an unknown Plug is ignored.
 
 " =========================================================
 " Navigation & windows
@@ -70,7 +75,7 @@ nnoremap <leader>fc :e ~/.ideavimrc<CR>
 
 " =========================================================
 " g — Goto (bare g) + Git (<leader>g)
-t =========================================================
+" =========================================================
 nmap gd <Action>(GotoDeclaration)
 nmap gD <Action>(GotoSuperMethod)
 nmap gi <Action>(GotoImplementation)
@@ -127,4 +132,3 @@ nmap <leader>st <Action>(com.github.pooryam92.vimcoach.actions.ShowVimTipAction)
 " a — AI
 " =========================================================
 nmap <leader>a <Action>(AIAssistant.Editor.AskAiAssistantInEditor)
-
