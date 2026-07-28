@@ -15,6 +15,7 @@
 # Find an id: Extensions view -> the extension -> "Unique Identifier" in the
 # details pane, or `code --list-extensions`.
 
+# No theme extension: settings.json uses "Dark Modern", which is built in.
+
 vscodevim.vim         # Vim mode — settings.json configures it (goal #1)
-kangsou.islands-theme # VS Code theme; without it VS Code falls back to Dark+
 anthropic.claude-code # Claude Code in-editor: diffs, selection context, @-mentions (goal #4)

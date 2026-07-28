@@ -189,13 +189,21 @@
   // ================================================================
   // Theme
   // ================================================================
-  // Islands Dark — a direct port of JetBrains' "Islands" theme, the same one Zed
-  // uses (JetBrains Islands Dark). VS Code is the exception here (alongside Zed):
-  // Tokyo Night was too dark to read comfortably in this editor. WezTerm, Neovim,
-  // and the shell prompts still use Tokyo Night. Ships in the
-  // "kangsou.islands-theme" extension, which the install script installs;
-  // without it VS Code silently falls back to Dark+.
-  "workbench.colorTheme": "Islands Dark",
+  // Dark Modern — VS Code's own default dark theme, BUILT IN. No extension, so
+  // there is nothing to install and nothing to fall back from (goal #2); this is
+  // the only theme in the repo that can't fail on a fresh machine.
+  //
+  // It is deliberately NOT Tokyo Night, which the terminal stack (WezTerm,
+  // Neovim, the prompts) uses: the night variant reads too dark in a full IDE
+  // chrome, and neither Tokyo Night Storm nor JetBrains' Islands Dark — both
+  // tried here, 2026-07-28 — were an improvement on plain Dark Modern. Goal #3
+  // still holds where it matters, since this is identical on Windows and Linux;
+  // it's the colour scheme alone that differs from the terminal, and Zed
+  // (JetBrains Islands Dark) already differs from both.
+  //
+  // Since it's built in, swapping it is a one-line edit with no extensions.txt
+  // change: Ctrl+K Ctrl+T lists everything installed.
+  "workbench.colorTheme": "Dark Modern",
 
   // ================================================================
   // Font — the JetBrainsMono Nerd Font the installers install

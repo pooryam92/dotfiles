@@ -2,13 +2,12 @@
 
 [VS Code](https://code.visualstudio.com) is the second **graphical** editor in
 this repo, alongside [Zed](../zed/README.md). Same modal Vim editing, same font
-(goal #1). The theme is the deliberate exception to the repo's Tokyo Night —
-which reads too dark in this editor — so VS Code runs **Islands Dark**, a port of
-the same JetBrains "Islands" theme Zed uses. Both GUI editors are on it, and both
-are identical across Windows and Linux, so goal #3 still holds; it's the terminal
-stack (WezTerm, Neovim, the prompts) that stays Tokyo Night. Where Zed is the
-fast, minimal one, VS Code is the one with the extension ecosystem behind it, and
-the one that renders Markdown properly.
+(goal #1). The theme is **Dark Modern** — VS Code's own built-in default, so it
+needs no extension and can't fail on a fresh machine (goal #2). It's deliberately
+not the repo's Tokyo Night: that palette's Night variant reads too dark in a full
+IDE chrome, and both Tokyo Night Storm and JetBrains Islands Dark were tried here
+and dropped. Where Zed is the fast, minimal one, VS Code is the one with the
+extension ecosystem behind it, and the one that renders Markdown properly.
 
 - Docs: <https://code.visualstudio.com/docs/getstarted/settings> · keybindings:
   <https://code.visualstudio.com/docs/getstarted/keybindings> · Vim extension:
@@ -167,12 +166,12 @@ whether or not VS Code is installed.
 **Extensions are data, not script.** Both installers read
 [`vscode/extensions.txt`](extensions.txt) — one id per line, `#` comments
 allowed — so adding an extension is one edit, in one file, and Windows and Linux
-can't drift apart (goal #3). The list is deliberately short:
+can't drift apart (goal #3). The list is deliberately short — two entries, since
+the theme is built in and needs nothing installed:
 
 | Extension | Why it's mandatory |
 | --------- | ------------------ |
 | `vscodevim.vim` | Vim mode; `settings.json` is 45 mappings of configuration for it |
-| `kangsou.islands-theme` | the theme — without it VS Code silently falls back to Dark+ |
 | `anthropic.claude-code` | Claude Code in-editor: diffs, selection context, `@`-mentions (goal #4) |
 
 Per-language tooling (Python, C#, SQL…) stays **off** this list on purpose —

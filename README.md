@@ -14,7 +14,7 @@ Windows).
 | Search       | [fzf](https://github.com/junegunn/fzf) (fuzzy picker: `Ctrl+R/T`, `Alt+C`) + [fd](https://github.com/sharkdp/fd) (fast `find`) + [ripgrep](https://github.com/BurntSushi/ripgrep) (search file contents) + [bat](https://github.com/sharkdp/bat) (previews) |
 | Editor       | [Neovim](https://neovim.io) — minimal single-file config (Tokyo Night) |
 | GUI editor   | [Zed](https://zed.dev) — fast GPU editor, Vim mode + JetBrains Islands Dark (shared `settings.json`/`keymap.json`) |
-| GUI editor   | [VS Code](https://code.visualstudio.com) — Vim mode + JetBrains Islands Dark; renders Markdown by default (shared `settings.json`/`keybindings.json`) |
+| GUI editor   | [VS Code](https://code.visualstudio.com) — Vim mode + built-in Dark Modern; renders Markdown by default (shared `settings.json`/`keybindings.json`) |
 | IDE editing  | [IdeaVim](https://github.com/JetBrains/ideavim) — Vim plugin for JetBrains IDEs (`.ideavimrc`) |
 | AI coding    | [Claude Code](https://docs.claude.com/en/docs/claude-code) — themed status line + synced settings |
 
@@ -34,7 +34,7 @@ in the actual config in this repo:
 - [zoxide](docs/zoxide.md) — smarter `cd`: jump to frecent dirs with `z`/`zi`
 - [Neovim](nvim/README.md) — minimal single-file config: sensible defaults, keymaps, Tokyo Night
 - [Zed](zed/README.md) — the GUI editor: Vim mode, JetBrains Islands Dark theme, fonts, keymap (**opt-in install**: `zed/install-zed.{sh,ps1}`)
-- [VS Code](vscode/README.md) — the other GUI editor: Vim mode, JetBrains Islands Dark, Markdown rendered by default (**opt-in install**: `vscode/install-vscode.{sh,ps1}`)
+- [VS Code](vscode/README.md) — the other GUI editor: Vim mode, built-in Dark Modern, Markdown rendered by default (**opt-in install**: `vscode/install-vscode.{sh,ps1}`)
 - [IdeaVim](intellij/README.md) — Vim in JetBrains IDEs: leader maps, IDE actions
 - [Claude Code](claude/README.md) — the AI agent: themed status line, synced settings
 - [COSMIC on niri](niri/README.md) — **opt-in, Linux-only**: COSMIC's shell on a scrollable-tiling compositor (`niri/install-cosmic-niri.sh`)
@@ -95,7 +95,7 @@ Code** — install from their own scripts, like the niri session below:
 `zed/install-zed.{sh,ps1}` and `vscode/install-vscode.{sh,ps1}`. The installers
 above still symlink both editors' configs either way. The VS Code script also
 installs the extensions its config needs, read from `vscode/extensions.txt` (Vim
-mode, the Islands Dark theme, Claude Code) — one list, both OSes.
+mode and Claude Code — the theme is built in) — one list, both OSes.
 Zed self-updates, as does VS Code on Windows; VS Code on Linux is apt-managed via
 Microsoft's repo, so it rides a normal `sudo apt-get upgrade`. Either way the
 `update` commands below don't track them.
