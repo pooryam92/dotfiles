@@ -72,7 +72,7 @@ Grouped by area, so **one map covers JetBrains and VS Code**. `<Space>` then:
 | Group | Keys |
 | ----- | ---- |
 | **`f`** Files | `fr` recent files · `fn` new file · `fc` edit live settings.json |
-| **`g`** Git | `gs` status/staging · `gb` switch branch · `gc` commit · `gp`/`gP` pull/**push** · `gh` file history (Timeline) · `gB` toggle inline blame |
+| **`g`** Git | `gs` status/staging · `gb` switch branch · `gc` commit · `gp`/`gP` pull/**push** · `gh` file history (Timeline) · `gB` toggle inline blame · `gw`/`gW` switch **w**orktree here/new window · `gn` new worktree |
 | **`c`** Code | `cr` rename · `ca` quick fix · `cf` format document · `co` organise imports |
 | **`m`** Run/Debug | `mr` run · `md` run **with** debugger · `ms` stop · `mb` toggle breakpoint · `mc` pick run config |
 | **`t`** Test/Term | `tr` run tests in file · `tf` rerun failed · `tl` rerun last · `tt` toggle terminal |
@@ -80,9 +80,10 @@ Grouped by area, so **one map covers JetBrains and VS Code**. `<Space>` then:
 | **`a`** AI | `a` open Claude Code (goal #4) — a single key, as in `.ideavimrc` |
 
 Bare `<leader>g` is git; bare `g` is goto — two separate namespaces, same as
-`.ideavimrc`. `<leader>sf` is the one key **not** from IdeaVim: VS Code splits
-project symbols from in-file symbols, and the in-file picker was too useful to
-leave unbound.
+`.ideavimrc`. Four keys are **not** from IdeaVim, because VS Code has something
+JetBrains doesn't: `<leader>sf` (VS Code splits project symbols from in-file
+symbols, and the in-file picker was too useful to leave unbound) and the three
+worktree keys `gw`/`gW`/`gn` — see below.
 
 **There is no which-key popup for VSCodeVim**, so this table *is* the discovery
 mechanism until the groups are muscle memory. Start with one group.
@@ -110,6 +111,55 @@ else goes in `settings.json`.
 That created one collision worth knowing about: the Claude Code extension claims
 plain `alt+k` for "insert @-mention". User keybindings beat extension ones, so
 move-line-up wins and **@-mention moved to `Alt+Shift+K`**.
+
+---
+
+## Worktrees — parallel branches, one click
+
+A **worktree** is a second checkout of the same repo in another folder, on
+another branch, sharing one `.git`. It replaces the stash-and-switch dance: a
+code review, a hotfix, or a `claude --worktree` session gets its own folder and
+its own VS Code window while your real work stays exactly where you left it.
+That's goal #1 (fewer interruptions) meeting goal #4 (an AI session that can't
+collide with what you're editing).
+
+**VS Code's own git extension ships the whole feature** — no extension to
+install, nothing to fall back from on a fresh machine (goal #2), identical on
+both OSes (goal #3). It's just shipped **off**: `settings.json` sets
+`"git.detectWorktrees": true`, which is the entire switch. With it on, worktrees
+appear in Source Control as their own repositories, with a **Worktrees** submenu
+in the panel's title bar.
+
+| Keys | Command | What it does |
+| ---- | ------- | ------------ |
+| `<leader>gn` | `git.createWorktree` | Create a worktree (prompts for branch + location) |
+| `<leader>gw` | `git.openWorktree` | Switch to one **in this window** |
+| `<leader>gW` | `git.openWorktreeInNewWindow` | Switch to one in a **new window** |
+| — | `git.deleteWorktree` | Palette only — `Git: Delete Worktree...` |
+
+None of these has a default keybinding, which is why they're bound above.
+
+**Put worktrees beside the repo, not inside it** — `~/code/myrepo/` and
+`~/code/myrepo.wt/feat-x/`. Nesting them under the repo means every window's
+file watcher and `<leader>/` search walk all of them, and it used to make the
+shell prompt display the *main* repo's branch while you stood in a worktree
+(fixed — see below — but sibling layout is still the right default).
+
+**`git.worktreeIncludeFiles` is the setting that makes a new worktree usable.**
+`git worktree add` materialises only *tracked* files, so a fresh worktree has no
+`.env` and won't run. That setting lists gitignored globs to copy in; it's set to
+`[".env", ".env.local"]`. Don't add `node_modules`/`.venv` — reinstall those in
+the worktree instead of copying them.
+
+**The shell prompt follows you into a worktree.** Inside one, `.git` is a *file*
+(`gitdir: …/.git/worktrees/<name>`), not a directory — both prompts now resolve
+it, so `zsh/.zshrc` and `pwsh/profile.ps1` show the worktree's branch instead of
+nothing (or, nested, the wrong one). Still zero subprocesses per draw.
+
+Two things worth knowing once: a branch can only be checked out in **one**
+worktree at a time (that's the safety feature, not a limitation), and deleting
+the folder isn't enough — use `git worktree remove <path>`, or `git worktree
+prune` to clean up after the fact.
 
 ---
 

@@ -150,6 +150,13 @@
     { "before": ["<leader>", "g", "h"], "commands": ["timeline.focus"] },
     { "before": ["<leader>", "g", "p"], "commands": ["git.pull"] },
     { "before": ["<leader>", "g", "P"], "commands": ["git.push"] },
+    // Worktrees — see the "git.detectWorktrees" section below for what they are
+    // and why they're built in. w/W switch to a worktree in this window / a new
+    // one; n creates one. None of these has a default keybinding, and none is in
+    // .ideavimrc (JetBrains has no built-in equivalent), so `w`/`W`/`n` were free.
+    { "before": ["<leader>", "g", "w"], "commands": ["git.openWorktree"] },
+    { "before": ["<leader>", "g", "W"], "commands": ["git.openWorktreeInNewWindow"] },
+    { "before": ["<leader>", "g", "n"], "commands": ["git.createWorktree"] },
 
     // --- c — Code / Refactor ---
     // Deliberate overlap with gR/ga above: .ideavimrc has both spellings too.
@@ -185,6 +192,32 @@
     // Windows). Needs anthropic.claude-code from extensions.txt.
     { "before": ["<leader>", "a"], "commands": ["claude-vscode.editor.openLast"] }
   ],
+
+  // ================================================================
+  // Git worktrees — BUILT IN, but shipped OFF
+  // ================================================================
+  // A worktree is a second checkout of the SAME repository in another folder, on
+  // another branch, sharing one .git. It's what lets a code review, a hotfix, or
+  // a `claude --worktree` session run in parallel with what you're doing — no
+  // stashing, no losing your place (goals #1 and #4).
+  //
+  // VS Code's OWN git extension ships the entire feature — worktrees listed as
+  // repositories in Source Control, a "Worktrees" submenu in its title bar, one
+  // click to open. No extension to install, nothing to fall back from (goal #2),
+  // and identical on Windows and Linux (goal #3). It only needs this switch,
+  // which ships `false`. The commands it unlocks — git.createWorktree,
+  // git.openWorktree, git.openWorktreeInNewWindow, git.deleteWorktree — have NO
+  // default keybindings; <leader>gn / gw / gW above bind the three we use.
+  "git.detectWorktrees": true,
+
+  // Gitignored files COPIED into a newly created worktree. `git worktree add`
+  // materialises only TRACKED files, so a fresh worktree starts without the local
+  // untracked state a checkout usually needs to actually run. A path is copied
+  // only if it matches one of these globs AND is gitignored.
+  //
+  // Keep this to small machine-local files. Do NOT add node_modules/.venv: copying
+  // them is slow and produces a subtly wrong tree — reinstall in the worktree.
+  "git.worktreeIncludeFiles": [".env", ".env.local"],
 
   // ================================================================
   // Theme
