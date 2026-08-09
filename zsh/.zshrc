@@ -67,14 +67,29 @@ done
 # Blue ~-abbreviated path + cyan git branch, then a `>` on its own line that turns
 # red after a failed command. The branch is read straight from .git/HEAD instead of
 # shelling out to `git` on every prompt draw — zero subprocesses, same trick as the
-# pwsh prompt. (Plain repos only; a worktree/submodule .git-file just shows no
-# branch, which is fine here.)
+# pwsh prompt.
+#
+# WORKTREES: inside a `git worktree`, `.git` is a FILE containing "gitdir: <path>",
+# not a directory — so resolving it is what keeps the branch correct there. Without
+# that step this loop misses and walks UP to the parent, which either shows nothing
+# or, if the worktree sits inside the repo, confidently shows the MAIN repo's
+# branch. Worktrees are how a review or a `claude -w` session runs beside your work
+# (see vscode/README.md), and the branch is precisely what you need the prompt to
+# tell you when three of them are open. Submodules get fixed by the same two lines.
 _prompt_git_branch() {
-  local dir=$PWD ref
+  local dir=$PWD gitdir ref
   psvar[1]=''
   while :; do
-    if [[ -f $dir/.git/HEAD ]]; then
-      ref="$(<"$dir/.git/HEAD")"
+    gitdir=''
+    if [[ -d $dir/.git ]]; then
+      gitdir=$dir/.git                                  # plain repo
+    elif [[ -f $dir/.git ]]; then
+      gitdir="$(<"$dir/.git")"                          # worktree/submodule
+      gitdir=${gitdir#gitdir: }
+      [[ $gitdir == /* ]] || gitdir=$dir/$gitdir        # the path may be relative
+    fi
+    if [[ -n $gitdir && -f $gitdir/HEAD ]]; then
+      ref="$(<"$gitdir/HEAD")"
       case $ref in
         'ref: refs/heads/'*) psvar[1]=${ref#ref: refs/heads/} ;;  # branch name
         ?*)                  psvar[1]=${ref[1,7]} ;;              # detached: short sha

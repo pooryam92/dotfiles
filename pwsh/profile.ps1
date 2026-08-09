@@ -60,8 +60,14 @@ if (Get-Module PSReadLine) {
 # ---- Native prompt (no subprocess, ~2ms; mirrored in zsh/.zshrc) ----
 # Shows a ~-abbreviated path, the current git branch, and a > that turns red after a
 # failed command. The branch is read straight from .git/HEAD rather than shelling out
-# to `git` on every draw — that's what keeps the prompt instant. (Plain repos only; a
-# worktree/submodule .git-file just shows no branch, which is fine here.)
+# to `git` on every draw — that's what keeps the prompt instant.
+#
+# WORKTREES: inside a `git worktree`, .git is a FILE containing "gitdir: <path>", not
+# a directory — resolving it is what keeps the branch correct there. Without that the
+# loop misses and walks UP to the parent, showing either nothing or, if the worktree
+# sits inside the repo, the MAIN repo's branch. Worktrees are how a review or a
+# `claude -w` session runs beside your work (see vscode/README.md), and the branch is
+# exactly what you need the prompt for with three of them open. Same fix as zsh.
 function prompt {
   $ok = $?
   $path = $PWD.Path
@@ -72,13 +78,31 @@ function prompt {
   $branch = ''
   $dir = $PWD.Path
   while ($dir) {
-    $head = Join-Path $dir '.git\HEAD'
-    if (Test-Path -LiteralPath $head) {
-      $ref = (Get-Content -LiteralPath $head -Raw).Trim()
-      $branch = if ($ref -like 'ref: refs/heads/*') { $ref.Substring(16) }
-                elseif ($ref)                        { $ref.Substring(0, [Math]::Min(7, $ref.Length)) }
-                else                                 { '' }
-      break
+    $gitPath = Join-Path $dir '.git'
+    $gitDir  = $null
+    if (Test-Path -LiteralPath $gitPath -PathType Container) {
+      $gitDir = $gitPath                                        # plain repo
+    }
+    elseif (Test-Path -LiteralPath $gitPath -PathType Leaf) {
+      # worktree/submodule. -is [string] guards an empty/odd file: this runs on
+      # every prompt draw, so it must never throw.
+      $line = Get-Content -LiteralPath $gitPath -TotalCount 1 -ErrorAction SilentlyContinue
+      if ($line -is [string] -and $line.Trim() -like 'gitdir: *') {
+        $gitDir = $line.Trim().Substring(8)
+        if (-not [System.IO.Path]::IsPathRooted($gitDir)) {      # the path may be relative
+          $gitDir = Join-Path $dir $gitDir
+        }
+      }
+    }
+    if ($gitDir) {
+      $head = Join-Path $gitDir 'HEAD'
+      if (Test-Path -LiteralPath $head) {
+        $ref = (Get-Content -LiteralPath $head -Raw).Trim()
+        $branch = if ($ref -like 'ref: refs/heads/*') { $ref.Substring(16) }
+                  elseif ($ref)                        { $ref.Substring(0, [Math]::Min(7, $ref.Length)) }
+                  else                                 { '' }
+        break
+      }
     }
     $parent = Split-Path $dir -Parent
     if ($parent -eq $dir) { break }   # hit the drive root
