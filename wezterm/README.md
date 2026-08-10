@@ -40,7 +40,7 @@ shell; `Alt+<letter>` is otherwise free.
 | ---------------------------- | --------------------------------------------------- |
 | `Alt+\`                      | Split pane **right**                                |
 | `Alt+-`                      | Split pane **down**                                 |
-| `Alt+x`                      | Close the focused pane                              |
+| `Alt+w`                      | Close the focused pane (see Tabs)                   |
 | `Alt+z`                      | Zoom the focused pane to fill the tab (toggle)      |
 | `Alt+h/j/k/l` or `Alt+←↓↑→`  | Move focus between panes                            |
 | `Alt+Shift+h/j/k/l`          | Resize the focused pane (press repeatedly to nudge) |
@@ -51,9 +51,14 @@ shell; `Alt+<letter>` is otherwise free.
 | Keys              | Action                    |
 | ----------------- | ------------------------- |
 | `Alt+t`           | New tab                   |
-| `Alt+w`           | Close tab                 |
+| `Alt+w`           | Close the pane — and the tab with it, once it's the last pane |
 | `Alt+[` / `Alt+]` | Previous / next tab       |
 | `Alt+1`…`Alt+9`   | Jump straight to that tab |
+
+`Alt+w` is the only destructive chord, deliberately: close lived on `Alt+x` until it
+proved one key too close to `Alt+z` (zoom), and a mis-hit killed a pane with no undo.
+`Alt+x` is now bound to `Nop` so the slip is silent. One key closes both pane and tab
+because WezTerm folds the tab away with its last pane, so a 3-pane tab takes 3 presses.
 
 **Scrollback & misc:**
 

@@ -54,8 +54,11 @@ config.keys = {
   { key = '\\', mods = 'ALT', action = act.SplitHorizontal { domain = 'CurrentPaneDomain' } },
   { key = '-',  mods = 'ALT', action = act.SplitVertical   { domain = 'CurrentPaneDomain' } },
 
-  { key = 'x', mods = 'ALT', action = act.CloseCurrentPane { confirm = false } },
   { key = 'z', mods = 'ALT', action = act.TogglePaneZoomState },
+  -- Close used to live on Alt+x, one key away from zoom — too easy to kill a pane by
+  -- mistake. It moved to Alt+w (see Tabs); `Nop` swallows the slip so it does nothing
+  -- rather than falling through to zsh's `execute-named-cmd` prompt.
+  { key = 'x', mods = 'ALT', action = act.Nop },
 
   -- Move focus — hjkl and arrows.
   { key = 'h',          mods = 'ALT', action = act.ActivatePaneDirection 'Left' },
@@ -81,7 +84,9 @@ config.keys = {
 
   -- Tabs (Alt+1..9 added below).
   { key = 't', mods = 'ALT', action = act.SpawnTab 'CurrentPaneDomain' },
-  { key = 'w', mods = 'ALT', action = act.CloseCurrentTab { confirm = false } },
+  -- One "close" key, like Ctrl+W everywhere else: closes the pane, and once that was
+  -- the last pane the tab goes with it. So a multi-pane tab takes one Alt+w per pane.
+  { key = 'w', mods = 'ALT', action = act.CloseCurrentPane { confirm = false } },
   { key = '[', mods = 'ALT', action = act.ActivateTabRelative(-1) },
   { key = ']', mods = 'ALT', action = act.ActivateTabRelative(1) },
 

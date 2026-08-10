@@ -177,8 +177,9 @@ Direct `Alt` chords — no prefix, no leader, no modes.
 | `Alt+\` / `Alt+-` | Split pane **right** / **down** |
 | `Alt+h/j/k/l` | Move focus between panes |
 | `Alt+Shift+h/j/k/l` | Resize the focused pane |
-| `Alt+z` / `Alt+x` | **Zoom** pane (toggle) / **close** pane |
-| `Alt+t` / `Alt+w` | New / close **tab** · `Alt+1`…`9` jump to tab |
+| `Alt+z` | **Zoom** pane to fill the tab (toggle) |
+| `Alt+w` | **Close** the pane — and the tab, once it's the last pane |
+| `Alt+t` | New **tab** · `Alt+1`…`9` jump to tab |
 | `Ctrl+s` | **Copy mode** — vim motions, `/` search, `y` yank, `Esc` out |
 | `Ctrl+Shift+Space` | **QuickSelect** — label & copy any path/URL/hash on screen, no mouse |
 | `Ctrl+Shift+P` | Command palette (fuzzy-search every action) |
