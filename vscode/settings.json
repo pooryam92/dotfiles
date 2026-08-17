@@ -177,6 +177,27 @@
     { "before": ["<leader>", "t", "f"], "commands": ["testing.reRunFailTests"] },
     { "before": ["<leader>", "t", "l"], "commands": ["testing.reRunLastRun"] },
     { "before": ["<leader>", "t", "t"], "commands": ["workbench.action.terminal.toggleTerminal"] },
+    // A terminal BESIDE the code — an editor tab in a split, rather than the
+    // drawer <leader>tt toggles. That's where anything long-running belongs (dev
+    // server, test watcher, `claude`), so toggling the drawer can't hide it.
+    // `s` = split, echoing <leader>| / <leader>- for editors. Close it with Ctrl+W
+    // like any tab; the palette's "Terminal: Move Terminal into Editor Area"
+    // promotes an existing drawer terminal instead of opening a new one.
+    { "before": ["<leader>", "t", "s"], "commands": ["workbench.action.createTerminalEditorSide"] },
+    // A terminal with the Claude CLI already running in it. `c` = claude.
+    //
+    // This is the EXTENSION'S OWN command, not a terminal profile — which is why
+    // there's no "claude" entry under terminal.integrated.profiles.* here. A
+    // profile would have meant one definition for zsh and another for pwsh, both
+    // hardcoding how to launch the CLI, and both silently breaking whenever that
+    // changes. Letting the extension launch it keeps Windows and Linux identical
+    // for free (goal #3) and keeps this file to zero lines of shell (goal #2).
+    //
+    // Distinct from <leader>a, which opens the extension's chat UI. This is the
+    // real CLI in a real shell, so slash commands, `--resume`, `--worktree` and
+    // piping all work — and being a normal terminal, it can be sent to a split
+    // with the palette's "Terminal: Move Terminal into Editor Area".
+    { "before": ["<leader>", "t", "c"], "commands": ["claude-vscode.terminal.open"] },
 
     // --- s — Settings / Search / Symbols ---
     { "before": ["<leader>", "s", "o"], "commands": ["workbench.action.openSettings"] },
@@ -294,5 +315,31 @@
   // shell as a real one: PowerShell 7 on Windows (the "PowerShell" profile is
   // pwsh 7; "Windows PowerShell" is the old 5.1), zsh on Linux.
   "terminal.integrated.defaultProfile.windows": "PowerShell",
-  "terminal.integrated.defaultProfile.linux": "zsh"
+  "terminal.integrated.defaultProfile.linux": "zsh",
+
+  // ---- The terminal as a real pane, not a drawer you visit ----------------
+  // VS Code's terminal swallows EVERY keystroke and hands it to the shell. So
+  // the Ctrl+h/j/k/l that moves between editor groups (vim block above) does
+  // nothing the moment a terminal has focus: you can get in, but not out —
+  // that's the whole reason the terminal feels second-class here.
+  //
+  // This list names the keys VS Code handles ITSELF instead of forwarding on.
+  // Entries ADD to VS Code's defaults (prefix one with `-` to drop a default).
+  //
+  // The keys are Alt+h/j/k/l (bound in keybindings.json), NOT the Ctrl+ spelling
+  // used in buffers — zsh's emacs line editing already owns Ctrl+h as backspace,
+  // Ctrl+j as Enter and Ctrl+k as kill-line (`bindkey -e` in zsh/.zshrc, see
+  // docs/shell-editing.md). Taking those would break line editing in every shell
+  // to fix navigation in one pane. One deliberate fork: Ctrl in a buffer, Alt in
+  // a terminal. Ctrl+1/2/3 are listed too, so jump-to-group works from a terminal.
+  "terminal.integrated.commandsToSkipShell": [
+    "workbench.action.navigateLeft",
+    "workbench.action.navigateRight",
+    "workbench.action.navigateUp",
+    "workbench.action.navigateDown",
+    "workbench.action.focusFirstEditorGroup",
+    "workbench.action.focusSecondEditorGroup",
+    "workbench.action.focusThirdEditorGroup",
+    "workbench.action.focusFourthEditorGroup"
+  ]
 }

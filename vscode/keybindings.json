@@ -66,5 +66,48 @@
     "key": "alt+shift+k",
     "command": "claude-vscode.insertAtMention",
     "when": "editorTextFocus"
+  },
+
+  // ==================================================================
+  // The terminal as a first-class pane
+  // ==================================================================
+  // Getting OUT of a terminal with the keyboard. The Ctrl+h/j/k/l group
+  // navigation in settings.json is a VIM mapping, so it's dead in a terminal —
+  // and those keys can't be reused there anyway, since zsh's emacs line editing
+  // owns Ctrl+h (backspace), Ctrl+j (Enter) and Ctrl+k (kill-line). Alt is the
+  // terminal's spelling of the same motion.
+  //
+  // These only work because the four navigate* commands are listed in
+  // `terminal.integrated.commandsToSkipShell` (settings.json) — without that the
+  // shell eats them before VS Code ever sees them. Both halves are required.
+  //
+  // Scoped to `terminalFocus`, so the alt+j / alt+k line-move bindings above are
+  // untouched: those are `editorTextFocus`, which can never be true at the same
+  // time. Same keys, different pane, no collision.
+  {
+    "key": "alt+h",
+    "command": "workbench.action.navigateLeft",
+    "when": "terminalFocus"
+  },
+  {
+    "key": "alt+l",
+    "command": "workbench.action.navigateRight",
+    "when": "terminalFocus"
+  },
+  {
+    "key": "alt+j",
+    "command": "workbench.action.navigateDown",
+    "when": "terminalFocus"
+  },
+  {
+    "key": "alt+k",
+    "command": "workbench.action.navigateUp",
+    "when": "terminalFocus"
   }
+
+  // OPENING a terminal beside the code is NOT here — it's <leader>ts in
+  // settings.json, with the rest of the leader namespace. Only the escape keys
+  // above need to live in this file, because a Vim mapping can't fire inside a
+  // terminal. Rule of thumb: if you press it from a buffer, it belongs in the
+  // vim block; if you press it from somewhere Vim can't see, it belongs here.
 ]
