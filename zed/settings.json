@@ -1,26 +1,16 @@
-// Zed editor configuration — shared across Linux and Windows.
+// Zed settings, shared across Linux and Windows.
 // Docs: https://zed.dev/docs/configuring-zed
-// Full key list: https://zed.dev/docs/reference/all-settings
 //
-// Zed watches this file and applies changes the moment you save — no reload.
-// The installers link it to:
-//   Linux:    ~/.config/zed/settings.json
-//   Windows:  %APPDATA%\Zed\settings.json
+// Linked to:  Linux ~/.config/zed/settings.json
+//             Windows %APPDATA%\Zed\settings.json
 //
-// Format is JSONC: // comments and trailing commas are allowed. Map-type
-// settings (like auto_install_extensions) merge over Zed's defaults rather
-// than replacing them, so you only list what you want to change.
+// Zed applies changes on save, no reload.
 {
   // ---- Editing model: Vim ----
-  // Modal, keyboard-first editing on every tool in this repo (goal #1) — the
-  // same muscle memory as the Neovim and IdeaVim configs. Toggle at runtime
-  // from the command palette: "workspace: toggle vim mode".
   "vim_mode": true,
 
   // ---- Theme ----
-  // The theme below ships in the "jetbrains-themes" extension (not built in).
-  // Listing it in auto_install_extensions makes Zed auto-install it on a fresh
-  // machine, so the theme survives a clean install on both Linux and Windows.
+  // Not built in; auto_install_extensions pulls it on a fresh machine.
   "theme": "JetBrains Islands Dark",
   "auto_install_extensions": {
     "jetbrains-themes": true
@@ -28,13 +18,9 @@
   "cli_default_open_behavior": "existing_window",
 
   // ---- Font: the JetBrainsMono Nerd Font the installers install ----
-  // Nerd Font so ligatures/glyphs match the terminal stack.
   "buffer_font_family": "JetBrainsMono Nerd Font",
   "buffer_font_size": 14,
 
   // ---- Format on save ----
-  // Off, matching the Neovim config (there, conform.nvim's format-on-save is
-  // opt-in per filetype). Flip to "on" for every save, or set per-language
-  // formatters under a "languages" block.
   "format_on_save": "off"
 }

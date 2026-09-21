@@ -1,6 +1,5 @@
 -- WezTerm config — one file for Linux and Windows; the only fork is the shell
--- (`default_prog`). WezTerm is also the multiplexer (panes/tabs), so no Zellij/tmux.
--- Auto-reloads on save; ctrl+shift+r forces it.
+-- (`default_prog`). Also the multiplexer, so no Zellij/tmux. Auto-reloads on save.
 
 local wezterm = require 'wezterm'
 local act = wezterm.action
@@ -9,7 +8,7 @@ local config = wezterm.config_builder()
 local is_windows = wezterm.target_triple:find 'windows' ~= nil
 
 -- ---- Font ----
-config.font = wezterm.font 'JetBrainsMono Nerd Font' -- Nerd Font: renders prompt/statusline glyphs
+config.font = wezterm.font 'JetBrainsMono Nerd Font'
 config.font_size = 11.0
 
 -- ---- Theme ----
@@ -28,8 +27,7 @@ config.use_fancy_tab_bar = false
 config.tab_bar_at_bottom = true
 
 -- ---- Panes ----
--- WezTerm has no per-pane title bar, so two cues mark the focused pane instead:
--- dim the inactive ones, and colour the split line so boundaries read as borders.
+-- No per-pane title bar, so dim the inactive panes and colour the split line instead.
 config.inactive_pane_hsb = { saturation = 0.8, brightness = 0.65 }
 config.colors = { split = '#7aa2f7' }
 
@@ -38,29 +36,25 @@ config.default_cursor_style = 'BlinkingBar'
 config.hide_mouse_cursor_when_typing = true
 config.scrollback_lines = 100000
 
--- Force the shell, ignoring the login shell, so every machine gets the full setup.
+-- Force the shell, ignoring the login shell.
 config.default_prog = is_windows and { 'pwsh', '-NoLogo' } or { '/usr/bin/zsh' }
 
 -- ---- Keybinds ----
--- One layer: direct chords, no leader, no modes. Almost everything is Alt+<key>,
--- because Alt is free whereas Ctrl+h (backspace) / Ctrl+l (clear) belong to the shell.
+-- One layer of direct chords, no leader. Alt carries almost everything: it is free,
+-- whereas Ctrl+h (backspace) and Ctrl+l (clear) belong to the shell.
 config.keys = {
   { key = 'r', mods = 'CTRL|SHIFT', action = act.ReloadConfiguration },
   { key = '=', mods = 'CTRL', action = act.IncreaseFontSize },
   { key = '-', mods = 'CTRL', action = act.DecreaseFontSize },
   { key = '0', mods = 'CTRL', action = act.ResetFontSize },
 
-  -- Split: `\` ≈ vertical divider → pane right; `-` ≈ horizontal divider → pane below.
   { key = '\\', mods = 'ALT', action = act.SplitHorizontal { domain = 'CurrentPaneDomain' } },
   { key = '-',  mods = 'ALT', action = act.SplitVertical   { domain = 'CurrentPaneDomain' } },
 
   { key = 'z', mods = 'ALT', action = act.TogglePaneZoomState },
-  -- Close used to live on Alt+x, one key away from zoom — too easy to kill a pane by
-  -- mistake. It moved to Alt+w (see Tabs); `Nop` swallows the slip so it does nothing
-  -- rather than falling through to zsh's `execute-named-cmd` prompt.
+  -- `Nop` swallows the slip: Alt+x does nothing rather than falling through to the shell.
   { key = 'x', mods = 'ALT', action = act.Nop },
 
-  -- Move focus — hjkl and arrows.
   { key = 'h',          mods = 'ALT', action = act.ActivatePaneDirection 'Left' },
   { key = 'j',          mods = 'ALT', action = act.ActivatePaneDirection 'Down' },
   { key = 'k',          mods = 'ALT', action = act.ActivatePaneDirection 'Up' },
@@ -70,28 +64,24 @@ config.keys = {
   { key = 'UpArrow',    mods = 'ALT', action = act.ActivatePaneDirection 'Up' },
   { key = 'RightArrow', mods = 'ALT', action = act.ActivatePaneDirection 'Right' },
 
-  -- Resize — move keys + Shift. Press repeatedly to nudge.
   { key = 'H', mods = 'ALT|SHIFT', action = act.AdjustPaneSize { 'Left', 3 } },
   { key = 'J', mods = 'ALT|SHIFT', action = act.AdjustPaneSize { 'Down', 3 } },
   { key = 'K', mods = 'ALT|SHIFT', action = act.AdjustPaneSize { 'Up', 3 } },
   { key = 'L', mods = 'ALT|SHIFT', action = act.AdjustPaneSize { 'Right', 3 } },
 
-  -- Rotate panes — WezTerm has no directional swap, so cycling is how you reorder.
-  -- Physical keycodes, not `[`/`]`: Alt+Shift+[ emits `{`, so a `[`+SHIFT binding
-  -- never fires. `phys:` matches the key by position, independent of the glyph/layout.
+  -- Rotate panes. Physical keycodes, not `[`/`]`: Alt+Shift+[ emits `{`, so a `[`+SHIFT
+  -- binding never fires. `phys:` matches the key by position, independent of glyph/layout.
   { key = 'phys:LeftBracket',  mods = 'ALT|SHIFT', action = act.RotatePanes 'CounterClockwise' },
   { key = 'phys:RightBracket', mods = 'ALT|SHIFT', action = act.RotatePanes 'Clockwise' },
 
   -- Tabs (Alt+1..9 added below).
   { key = 't', mods = 'ALT', action = act.SpawnTab 'CurrentPaneDomain' },
-  -- One "close" key, like Ctrl+W everywhere else: closes the pane, and once that was
-  -- the last pane the tab goes with it. So a multi-pane tab takes one Alt+w per pane.
+  -- One close key: closes the pane, and the tab goes with its last pane.
   { key = 'w', mods = 'ALT', action = act.CloseCurrentPane { confirm = false } },
   { key = '[', mods = 'ALT', action = act.ActivateTabRelative(-1) },
   { key = ']', mods = 'ALT', action = act.ActivateTabRelative(1) },
 
-  -- Copy mode (vim motions, `/` search, `y` yank). WezTerm grabs Ctrl+s before the
-  -- shell, so it never triggers the terminal flow-control freeze.
+  -- Copy mode. WezTerm grabs Ctrl+s before the shell, so no flow-control freeze.
   { key = 's', mods = 'CTRL', action = act.ActivateCopyMode },
 }
 

@@ -1,15 +1,9 @@
-# Shared helpers for install.ps1 (and the standalone zed installer) — dot-sourced,
-# never run directly. Holds logging, the link helper, the scoop app list, and the
-# per-tool setup steps. Which configs link where lives in links.tsv; this file holds
-# the ACTIONS. Counterpart of lib.sh.
+# Shared helpers for install.ps1 (and the standalone zed installer) — dot-sourced, never
+# run directly: logging, the link helpers, the scoop app list, and the per-tool steps.
 
 $LIB = $PSScriptRoot                       # …\setup — this lib + links.tsv live here
 $DOT = Split-Path -Parent $LIB             # repo root — where the config sources live
 
-# Everything installed (and updated) via scoop — mirrors the install_* calls in
-# install.sh, minus Linux-only keyd (PowerToys covers remapping) and claude (native
-# installer, not a scoop app). pwsh=target shell, fzf=fuzzy finder (Ctrl+T, zoxide
-# `zi`), win32yank=Neovim clipboard provider.
 $SCOOP_APPS = @('pwsh', 'fzf', 'win32yank',
                 'wezterm-nightly', 'zoxide', 'fd', 'ripgrep', 'bat',
                 'neovim', 'JetBrainsMono-NF')
@@ -20,10 +14,8 @@ function Warn($msg) { Write-Host "!!  $msg" -ForegroundColor Yellow }
 # --- config links (links.tsv) ------------------------------------------------
 function Read-Links { Import-Csv -Delimiter "`t" -Path (Join-Path $LIB 'links.tsv') }
 
-# --- config links ----------------------------------------------------------
-# Link a repo file (symlink) or directory (junction) to a target path. Junctions
-# need no privilege; file symlinks need Developer Mode or admin, so they fall back to
-# a plain copy (with a warning) when not permitted.
+# Junctions need no privilege, but file symlinks need Developer Mode or admin, so they
+# fall back to a plain copy (with a warning) when not permitted.
 function Link-Config {
   param(
     [Parameter(Mandatory)] [string] $Src,
@@ -37,7 +29,7 @@ function Link-Config {
   $existing = Get-Item -LiteralPath $Dst -Force -ErrorAction SilentlyContinue
   if ($existing) {
     if ($existing.LinkType) {
-      # Already a link/junction — remove the reparse point only (never the target).
+      # Remove the reparse point only, never the target.
       if ($Directory) { [System.IO.Directory]::Delete($Dst) }
       else { Remove-Item -LiteralPath $Dst -Force }
     } else {
@@ -57,10 +49,8 @@ function Link-Config {
   }
 }
 
-# Copy a repo file to a target (not a symlink), overwriting whatever is there but
-# backing up a real existing file first. Used for settings.json: the app rewrites it
-# in place (e.g. /model persists to it), and a symlink would push that churn back into
-# the repo. A copy seeds our defaults, then lets the live file diverge locally.
+# Copy rather than symlink, for settings.json: the app rewrites it in place (/model
+# persists to it) and a symlink would push that churn back into the repo.
 function Copy-Config {
   param(
     [Parameter(Mandatory)] [string] $Src,
@@ -84,11 +74,8 @@ function Copy-Config {
   Info "copied $Dst <- $Src"
 }
 
-# Expand the links.tsv destination tokens to real Windows paths. {PROFILE} is the
-# dynamically-resolved pwsh profile path, passed in (see Resolve-ProfilePath).
 function Expand-Dst([string] $p, [string] $ProfilePath) {
-  # .Replace() is a literal find/replace — no regex on either side, so the path's
-  # backslashes/colons and the token braces stay literal (unlike -replace).
+  # .Replace() is literal, not regex, so backslashes and braces stay as typed.
   $p = $p.Replace('{CONFIG}',       (Join-Path $env:USERPROFILE '.config'))
   $p = $p.Replace('{LOCALAPPDATA}', $env:LOCALAPPDATA)
   $p = $p.Replace('{APPDATA}',      $env:APPDATA)
@@ -98,14 +85,11 @@ function Expand-Dst([string] $p, [string] $ProfilePath) {
   return $p.Replace('/', '\')
 }
 
-# Link every config in links.tsv (windows_dst column; "-" means skip on Windows).
-# The `type` column picks the strategy: dir/file symlink live, `copy` seeds a file the
-# app owns afterward (claude's settings.json — kept a copy so /model edits don't churn
-# the repo).
+# links.tsv drives this: windows_dst "-" skips, type `copy` seeds a file the app then owns.
 function Invoke-Links([string] $ProfilePath) {
   Info "Linking config files…"
   foreach ($row in Read-Links) {
-    if ($row.windows_dst -eq '-') { continue }   # not linked on Windows (e.g. .zshrc)
+    if ($row.windows_dst -eq '-') { continue }
     $src = Join-Path $DOT ($row.src -replace '/', '\')
     $dst = Expand-Dst $row.windows_dst $ProfilePath
     if     ($row.type -eq 'dir')  { Link-Config $src $dst -Directory }
@@ -120,21 +104,15 @@ function Ensure-Scoop {
   if (-not (Get-Command scoop -ErrorAction SilentlyContinue)) {
     Invoke-RestMethod -Uri 'https://get.scoop.sh' | Invoke-Expression
   }
-  # Make sure scoop shims are on PATH for the rest of this session.
   $env:Path = (Join-Path $env:USERPROFILE 'scoop\shims') + ';' + $env:Path
-  # versions carries wezterm-nightly. extras only has the plain `wezterm` manifest,
-  # frozen at the 20240203 stable — upstream has not tagged a release since (the same
-  # reason fetch_wezterm in lib.sh pulls the nightly .deb). Without this bucket
-  # `scoop install` aborts the WHOLE app list with "Could not find manifest".
+  # versions carries wezterm-nightly (extras only has the frozen 20240203 stable), and
+  # without that bucket `scoop install` aborts the whole app list on a missing manifest.
   Info "Adding scoop buckets (extras, versions, nerd-fonts)…"
   foreach ($b in 'extras', 'versions', 'nerd-fonts') { scoop bucket add $b 2>$null }
 }
 
-# Guard: the nvim config needs 0.12+ (vim.pack / PackChanged). scoop installs a
-# current build, but a stale winget/MSI Neovim under "C:\Program Files\Neovim" sits in
-# the machine PATH ahead of scoop's user shims and wins `nvim`, aborting startup with
-# "Invalid 'event': 'PackChanged'". Detect and tell the user how to remove it (needs
-# an elevated shell — this user-scope installer can't elevate).
+# A stale winget/MSI Neovim under C:\Program Files sits ahead of scoop's shims in the
+# machine PATH and breaks startup; removing it needs an admin shell, so only warn.
 function Test-NvimShadow {
   $nvimCmd = Get-Command nvim -ErrorAction SilentlyContinue
   if (-not $nvimCmd) { return }
@@ -151,12 +129,8 @@ function Test-NvimShadow {
   }
 }
 
-# Guard: WezTerm must be the NIGHTLY build (the config assumes a current one).
-# Two stale copies commonly shadow it: scoop's plain `wezterm` app (extras, frozen at
-# the 20240203 stable) fights wezterm-nightly for the same shims, and a machine-wide
-# MSI under "C:\Program Files\WezTerm" owns the Start-menu shortcut, so the GUI can
-# still launch the 2024 build even when the shims are right. Detect both and print
-# the removal commands (the MSI needs an ELEVATED shell — this installer is user-scope).
+# Two stale copies shadow the nightly: scoop's plain `wezterm` app fights it over the same
+# shims, and a machine-wide MSI owns the Start-menu shortcut (removing it needs admin).
 function Test-WeztermShadow {
   $stale = $false
   if (Test-Path (Join-Path $env:USERPROFILE 'scoop\apps\wezterm')) {
@@ -176,8 +150,7 @@ function Test-WeztermShadow {
   }
 }
 
-# Resolve the pwsh 7 profile path from pwsh itself — OneDrive-redirection-aware and
-# version-correct (…\PowerShell\… not 5.1's …\WindowsPowerShell\…).
+# Ask pwsh itself: OneDrive-redirection-aware and version-correct (PowerShell, not 5.1).
 function Resolve-ProfilePath {
   $p = $null
   if (Get-Command pwsh -ErrorAction SilentlyContinue) {

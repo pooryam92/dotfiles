@@ -1,22 +1,14 @@
-# Dotfiles front door for Windows — installs AND updates the terminal/CLI stack
-# (WezTerm + PowerShell 7 + Neovim + zoxide + Claude Code + font). Counterpart of
-# install.sh. Idempotent: safe to re-run. Existing files are backed up before linking.
-# The managed apps are the $SCOOP_APPS list in setup\lib.ps1, the config-link targets
-# live in setup\links.tsv, and shared actions/helpers in setup\lib.ps1.
+# Dotfiles front door for Windows — installs and updates the terminal/CLI stack.
+# install is install-once (scoop install no-ops on apps already present); update upgrades.
 #
-#   .\install.ps1              install everything (default; idempotent, safe to re-run)
+#   .\install.ps1              install everything (default)
 #   .\install.ps1 update       force every managed app to its latest release
 #
-# Install is install-once (`scoop install` no-ops on apps already present), so re-running
-# `install` never upgrades anything — that's what `update` is for. scoop is the native
-# updater (`scoop status` shows what's behind); `update` just runs it on the managed apps.
-#
-# FIRST RUN (pwsh 7 isn't installed yet) — run under Windows PowerShell 5.1:
+# First run, before pwsh 7 exists, under Windows PowerShell 5.1:
 #   powershell -ExecutionPolicy Bypass -File install.ps1
 #
-# Uses scoop (user-scope, no admin). For live-editable config links, enable Windows
-# "Developer Mode" (Settings -> System -> For developers) once so file symlinks can be
-# created unprivileged; otherwise the installer copies instead.
+# Enable Windows "Developer Mode" once (Settings -> System -> For developers) so file
+# symlinks can be created unprivileged; otherwise configs are copied instead.
 param(
   [string] $Command = 'install'
 )
@@ -25,22 +17,16 @@ $ErrorActionPreference = 'Stop'
 
 # --- install ----------------------------------------------------------------
 function Invoke-Install {
-  # Allow the installed profile (and this script on later runs) to load.
   Info "Setting ExecutionPolicy (CurrentUser -> RemoteSigned)…"
   Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
 
   # --- packages ------------------------------------------------------------
   Ensure-Scoop
-  # neovim needs 0.12+ (vim.pack);
-  # a separate winget/MSI Neovim shadows scoop on PATH — the guard below warns if so.
-  # NOTE: the nvim config is colorscheme-only (no treesitter/Telescope), so zig, the
-  # tree-sitter CLI, ripgrep and fd are intentionally NOT installed — add them back if
-  # you grow the nvim config (see nvim/README.md). install.sh mirrors this.
+  # The nvim config is colorscheme-only, so zig and the tree-sitter CLI stay out.
   Info "Installing packages via scoop…"
   scoop install @($SCOOP_APPS)
 
-  # Claude Code — Anthropic's CLI. Not a scoop app; the official installer self-updates
-  # afterwards (or `.\install.ps1 update`), so only run it when absent. Config linked below.
+  # Not a scoop app, and the official installer self-updates, so run it only when absent.
   Info "Installing Claude Code…"
   if (Get-Command claude -ErrorAction SilentlyContinue) {
     Info "claude already installed ($(claude --version 2>$null))"
@@ -53,7 +39,6 @@ function Invoke-Install {
   Test-WeztermShadow
 
   # --- config links --------------------------------------------------------
-  # Resolve the pwsh profile path first ({PROFILE} token feeds Invoke-Links).
   $profilePath = Resolve-ProfilePath
   Invoke-Links $profilePath
 
@@ -64,28 +49,17 @@ function Invoke-Install {
 }
 
 # --- update -----------------------------------------------------------------
-# (Config FILES are symlinks/junctions into this repo, so `git pull` already updates
-# those; the commands below only touch the apps `install` installs via scoop.)
 
 function Invoke-Update {
   if (-not (Get-Command scoop -ErrorAction SilentlyContinue)) { Warn "scoop not found — run install first."; exit 1 }
 
-  # scoop prints each app's old -> new transition as it upgrades. Scope to the apps
-  # install manages ($SCOOP_APPS, not `scoop update *`) so we don't drag along
-  # unrelated apps — mirrors install.sh's targeted apt upgrade.
   Info "Refreshing scoop manifests…"
   scoop update | Out-Null
-  # scoop stamps a nightly install 'nightly-yyyyMMdd' and by default treats every
-  # nightly as equal to every other, so a plain `scoop update` would keep the old
-  # WezTerm build forever. update_nightly makes it compare nightlies BY DATE, so the
-  # batch below moves wezterm-nightly forward once a day like any other app (the
-  # counterpart of install.sh's fetch_wezterm, which always re-fetches the .deb).
-  # Idempotent; set here rather than at install so older machines pick it up too.
+  # scoop treats every nightly stamp as equal, so without update_nightly it never moves
+  # wezterm-nightly forward. Idempotent; set here so existing machines pick it up too.
   scoop config update_nightly true | Out-Null
-  # scoop refuses to replace an app with a running process ("Running process
-  # detected, skip updating"), and this shell normally lives INSIDE WezTerm. When
-  # the WezTerm we're running in is scoop's, skip it cleanly with a pointer instead
-  # of letting the batch trip over it. (WezTerm exports its own path to children.)
+  # scoop refuses to replace an app with a running process, and this shell normally lives
+  # inside WezTerm, so skip wezterm-nightly with a pointer when that WezTerm is scoop's.
   $apps = $SCOOP_APPS
   if ($env:WEZTERM_EXECUTABLE -like (Join-Path $env:USERPROFILE 'scoop\apps\wezterm-nightly\*')) {
     Warn "Running inside scoop's WezTerm, so wezterm-nightly is skipped (scoop won't replace a running app)."
@@ -96,20 +70,16 @@ function Invoke-Update {
   scoop update @($apps)
   Test-WeztermShadow
 
-  # Bust the cached zoxide init. The profile caches `zoxide init` output to disk and
-  # treats it as DURABLE (it never re-checks the binary), so an upgraded zoxide would
-  # keep running the OLD init across restarts. Deleting the cache makes the next shell
-  # regenerate it from the just-upgraded binary.
+  # The profile caches zoxide's init to disk and never re-checks the binary, so delete the
+  # cache or an upgraded zoxide keeps running the old init.
   $tmp = [IO.Path]::GetTempPath()
   Remove-Item (Join-Path $tmp 'zoxide_init.ps1') -Force -ErrorAction SilentlyContinue
 
-  # Claude Code — native installer, self-updating. `claude update` forces it now.
   if (Get-Command claude -ErrorAction SilentlyContinue) {
     Info "Updating Claude Code…"
     try { claude update } catch { Warn "claude update failed; it also self-updates on launch" }
   }
 
-  # Neovim's plugins update separately, from inside nvim: :lua vim.pack.update()
   Info "Done. Restart your shell (. `$PROFILE) to pick up the new versions."
 }
 
