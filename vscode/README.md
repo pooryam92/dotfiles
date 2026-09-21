@@ -247,7 +247,7 @@ command scopes itself to the packages `install.sh` owns).
   the two kinds of chord a Vim mapping can't express: ones that must work outside
   a Vim buffer, and **Alt chords** (which VSCodeVim never receives — see above).
 - **Adding an extension?** One line in [`extensions.txt`](extensions.txt), then
-  re-run `./install.sh` / `.install.ps1` (or `update`). Don't hardcode it in a script.
+  re-run `./install.sh` / `.\install.ps1` (or `update`). Don't hardcode it in a script.
 - **Turn Vim off temporarily** without editing anything: `Ctrl+Shift+P` →
   "Extensions: Disable" → Vim.
 

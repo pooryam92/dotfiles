@@ -33,12 +33,16 @@ in the actual config in this repo:
 - [fzf + fd + rg + bat](docs/fzf.md) — fuzzy finding: `Ctrl+R` history, `Ctrl+T` files (with previews), `Alt+C` cd, `rg` content search
 - [zoxide](docs/zoxide.md) — smarter `cd`: jump to frecent dirs with `z`/`zi`
 - [Neovim](nvim/README.md) — minimal single-file config: sensible defaults, keymaps, Tokyo Night
-- [Zed](zed/README.md) — the GUI editor: Vim mode, JetBrains Islands Dark theme, fonts, keymap (**opt-in install**: `zed/install-zed.{sh,ps1}`)
-- [VS Code](vscode/README.md) — the other GUI editor: Vim mode, built-in Dark Modern, Markdown rendered by default (**opt-in install**: `vscode/install-vscode.{sh,ps1}`)
-- [IdeaVim](intellij/README.md) — Vim in JetBrains IDEs: leader maps, IDE actions
+- [Zed](zed/README.md) — the GUI editor: Vim mode, JetBrains Islands Dark theme, fonts, keymap
+- [VS Code](vscode/README.md) — the other GUI editor: Vim mode, built-in Dark Modern, Markdown rendered by default
+- [IdeaVim](intellij/README.md) — Vim in JetBrains IDEs: leader maps, IDE actions (config only — the IDE is yours)
 - [Claude Code](claude/README.md) — the AI agent: themed status line, synced settings
-- [COSMIC on niri](niri/README.md) — **opt-in, Linux-only**: COSMIC's shell on a scrollable-tiling compositor (`niri/install-cosmic-niri.sh`)
 - [Windows](docs/windows.md) — **native Windows setup**: scoop, PowerShell profile, paths
+
+Opt-in **extras**, outside the core install (see [Extras](#extras-linux-only-opt-in)):
+
+- [COSMIC on niri](extras/niri/README.md) — COSMIC's shell on a scrollable-tiling compositor
+- [keyd](extras/keyd/README.md) — system-wide key remaps: CapsLock = Esc/Ctrl, Right Alt = Super
 
 ## Quick start
 
@@ -72,33 +76,31 @@ with `Alt+h/j/k/l` (see the [Cheat sheet](#cheat-sheet) for the full set).
 Both are **idempotent** — safe to re-run. Anything already at a target path is
 backed up to `<file>.bak.<timestamp>` before linking.
 
+One command per OS installs the **whole core**: the terminal/CLI stack, the GUI
+editors, and every config in the table under [Layout](#layout). Nothing under
+`extras/` is touched — see [Extras](#extras-linux-only-opt-in).
+
 **`install.sh` (Linux)** installs these apt packages: `zsh`, `git`, `curl`,
 `unzip`, `ca-certificates`, `fontconfig`, `wl-clipboard`, `fzf`, `fd`,
 `ripgrep`, `bat`, and the zsh plugins `zsh-autosuggestions` /
 `zsh-syntax-highlighting`. It installs **WezTerm** (nightly .deb) and — as user
 binaries in `~/.local/bin` via their official installers — **zoxide**,
-**Neovim**, and **Claude Code**, and builds **keyd** from source. It installs the
-**JetBrainsMono Nerd Font**, symlinks the configs (including Zed's and VS
-Code's), and sets
-**zsh** as the login shell (`chsh`). Steps using `sudo` will prompt for your
-password.
+**Neovim**, and **Claude Code**. It installs the **JetBrainsMono Nerd Font**,
+**Zed** (official installer) and **VS Code** (Microsoft's apt repo), symlinks
+the configs, and sets **zsh** as the login shell (`chsh`). Steps using `sudo`
+will prompt for your password.
 
 **`install.ps1` (Windows)** uses [scoop](https://scoop.sh) (user-scope, no admin)
 to install **PowerShell 7**, **WezTerm**, **zoxide**, **Neovim**, **fd**,
-**ripgrep**, **bat**, plus `fzf` (fuzzy finder) and `win32yank` (Neovim's
-clipboard), and the Nerd Font. It also installs **Claude Code** (its own native
-installer, not scoop), then links the configs (including Zed's and VS Code's). See
-[docs/windows.md](docs/windows.md).
+**ripgrep**, **bat**, **Zed**, plus `fzf` (fuzzy finder) and `win32yank`
+(Neovim's clipboard), and the Nerd Font. It also installs **Claude Code** (its
+own native installer, not scoop) and **VS Code** (winget, user scope), then
+links the configs. See [docs/windows.md](docs/windows.md).
 
-These install the **terminal/CLI stack** only. The **GUI editors — Zed and VS
-Code** — install from their own scripts, like the niri session below:
-`zed/install-zed.{sh,ps1}` and `vscode/install-vscode.{sh,ps1}`. The installers
-above still symlink both editors' configs either way. The VS Code script also
-installs the extensions its config needs, read from `vscode/extensions.txt` (Vim
-mode and Claude Code — the theme is built in) — one list, both OSes.
-Zed self-updates, as does VS Code on Windows; VS Code on Linux is apt-managed via
-Microsoft's repo, so it rides a normal `sudo apt-get upgrade`. Either way the
-`update` commands below don't track them.
+Both also install the VS Code extensions its config needs, read from
+`vscode/extensions.txt` (Vim mode and Claude Code — the theme is built in) — one
+list, both OSes. **IdeaVim** is config-only: the repo ships `.ideavimrc`, the
+JetBrains IDE itself is yours to install.
 
 ### Keeping things updated
 
@@ -119,9 +121,26 @@ upgrades it. To bump everything to its latest release:
 There's no version bookkeeping — apt/scoop and the release downloads always fetch
 latest, so `update` just re-runs them and the package manager prints what moved.
 WezTerm tracks the **nightly** channel on both OSes (upstream hasn't tagged a release
-since 2024; nightly is the maintained one). Claude Code self-updates on its own (as
-does Zed, installed separately); Neovim's plugins update from inside nvim with
-`:lua vim.pack.update()`.
+since 2024; nightly is the maintained one). Claude Code self-updates on its own, as
+do Zed (Linux) and VS Code (Windows); `update` moves Zed on Windows (scoop) and VS
+Code on Linux (apt), and re-applies `vscode/extensions.txt` on both. Neovim's
+plugins update from inside nvim with `:lua vim.pack.update()`.
+
+## Extras (Linux-only, opt-in)
+
+Everything under **`extras/`** is outside the core: the root installers never
+install, update, or link it. Each extra has its own installer and README. Both
+current extras are Linux-only (no Windows counterpart exists), which is exactly
+why they're not in the cross-platform core.
+
+| Extra | What | Install |
+| ----- | ---- | ------- |
+| [COSMIC on niri](extras/niri/README.md) | COSMIC's desktop parts on the niri scrollable-tiling compositor; builds niri from source | `./extras/niri/install-cosmic-niri.sh` |
+| [keyd](extras/keyd/README.md) | System-wide key remaps at the evdev layer: CapsLock = Esc (tap) / Ctrl (hold), Right Alt = Super | `./extras/keyd/install-keyd.sh` (the niri installer runs it too) |
+
+Their configs (`extras/niri/config.kdl` → `~/.config/niri/config.kdl`,
+`extras/keyd/default.conf` → `/etc/keyd/default.conf`) are placed by those
+scripts, not by `setup/links.tsv`.
 
 ## Layout
 
@@ -133,7 +152,8 @@ The setup machinery lives in **`setup/`**: the link targets below are data in
 `setup/lib.sh` / `setup/lib.ps1`. Adding a config is one `links.tsv` row; adding
 a tool is one `install_*` call in `install.sh` (Linux) and/or a `$SCOOP_APPS`
 entry in `setup/lib.ps1` (Windows). Only `install.sh` / `install.ps1` stay at
-the repo root as the entry points.
+the repo root as the entry points. Anything that can't be cross-platform goes
+under `extras/` with its own installer instead (see [Extras](#extras-linux-only-opt-in)).
 
 | Repo file                | Linux target                  | Windows target                          |
 | ------------------------ | ----------------------------- | --------------------------------------- |
@@ -148,7 +168,6 @@ the repo root as the entry points.
 | `pwsh/profile.ps1`       | —                             | `$PROFILE.CurrentUserAllHosts`          |
 | `claude/statusline.js`   | `~/.claude/statusline.js`     | `%USERPROFILE%\.claude\statusline.js`   |
 | `claude/settings.json`   | `~/.claude/settings.json`     | `%USERPROFILE%\.claude\settings.json`   |
-| `niri/config.kdl`                | `~/.config/niri/config.kdl`   | — (Linux-only; via `niri/install-cosmic-niri.sh`) |
 
 After editing:
 
@@ -241,7 +260,7 @@ Emacs-style, always-on (no modes) — identical on zsh and PowerShell.
 | Change the prompt            | the prompt block in `zsh/.zshrc` (Linux) / the `prompt` function in `pwsh/profile.ps1` (Windows) |
 | Change the Claude status line| `claude/statusline.js` (see [claude/README.md](claude/README.md)) |
 | Stop `.md` opening rendered  | the `workbench.editorAssociations` block in `vscode/settings.json` |
-| Add a VS Code extension      | one line in `vscode/extensions.txt`, then re-run `vscode/install-vscode.{sh,ps1}` |
+| Add a VS Code extension      | one line in `vscode/extensions.txt`, then re-run `./install.sh` / `.install.ps1` (or `update`) |
 | Add aliases / env            | `zsh/.zshrc` (Linux) / `pwsh/profile.ps1` (Windows) |
 | Switch theme                 | `color_scheme` in WezTerm (prompts follow the terminal palette) |
 
