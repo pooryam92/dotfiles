@@ -113,6 +113,7 @@ upgrades it. To bump everything to its latest release:
 
 ```powershell
 .\install.ps1 update    # Windows: scoop update for the managed apps
+                        # (run it from Windows Terminal: scoop can't replace a running WezTerm)
 ```
 
 There's no version bookkeeping — apt/scoop and the release downloads always fetch

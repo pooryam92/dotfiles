@@ -23,8 +23,11 @@ prompt) runs *inside* WezTerm.
 > **Version channel: nightly, on both OSes.** Upstream hasn't tagged a stable
 > release since `20240203`, and that build had Wayland bugs under niri. Linux
 > installs the nightly `.deb` from GitHub (`fetch_wezterm` in `setup/lib.sh`);
-> Windows uses scoop's `wezterm-nightly`. `install.sh update` /
-> `install.ps1 update` move both forward.
+> Windows uses scoop's `wezterm-nightly`, from the **`versions`** bucket (`extras`
+> only carries the frozen stable). `install.sh update` / `install.ps1 update` move
+> both forward — the Windows side turns on scoop's `update_nightly` config, because
+> scoop otherwise treats every nightly as current forever. Run the Windows update
+> from Windows Terminal, not from inside WezTerm: scoop won't replace a running app.
 
 ---
 

@@ -122,8 +122,12 @@ function Ensure-Scoop {
   }
   # Make sure scoop shims are on PATH for the rest of this session.
   $env:Path = (Join-Path $env:USERPROFILE 'scoop\shims') + ';' + $env:Path
-  Info "Adding scoop buckets (extras, nerd-fonts)…"
-  foreach ($b in 'extras', 'nerd-fonts') { scoop bucket add $b 2>$null }
+  # versions carries wezterm-nightly. extras only has the plain `wezterm` manifest,
+  # frozen at the 20240203 stable — upstream has not tagged a release since (the same
+  # reason fetch_wezterm in lib.sh pulls the nightly .deb). Without this bucket
+  # `scoop install` aborts the WHOLE app list with "Could not find manifest".
+  Info "Adding scoop buckets (extras, versions, nerd-fonts)…"
+  foreach ($b in 'extras', 'versions', 'nerd-fonts') { scoop bucket add $b 2>$null }
 }
 
 # Guard: the nvim config needs 0.12+ (vim.pack / PackChanged). scoop installs a
@@ -144,6 +148,31 @@ function Test-NvimShadow {
     Warn "Then restart your shell so scoop's nvim takes over."
   } else {
     Info "nvim OK: $($nvimCmd.Source) ($ver)"
+  }
+}
+
+# Guard: WezTerm must be the NIGHTLY build (the config assumes a current one).
+# Two stale copies commonly shadow it: scoop's plain `wezterm` app (extras, frozen at
+# the 20240203 stable) fights wezterm-nightly for the same shims, and a machine-wide
+# MSI under "C:\Program Files\WezTerm" owns the Start-menu shortcut, so the GUI can
+# still launch the 2024 build even when the shims are right. Detect both and print
+# the removal commands (the MSI needs an ELEVATED shell — this installer is user-scope).
+function Test-WeztermShadow {
+  $stale = $false
+  if (Test-Path (Join-Path $env:USERPROFILE 'scoop\apps\wezterm')) {
+    Warn "scoop's stable 'wezterm' app is installed — it fights wezterm-nightly over the same shims."
+    Warn "    scoop uninstall wezterm"
+    $stale = $true
+  }
+  if (Test-Path 'C:\Program Files\WezTerm\wezterm-gui.exe') {
+    Warn "A machine-wide WezTerm MSI is installed; it owns the Start-menu shortcut."
+    Warn "Remove it in an ADMIN shell (or via Settings -> Apps), then restart your shell:"
+    Warn "    winget uninstall --id wez.wezterm"
+    $stale = $true
+  }
+  if (-not $stale) {
+    $wt = Get-Command wezterm -ErrorAction SilentlyContinue
+    if ($wt) { Info "wezterm OK: $($wt.Source) ($(& $wt.Source --version))" }
   }
 }
 

@@ -50,6 +50,7 @@ function Invoke-Install {
   }
 
   Test-NvimShadow
+  Test-WeztermShadow
 
   # --- config links --------------------------------------------------------
   # Resolve the pwsh profile path first ({PROFILE} token feeds Invoke-Links).
@@ -74,8 +75,26 @@ function Invoke-Update {
   # unrelated apps — mirrors install.sh's targeted apt upgrade.
   Info "Refreshing scoop manifests…"
   scoop update | Out-Null
+  # scoop stamps a nightly install 'nightly-yyyyMMdd' and by default treats every
+  # nightly as equal to every other, so a plain `scoop update` would keep the old
+  # WezTerm build forever. update_nightly makes it compare nightlies BY DATE, so the
+  # batch below moves wezterm-nightly forward once a day like any other app (the
+  # counterpart of install.sh's fetch_wezterm, which always re-fetches the .deb).
+  # Idempotent; set here rather than at install so older machines pick it up too.
+  scoop config update_nightly true | Out-Null
+  # scoop refuses to replace an app with a running process ("Running process
+  # detected, skip updating"), and this shell normally lives INSIDE WezTerm. When
+  # the WezTerm we're running in is scoop's, skip it cleanly with a pointer instead
+  # of letting the batch trip over it. (WezTerm exports its own path to children.)
+  $apps = $SCOOP_APPS
+  if ($env:WEZTERM_EXECUTABLE -like (Join-Path $env:USERPROFILE 'scoop\apps\wezterm-nightly\*')) {
+    Warn "Running inside scoop's WezTerm, so wezterm-nightly is skipped (scoop won't replace a running app)."
+    Warn "    To move WezTerm forward, run '.\install.ps1 update' from Windows Terminal or conhost."
+    $apps = $apps | Where-Object { $_ -ne 'wezterm-nightly' }
+  }
   Info "Upgrading managed scoop apps to the latest…"
-  scoop update @($SCOOP_APPS)
+  scoop update @($apps)
+  Test-WeztermShadow
 
   # Bust the cached zoxide init. The profile caches `zoxide init` output to disk and
   # treats it as DURABLE (it never re-checks the binary), so an upgraded zoxide would

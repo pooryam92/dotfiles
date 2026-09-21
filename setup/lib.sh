@@ -121,7 +121,15 @@ fetch_wezterm() {
   sudo rm -f /etc/apt/sources.list.d/wezterm.list /usr/share/keyrings/wezterm-fury.gpg
 }
 install_wezterm() {
-  if command -v wezterm >/dev/null; then info "wezterm already installed ($(wezterm --version))"
+  if command -v wezterm >/dev/null; then
+    info "wezterm already installed ($(wezterm --version))"
+    # A machine set up before this repo moved to nightly still carries the frozen
+    # 20240203 stable (apt, from the old Fury repo). `install` never upgrades, so
+    # say it out loud instead of silently leaving a 2024 build under a config that
+    # assumes a current one — Test-WeztermShadow in lib.ps1 is the Windows mirror.
+    if wezterm --version | grep -q 20240203; then
+      warn "that is the frozen 20240203 stable; run ./install.sh update to move to nightly"
+    fi
   else info "Installing WezTerm…"; fetch_wezterm; fi
 }
 

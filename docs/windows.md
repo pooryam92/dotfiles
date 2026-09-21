@@ -56,7 +56,10 @@ Developer Mode to upgrade copies to links. (The `nvim/` directory uses a
 
 1. Sets `ExecutionPolicy` for the current user to `RemoteSigned` (so the profile
    loads on future launches).
-2. Bootstraps **scoop** if missing; adds the `extras` and `nerd-fonts` buckets.
+2. Bootstraps **scoop** if missing; adds the `extras`, `versions` and `nerd-fonts`
+   buckets. `versions` is the one that carries `wezterm-nightly` — `extras` only has
+   the plain `wezterm` manifest, frozen at the 20240203 stable — so without it the
+   whole `scoop install` line aborts with "Could not find manifest".
 3. Installs: `pwsh`, `neovim`, `wezterm-nightly` (WezTerm's maintained channel —
    matches Linux; see below), `fzf` (fuzzy finder — powers `zi`),
    `win32yank` (nvim clipboard), `zoxide` (smarter `cd`), `fd`/`ripgrep`/`bat`
