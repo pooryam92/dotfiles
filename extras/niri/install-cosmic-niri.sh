@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 # Installs the "COSMIC on niri" session: COSMIC's desktop parts (panel, settings,
 # launcher…) running on niri instead of cosmic-comp. Log out afterwards and pick it
-# on the greeter. See niri/README.md.
+# on the greeter. See extras/niri/README.md.
 set -euo pipefail
 
-source "$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/setup/lib.sh"
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)/setup/lib.sh"
 
 SRC="${SRC_DIR:-$HOME/src}"
 PREFIX="/usr/local"
@@ -64,10 +64,15 @@ fi
     && sudo just install-niri )
 
 # ---------------------------------------------------------------------------
+# config.kdl's Mod is Super, and keyd is what puts Super on Right Alt (plus CapsLock as
+# Esc/Ctrl). Its installer is standalone and idempotent, so just run it.
+"$DOTFILES/extras/keyd/install-keyd.sh"
+
+# ---------------------------------------------------------------------------
 info "Linking niri config…"
 # link() backs up any existing real file, then symlinks.
-link "$DOTFILES/niri/config.kdl" "$HOME/.config/niri/config.kdl"
+link "$DOTFILES/extras/niri/config.kdl" "$HOME/.config/niri/config.kdl"
 
 # ---------------------------------------------------------------------------
 info "Done. Log out, then pick \"COSMIC on niri\" on the greeter's session menu."
-info "Mod is Super. Mod+T terminal · Mod+D launcher · Mod+Shift+E quit. See niri/README.md."
+info "Mod is Super. Mod+T terminal · Mod+D launcher · Mod+Shift+E quit. See extras/niri/README.md."

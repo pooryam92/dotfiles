@@ -6,8 +6,8 @@ everywhere the same way: niri, stock COSMIC (`cosmic-comp`), X11, and even a bar
 TTY. It's the one tool that gives us *identical* keyboard behaviour across every
 session, which fits the repo's "one experience" goal.
 
-- Config (source of truth): [`keyd/default.conf`](../keyd/default.conf)
-- Installed by [`install.sh`](../install.sh) → copied to `/etc/keyd/default.conf`
+- Config (source of truth): [`extras/keyd/default.conf`](default.conf)
+- Installed by [`extras/keyd/install-keyd.sh`](install-keyd.sh) (also run by the niri installer) → copied to `/etc/keyd/default.conf`
 - Linux-only. The Windows counterpart would be PowerToys Keyboard Manager.
 
 ## What it remaps
@@ -44,22 +44,30 @@ which is the simpler thing to maintain.
 
 ## Build / install
 
-keyd isn't in Pop!_OS 24.04's apt repos, so `install.sh` builds it from source
+**Opt-in and Linux-only** — it lives under `extras/`, outside the cross-platform
+`install.{sh,ps1}` pair. The niri installer runs it (Right Alt → Super is niri's
+`Mod`); on stock COSMIC run it yourself for CapsLock-as-Esc/Ctrl:
+
+```bash
+./extras/keyd/install-keyd.sh
+```
+
+keyd isn't in Pop!_OS 24.04's apt repos, so the script builds it from source
 (`git clone … && make && sudo make install`) and enables the service. The build
-is tiny. Re-running `install.sh` is idempotent: it skips the build if `keyd` is
-already on `PATH` and always re-syncs the config.
+is tiny. Re-running is idempotent: it skips the build if `keyd` is already on
+`PATH` and always re-syncs the config.
 
 ## Apply config changes
 
 `/etc/keyd/default.conf` is a **copy**, not a symlink (keyd starts at boot,
 possibly before `$HOME` is mounted, so a symlink into the repo would be fragile).
-After editing `keyd/default.conf`, push it live with:
+After editing `extras/keyd/default.conf`, push it live with:
 
 ```bash
-sudo install -Dm644 keyd/default.conf /etc/keyd/default.conf && sudo keyd reload
+sudo install -Dm644 extras/keyd/default.conf /etc/keyd/default.conf && sudo keyd reload
 ```
 
-(or just re-run `./install.sh`).
+(or just re-run `./extras/keyd/install-keyd.sh`).
 
 ## Debugging
 

@@ -27,7 +27,7 @@ Small, deferred tasks. One line each — link details where useful.
   daemon + sync account is too heavy; fzf `Ctrl+R` first), `jq` (JSON processor —
   only once APIs/JSON come up regularly).
 
-- [ ] **Try `prefer-no-csd` in `niri/config.kdl` now that WezTerm is on nightly.**
+- [ ] **Try `prefer-no-csd` in `extras/niri/config.kdl` now that WezTerm is on nightly.**
   Stable WezTerm had a tiled-size bug with it (why it was left off). Nightly may
   fix it: enable, launch WezTerm under niri, check windows still size correctly —
   revert if not. Cosmetic win: no client-side title bars.

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Shared helpers for install.sh (and the niri installer) — sourced, never
+# Shared helpers for install.sh (and the extras/ installers) — sourced, never
 # run directly: logging, paths, the link helpers, and the per-tool install/fetch actions.
 
 LIBDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"   # …/setup
@@ -16,7 +16,7 @@ info() { printf '\033[1;34m==>\033[0m %s\n' "$*"; }
 warn() { printf '\033[1;33m!! \033[0m %s\n' "$*"; }
 die()  { printf '\033[1;31mxx \033[0m %s\n' "$*" >&2; exit 1; }
 
-# A long source build (keyd here, niri's cargo build) can outlast sudo's timeout and
+# A long source build (the extras' keyd and niri builds) can outlast sudo's timeout and
 # surprise-prompt mid-run, so authenticate once and keep the timestamp fresh. Call early.
 keep_sudo_fresh() {
   sudo -v || return 1
@@ -169,29 +169,6 @@ install_nvim() {
   fi
 }
 # The nvim config is colorscheme-only, so the tree-sitter CLI stays out (nvim/README.md).
-
-# keyd — remaps at the evdev layer, so it works under any compositor, X11 and the TTY.
-# Not packaged for Pop!_OS 24.04, so build from source; install-once, never rebuilt.
-install_keyd() {
-  if command -v keyd >/dev/null; then
-    info "keyd already installed ($(keyd --version 2>/dev/null | head -1))"
-  else
-    info "Installing keyd (key remapper)…"
-    sudo apt-get install -y build-essential
-    local src="${SRC_DIR:-$HOME/src}/keyd"
-    if [ -d "$src/.git" ]; then
-      git -C "$src" pull --ff-only || warn "could not update keyd; building current checkout"
-    else
-      git clone https://github.com/rvaiya/keyd "$src"
-    fi
-    ( cd "$src" && make && sudo make install )
-    sudo systemctl enable --now keyd
-  fi
-  # /etc is root-owned and keyd starts at boot (before $HOME may be mounted), so the
-  # config is copied, not symlinked.
-  sudo install -Dm644 "$DOTFILES/keyd/default.conf" /etc/keyd/default.conf
-  sudo keyd reload 2>/dev/null || warn "keyd reload failed; run 'sudo keyd reload' once the service is up"
-}
 
 # --- GUI editors -------------------------------------------------------------
 # Zed's official installer drops a self-updating binary under ~/.local; there is no

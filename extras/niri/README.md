@@ -6,15 +6,15 @@ daemon, notifications, launcher, background…) on top of **[niri](https://githu
 `cosmic-comp`. You keep the COSMIC look and apps, but get keyboard-first tiling
 window management.
 
-> **Opt-in and Linux-only.** This is not part of the everyday `install.sh`. It
+> **Opt-in and Linux-only.** This lives under `extras/`, outside the everyday `install.sh`. It
 > builds niri from source and writes system files with `sudo`, so it has its own
-> script: [`niri/install-cosmic-niri.sh`](../niri/install-cosmic-niri.sh). There
+> script: [`extras/niri/install-cosmic-niri.sh`](install-cosmic-niri.sh). There
 > is no Windows counterpart — COSMIC and niri are Linux-only, so this sits
 > *outside* the cross-platform `install.{sh,ps1}` pair on purpose.
 
 - niri docs: <https://yalter.github.io/niri/>
 - The glue project: <https://github.com/Drakulix/cosmic-ext-extra-sessions>
-- Your config: `niri/config.kdl` → linked to `~/.config/niri/config.kdl`
+- Your config: `extras/niri/config.kdl` → linked to `~/.config/niri/config.kdl`
 
 ---
 
@@ -78,7 +78,7 @@ The three moving parts the installer puts in place:
 ## Install
 
 ```bash
-./niri/install-cosmic-niri.sh
+./extras/niri/install-cosmic-niri.sh
 ```
 
 It's idempotent — safe to re-run to pull and rebuild the latest niri. In order it:
@@ -91,7 +91,9 @@ It's idempotent — safe to re-run to pull and rebuild the latest niri. In order
    `niri` binary — none of niri's own session files, since `cosmic-session` owns
    the session.
 3. **Builds + installs** the session glue (`just build && sudo just install-niri`).
-4. **Links** `niri/config.kdl` → `~/.config/niri/config.kdl`.
+4. **Runs [`extras/keyd/install-keyd.sh`](../keyd/README.md)** — keyd puts Super on
+   Right Alt (niri's `Mod`) and makes CapsLock Esc/Ctrl.
+5. **Links** `extras/niri/config.kdl` → `~/.config/niri/config.kdl`.
 
 Source trees are cloned under `~/src` (override with `SRC_DIR=…`).
 
@@ -102,7 +104,7 @@ greeter (usually a gear/menu icon near the password box).
 
 ## The config
 
-`niri/config.kdl` is niri's well-commented default with three COSMIC-specific
+`extras/niri/config.kdl` is niri's well-commented default with three COSMIC-specific
 changes — everything else (the full set of navigation/tiling binds) is stock and
 documented inline:
 
@@ -219,7 +221,7 @@ work even on the lock screen.
 
 Press `Mod+Shift+/` (i.e. `Mod+?`) in-session any time for the complete,
 always-correct list. The config is **live-reloaded** on save — tweak
-`niri/config.kdl` and changes apply instantly.
+`extras/niri/config.kdl` and changes apply instantly.
 
 ---
 

@@ -1,5 +1,5 @@
 // niri config — COSMIC-on-niri session. KDL format; "/-" comments out a node.
-// Live-reloaded on save. Validate: niri validate -c niri/config.kdl · docs: yalter.github.io/niri
+// Live-reloaded on save. Validate: niri validate -c extras/niri/config.kdl · docs: yalter.github.io/niri
 
 input {
     keyboard {

@@ -28,7 +28,6 @@ cmd_install() {
   install_nvim
   install_font
   install_claude
-  install_keyd
 
   # --- GUI editors ---------------------------------------------------------
   install_zed
