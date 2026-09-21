@@ -198,20 +198,11 @@ Two consequences worth internalising:
 `keybindings.json` stays a live symlink — it holds no machine state, and VS Code
 only writes it when you deliberately change a keybinding.
 
-**Installing VS Code itself is opt-in and lives in its own script** — it's a GUI
-app, so it stays out of the main installers' terminal/CLI flow (same as Zed and
-the niri session). Run once:
-
-```sh
-./vscode/install-vscode.sh        # Linux — Microsoft's apt repo
-```
-
-```powershell
-.\vscode\install-vscode.ps1       # Windows — winget, user scope, no admin
-```
-
-Re-running is safe. The config links above are made by the main installers
-whether or not VS Code is installed.
+**VS Code is part of the core install.** `install.sh` adds Microsoft's apt repo
+and installs `code` (Linux); `install.ps1` installs it via winget, user scope, no
+admin (Windows). Both then install the extensions and link the configs above.
+`install.sh update` upgrades it with the other apt packages; on Windows it
+self-updates.
 
 **Extensions are data, not script.** Both installers read
 [`vscode/extensions.txt`](extensions.txt) — one id per line, `#` comments
@@ -256,7 +247,7 @@ command scopes itself to the packages `install.sh` owns).
   the two kinds of chord a Vim mapping can't express: ones that must work outside
   a Vim buffer, and **Alt chords** (which VSCodeVim never receives — see above).
 - **Adding an extension?** One line in [`extensions.txt`](extensions.txt), then
-  re-run `install-vscode.{sh,ps1}`. Don't hardcode it in a script.
+  re-run `./install.sh` / `.install.ps1` (or `update`). Don't hardcode it in a script.
 - **Turn Vim off temporarily** without editing anything: `Ctrl+Shift+P` →
   "Extensions: Disable" → Vim.
 

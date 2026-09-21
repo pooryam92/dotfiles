@@ -1,10 +1,10 @@
-# Shared helpers for install.ps1 (and the standalone zed installer) — dot-sourced, never
+# Shared helpers for install.ps1 — dot-sourced, never
 # run directly: logging, the link helpers, the scoop app list, and the per-tool steps.
 
 $LIB = $PSScriptRoot                       # …\setup — this lib + links.tsv live here
 $DOT = Split-Path -Parent $LIB             # repo root — where the config sources live
 
-$SCOOP_APPS = @('pwsh', 'fzf', 'win32yank',
+$SCOOP_APPS = @('pwsh', 'fzf', 'win32yank', 'zed',
                 'wezterm-nightly', 'zoxide', 'fd', 'ripgrep', 'bat',
                 'neovim', 'JetBrainsMono-NF')
 
@@ -147,6 +147,41 @@ function Test-WeztermShadow {
   if (-not $stale) {
     $wt = Get-Command wezterm -ErrorAction SilentlyContinue
     if ($wt) { Info "wezterm OK: $($wt.Source) ($(& $wt.Source --version))" }
+  }
+}
+
+# --- GUI editors -------------------------------------------------------------
+# Zed comes from scoop ($SCOOP_APPS), so install/update handle it with the CLI tools.
+# VS Code has no user-scope scoop build, so it comes from winget instead and self-updates.
+function Install-VSCode {
+  if (Get-Command code -ErrorAction SilentlyContinue) {
+    Info "VS Code already installed ($(code --version 2>$null | Select-Object -First 1)); it self-updates."
+  } elseif (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
+    Warn "winget not found. Install 'App Installer' from the Microsoft Store, or get VS Code from https://code.visualstudio.com/download"
+  } else {
+    Info "Installing VS Code via winget (user scope, no admin)…"
+    winget install --id Microsoft.VisualStudioCode --scope user `
+      --accept-package-agreements --accept-source-agreements
+    # The installer adds `code` to PATH for NEW shells; prepend it here so extensions work now.
+    $env:Path = (Join-Path $env:LOCALAPPDATA 'Programs\Microsoft VS Code\bin') + ';' + $env:Path
+  }
+}
+
+# The extensions the VS Code config needs, one id per line in vscode\extensions.txt
+# (trailing `# comments` allowed). --force makes --install-extension idempotent, so this
+# runs on both install and update and picks up new lines in the file.
+function Install-VSCodeExtensions {
+  $extensions = Get-Content (Join-Path $DOT 'vscode\extensions.txt') |
+    ForEach-Object { ($_ -split '#')[0].Trim() } |
+    Where-Object { $_ }
+  if (-not (Get-Command code -ErrorAction SilentlyContinue)) {
+    Warn "'code' not on PATH — open a NEW shell and re-run install to add: $($extensions -join ', ')"
+    return
+  }
+  foreach ($ext in $extensions) {
+    Info "Installing VS Code extension $ext…"
+    try { code --install-extension $ext --force }
+    catch { Warn "could not install $ext ($_); install it from the Extensions view" }
   }
 }
 

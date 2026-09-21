@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Shared helpers for install.sh (and the standalone zed/niri installers) — sourced, never
+# Shared helpers for install.sh (and the niri installer) — sourced, never
 # run directly: logging, paths, the link helpers, and the per-tool install/fetch actions.
 
 LIBDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"   # …/setup
@@ -193,7 +193,54 @@ install_keyd() {
   sudo keyd reload 2>/dev/null || warn "keyd reload failed; run 'sudo keyd reload' once the service is up"
 }
 
-# Zed and VS Code are GUI apps with their own installers; only their configs are linked.
+# --- GUI editors -------------------------------------------------------------
+# Zed's official installer drops a self-updating binary under ~/.local; there is no
+# fetch_zed because the app upgrades itself.
+install_zed() {
+  if command -v zed >/dev/null; then
+    info "zed already installed ($(zed --version 2>/dev/null | head -1)); it self-updates"
+  else
+    info "Installing Zed…"
+    curl -fsSL https://zed.dev/install.sh | sh \
+      || warn "Zed install failed; see https://zed.dev/docs/linux"
+  fi
+}
+
+# VS Code from Microsoft's apt repo, so `update` upgrades it with the other apt packages.
+install_vscode() {
+  if command -v code >/dev/null; then
+    info "VS Code already installed ($(code --version 2>/dev/null | head -1))"
+  else
+    info "Installing VS Code from Microsoft's apt repo (needs sudo)…"
+    local key
+    key="$(mktemp)"
+    curl -fsSL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > "$key" \
+      || { warn "could not fetch Microsoft's signing key; skipping VS Code"; rm -f "$key"; return; }
+    sudo install -D -o root -g root -m 644 "$key" /usr/share/keyrings/microsoft.gpg
+    rm -f "$key"
+    echo "deb [arch=amd64,arm64,armhf signed-by=/usr/share/keyrings/microsoft.gpg] https://packages.microsoft.com/repos/code stable main" \
+      | sudo tee /etc/apt/sources.list.d/vscode.list >/dev/null
+    sudo apt-get update -y
+    sudo apt-get install -y code \
+      || { warn "VS Code install failed; see https://code.visualstudio.com/docs/setup/linux"; return; }
+  fi
+}
+
+# The extensions the VS Code config needs, one id per line in vscode/extensions.txt
+# (trailing `# comments` allowed). --force makes --install-extension idempotent, so this
+# runs on both install and update and picks up new lines in the file.
+install_vscode_extensions() {
+  command -v code >/dev/null || { warn "VS Code not installed; skipping extensions"; return; }
+  local line ext
+  while read -r line || [ -n "$line" ]; do
+    ext="${line%%#*}"
+    ext="$(printf '%s' "$ext" | tr -d '[:space:]')"
+    [ -z "$ext" ] && continue
+    info "Installing VS Code extension $ext…"
+    code --install-extension "$ext" --force </dev/null \
+      || warn "could not install $ext; install it from the Extensions view"
+  done < "$DOTFILES/vscode/extensions.txt"
+}
 
 # The native installer self-updates (or `claude update`), so run it only when absent.
 install_claude() {

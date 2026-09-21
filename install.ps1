@@ -1,4 +1,4 @@
-# Dotfiles front door for Windows — installs and updates the terminal/CLI stack.
+# Dotfiles front door for Windows — installs and updates the terminal + editor stack.
 # install is install-once (scoop install no-ops on apps already present); update upgrades.
 #
 #   .\install.ps1              install everything (default)
@@ -37,6 +37,11 @@ function Invoke-Install {
 
   Test-NvimShadow
   Test-WeztermShadow
+
+  # --- GUI editors ---------------------------------------------------------
+  # Zed is in $SCOOP_APPS above; VS Code comes from winget.
+  Install-VSCode
+  Install-VSCodeExtensions
 
   # --- config links --------------------------------------------------------
   $profilePath = Resolve-ProfilePath
@@ -80,13 +85,17 @@ function Invoke-Update {
     try { claude update } catch { Warn "claude update failed; it also self-updates on launch" }
   }
 
+  # Zed moved with the scoop apps above; VS Code self-updates. Extensions re-run so new
+  # lines in vscode\extensions.txt land on every update.
+  Install-VSCodeExtensions
+
   Info "Done. Restart your shell (. `$PROFILE) to pick up the new versions."
 }
 
 function Show-Usage {
   Write-Host @'
 usage: .\install.ps1 [command]
-  install     install the terminal/CLI stack (default; idempotent, safe to re-run)
+  install     install the terminal + editor stack (default; idempotent, safe to re-run)
   update      force every managed app to its latest release
 '@
 }

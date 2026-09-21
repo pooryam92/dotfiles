@@ -34,12 +34,10 @@ Both files are linked by the main installers (`install.sh` / `install.ps1`):
 > Note the case: Zed's config dir is lowercase `zed` on Linux (XDG) but
 > capitalized `Zed` on Windows (Roaming `%APPDATA%`).
 
-**Installing Zed itself is opt-in and lives in its own script** — Zed is a GUI
-app, so it stays out of the main installers' terminal/CLI flow (the same way
-the niri session does). Run once: `./zed/install-zed.sh` (Linux) /
-`.\zed\install-zed.ps1` (Windows). Zed self-updates from there. The config
-links above are made by the main installers regardless of whether Zed itself is
-installed.
+**Zed is part of the core install.** `install.sh` uses Zed's official installer
+(Linux) and `install.ps1` gets it from scoop (Windows), then both link the
+configs above. Zed self-updates on Linux; on Windows `.\install.ps1 update` moves
+it forward with the other scoop apps.
 
 ---
 

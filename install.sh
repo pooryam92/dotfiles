@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Dotfiles front door for Pop!_OS / Ubuntu — installs and updates the terminal/CLI stack.
+# Dotfiles front door for Pop!_OS / Ubuntu — installs and updates the terminal + editor stack.
 # install is install-once (every step is guarded); update is what upgrades.
 #
 #   ./install.sh              install everything (default)
@@ -30,6 +30,11 @@ cmd_install() {
   install_claude
   install_keyd
 
+  # --- GUI editors ---------------------------------------------------------
+  install_zed
+  install_vscode
+  install_vscode_extensions
+
   # --- config links --------------------------------------------------------
   do_links
 
@@ -54,6 +59,8 @@ cmd_update() {
   info "Upgrading apt packages (needs sudo)…"
   sudo apt-get update -y
   sudo apt-get install --only-upgrade -y "${BASE_APT[@]}" fd-find ripgrep bat
+  # VS Code is apt-managed too (Microsoft's repo, added by install), but only once installed.
+  if command -v code >/dev/null; then sudo apt-get install --only-upgrade -y code; fi
 
   info "Upgrading WezTerm…";  fetch_wezterm
   info "Upgrading zoxide…";   fetch_zoxide
@@ -65,13 +72,17 @@ cmd_update() {
     claude update || warn "claude update failed; it also self-updates on launch"
   fi
 
+  # Zed self-updates; VS Code came through apt above. Extensions re-run so new lines in
+  # vscode/extensions.txt land on every update.
+  install_vscode_extensions
+
   info "Done. Restart your shell (exec zsh) to pick up the new versions."
 }
 
 usage() {
   cat <<'EOF'
 usage: ./install.sh [command]
-  install     install the terminal/CLI stack (default; idempotent, safe to re-run)
+  install     install the terminal + editor stack (default; idempotent, safe to re-run)
   update      force every managed tool to its latest release
 EOF
 }
