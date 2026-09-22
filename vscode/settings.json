@@ -13,6 +13,11 @@
   "workbench.editorAssociations": {
     "*.md": "vscode.markdown.preview.editor"
   },
+  // Diffs (Source Control, compare) are the exception: a rendered preview cannot
+  // show changes, so they open as text. Wins over editorAssociations for diffs.
+  "workbench.diffEditorAssociations": {
+    "*.md": "default"
+  },
 
   // ==== Editing model: Vim ====
   // VSCodeVim, installed by the install script.

@@ -259,7 +259,7 @@ Emacs-style, always-on (no modes) — identical on zsh and PowerShell.
 | Change pane/tab keybinds     | the `config.keys` block in `wezterm/wezterm.lua`    |
 | Change the prompt            | the prompt block in `zsh/.zshrc` (Linux) / the `prompt` function in `pwsh/profile.ps1` (Windows) |
 | Change the Claude status line| `claude/statusline.js` (see [claude/README.md](claude/README.md)) |
-| Stop `.md` opening rendered  | the `workbench.editorAssociations` block in `vscode/settings.json` |
+| Stop `.md` opening rendered  | the `workbench.editorAssociations` block in `vscode/settings.json` (diffs already open as text via `diffEditorAssociations`) |
 | Add a VS Code extension      | one line in `vscode/extensions.txt`, then re-run `./install.sh` / `.install.ps1` (or `update`) |
 | Add aliases / env            | `zsh/.zshrc` (Linux) / `pwsh/profile.ps1` (Windows) |
 | Switch theme                 | `color_scheme` in WezTerm (prompts follow the terminal palette) |
