@@ -8,9 +8,10 @@ window management.
 
 > **Opt-in and Linux-only.** This lives under `extras/`, outside the everyday `install.sh`. It
 > builds niri from source and writes system files with `sudo`, so it has its own
-> script: [`extras/niri/install-cosmic-niri.sh`](install-cosmic-niri.sh). There
-> is no Windows counterpart — COSMIC and niri are Linux-only, so this sits
-> *outside* the cross-platform `install.{sh,ps1}` pair on purpose.
+> script: [`extras/niri/install-cosmic-niri.sh`](install-cosmic-niri.sh). COSMIC
+> and niri are Linux-only, so this sits *outside* the cross-platform
+> `install.{sh,ps1}` pair on purpose. The Windows counterpart is
+> [komorebi](../komorebi/README.md): the same scrolling layout and the same keys.
 
 - niri docs: <https://yalter.github.io/niri/>
 - The glue project: <https://github.com/Drakulix/cosmic-ext-extra-sessions>
@@ -195,7 +196,7 @@ focus; add **`Shift`** to reach *monitors* (and `Shift+Ctrl` to move across them
 |------|--------|
 | `Mod+F` / `Mod+Shift+F` | maximize column / fullscreen window |
 | `Mod+M` | maximize window to screen edges (no gaps) |
-| `Mod+V` / `Mod+Shift+V` | toggle window floating / jump between floating and tiling |
+| `Mod+G` / `Mod+Shift+G` | toggle window floating / jump between floating and tiling (G, not niri's default V, to match Windows) |
 | `Mod+W` | toggle tabbed display for the column |
 | `Mod+Q` | close window |
 | `Mod+O` | overview (zoomed-out workspaces) |

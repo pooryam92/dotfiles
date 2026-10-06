@@ -1,0 +1,59 @@
+{
+  "$schema": "https://raw.githubusercontent.com/LGUG2Z/komorebi/v0.1.41/schema.json",
+  "app_specific_configuration_path": "$Env:USERPROFILE/applications.json",
+  "object_name_change_applications": [
+    { "kind": "Exe", "id": "SSMS.exe", "matching_strategy": "Equals" }
+  ],
+  "cross_monitor_move_behaviour": "Insert",
+  "mouse_follows_focus": false,
+  "default_workspace_padding": 4,
+  "default_container_padding": 4,
+  "animation": { "enabled": true, "duration": 150, "style": "EaseOutCubic" },
+  "border_width": 4,
+  "border_colours": {
+    "single": "#7fc8ff",
+    "stack": "#e0af68",
+    "unfocused": "#505050"
+  },
+  "stackbar": {
+    "mode": "OnStack",
+    "label": "Title",
+    "tabs": { "background": "#202020", "focused_text": "#e0af68", "unfocused_text": "#a0a0a0" }
+  },
+  "layout_defaults": {
+    "Scrolling": { "layout_options": { "scrolling": { "columns": 2 } } }
+  },
+  "display_index_preferences": {
+    "0": "LEN4146-4&81e161&0&UID8388688",
+    "1": "HNTL500135"
+  },
+  "monitors": [
+    {
+      "workspaces": [
+        { "name": "L1", "layout": "Scrolling" },
+        { "name": "L2", "layout": "Scrolling" },
+        { "name": "L3", "layout": "Scrolling" },
+        { "name": "L4", "layout": "Scrolling" },
+        { "name": "L5", "layout": "Scrolling" },
+        { "name": "L6", "layout": "Scrolling" },
+        { "name": "L7", "layout": "Scrolling" },
+        { "name": "L8", "layout": "Scrolling" },
+        { "name": "L9", "layout": "Scrolling" }
+      ]
+    },
+    {
+      "work_area_offset": { "left": 344, "top": 0, "right": 688, "bottom": 0 },
+      "workspaces": [
+        { "name": "W1", "layout": "Scrolling", "layout_options": { "scrolling": { "columns": 1 } } },
+        { "name": "W2", "layout": "Scrolling", "layout_options": { "scrolling": { "columns": 1 } } },
+        { "name": "W3", "layout": "Scrolling", "layout_options": { "scrolling": { "columns": 1 } } },
+        { "name": "W4", "layout": "Scrolling", "layout_options": { "scrolling": { "columns": 1 } } },
+        { "name": "W5", "layout": "Scrolling", "layout_options": { "scrolling": { "columns": 1 } } },
+        { "name": "W6", "layout": "Scrolling", "layout_options": { "scrolling": { "columns": 1 } } },
+        { "name": "W7", "layout": "Scrolling", "layout_options": { "scrolling": { "columns": 1 } } },
+        { "name": "W8", "layout": "Scrolling", "layout_options": { "scrolling": { "columns": 1 } } },
+        { "name": "W9", "layout": "Scrolling", "layout_options": { "scrolling": { "columns": 1 } } }
+      ]
+    }
+  ]
+}

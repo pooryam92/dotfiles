@@ -1,0 +1,12 @@
+# dual-key-remap — Windows counterpart of extras/keyd/default.conf.
+# Linked next to the exe by install-dual-key-remap.ps1; apply edits with the tray
+# icon's "Reload". Key names: https://github.com/ililim/dual-key-remap/wiki/Using-config.txt#key-names
+
+# CapsLock is Esc when tapped, Ctrl when held (keyd: overload(control, esc)).
+remap_key=CAPSLOCK
+when_alone=ESCAPE
+with_other=CTRL
+
+# Esc becomes CapsLock, so CapsLock is still reachable (keyd: esc = capslock).
+remap_key=ESCAPE
+to=CAPSLOCK

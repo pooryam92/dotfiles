@@ -1,0 +1,102 @@
+# whkd hotkeys for komorebi — mirrors the niri binds in extras/niri/config.kdl
+# (Mod = Win), driving komorebi's Scrolling layout. Restart whkd to apply edits:
+#   komorebic stop --whkd; komorebic start --whkd
+# Key names: https://docs.rs/win-hotkeys/latest/win_hotkeys/enum.VKey.html
+
+# cmd starts in milliseconds; pwsh would add its startup to every keypress.
+.shell cmd
+
+# Win+L is reserved by Windows (lock) and can't be rebound, so every "right" also
+# has its arrow twin: use Win+Right where niri would use Mod+L.
+win + q                     : komorebic close
+win + t                     : start "" wezterm-gui
+# niri's Mod+? overlay: komorebi-shortcuts lists the binds parsed from this file.
+win + shift + oem_2         : komorebic toggle-shortcuts
+# niri's Mod+O overview: the shell's "Window Switcher" item opens Task View (= Win+Tab).
+win + o                     : explorer shell:::{3080F90E-D7AD-11D9-BD98-0000947B0257}
+
+# Focus: left/right walks the column strip; up/down walks a stack (niri's column).
+win + left                  : komorebic focus left
+win + right                 : komorebic focus right
+win + h                     : komorebic focus left
+win + up                    : komorebic cycle-stack previous
+win + down                  : komorebic cycle-stack next
+win + k                     : komorebic cycle-stack previous
+win + j                     : komorebic cycle-stack next
+
+# Move: add Ctrl to the focus binds
+win + ctrl + left           : komorebic move left
+win + ctrl + right          : komorebic move right
+win + ctrl + h              : komorebic move left
+win + ctrl + l              : komorebic move right
+win + ctrl + up             : komorebic cycle-stack-index previous
+win + ctrl + down           : komorebic cycle-stack-index next
+win + ctrl + k              : komorebic cycle-stack-index previous
+win + ctrl + j              : komorebic cycle-stack-index next
+
+# Monitors: add Shift to focus one; add Shift+Ctrl to take the window along
+win + shift + left          : komorebic cycle-monitor previous
+win + shift + up            : komorebic cycle-monitor previous
+win + shift + h             : komorebic cycle-monitor previous
+win + shift + k             : komorebic cycle-monitor previous
+win + shift + right         : komorebic cycle-monitor next
+win + shift + down          : komorebic cycle-monitor next
+win + shift + j             : komorebic cycle-monitor next
+win + shift + l             : komorebic cycle-monitor next
+win + shift + ctrl + left   : komorebic cycle-move-to-monitor previous
+win + shift + ctrl + up     : komorebic cycle-move-to-monitor previous
+win + shift + ctrl + h      : komorebic cycle-move-to-monitor previous
+win + shift + ctrl + k      : komorebic cycle-move-to-monitor previous
+win + shift + ctrl + right  : komorebic cycle-move-to-monitor next
+win + shift + ctrl + down   : komorebic cycle-move-to-monitor next
+win + shift + ctrl + j      : komorebic cycle-move-to-monitor next
+win + shift + ctrl + l      : komorebic cycle-move-to-monitor next
+
+# Workspaces up/down: PageUp/Down or U/I; add Ctrl to take the window along
+win + next                  : komorebic cycle-workspace next
+win + prior                 : komorebic cycle-workspace previous
+win + u                     : komorebic cycle-workspace next
+win + i                     : komorebic cycle-workspace previous
+win + ctrl + next           : komorebic cycle-move-to-workspace next
+win + ctrl + prior          : komorebic cycle-move-to-workspace previous
+win + ctrl + u              : komorebic cycle-move-to-workspace next
+win + ctrl + i              : komorebic cycle-move-to-workspace previous
+
+# Workspace N: Win+N jumps, add Ctrl to send the window
+win + 1                     : komorebic focus-workspace 0
+win + 2                     : komorebic focus-workspace 1
+win + 3                     : komorebic focus-workspace 2
+win + 4                     : komorebic focus-workspace 3
+win + 5                     : komorebic focus-workspace 4
+win + 6                     : komorebic focus-workspace 5
+win + 7                     : komorebic focus-workspace 6
+win + 8                     : komorebic focus-workspace 7
+win + 9                     : komorebic focus-workspace 8
+win + ctrl + 1              : komorebic move-to-workspace 0
+win + ctrl + 2              : komorebic move-to-workspace 1
+win + ctrl + 3              : komorebic move-to-workspace 2
+win + ctrl + 4              : komorebic move-to-workspace 3
+win + ctrl + 5              : komorebic move-to-workspace 4
+win + ctrl + 6              : komorebic move-to-workspace 5
+win + ctrl + 7              : komorebic move-to-workspace 6
+win + ctrl + 8              : komorebic move-to-workspace 7
+win + ctrl + 9              : komorebic move-to-workspace 8
+
+# Columns: brackets pull the window into the neighbour's stack, period pops it out.
+# A komorebi stack shows one window at a time, like niri's tabbed column.
+win + oem_4                 : komorebic stack left
+win + oem_6                 : komorebic stack right
+win + oem_period            : komorebic unstack
+
+# Sizing. Scrolling columns share one width, so Win+R picks how many fit on screen
+# (niri's preset widths): one big column, or two side by side.
+win + r                     : komorebic scrolling-layout-columns 1
+win + shift + r             : komorebic scrolling-layout-columns 2
+win + f                     : komorebic toggle-monocle
+win + m                     : komorebic toggle-maximize
+
+# Float is G on both OSes (niri's default is V, but Win+V is Windows' clipboard history).
+win + g                     : komorebic toggle-float
+win + shift + g             : komorebic toggle-workspace-layer
+# reload-configuration only reloads legacy .ahk/.ps1 configs; this re-reads the JSON.
+win + ctrl + r              : komorebic replace-configuration "%USERPROFILE%\komorebi.json"

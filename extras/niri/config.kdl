@@ -13,7 +13,7 @@ input {
 }
 
 layout {
-    gaps 16
+    gaps 8
 
     center-focused-column "always"
 
@@ -188,9 +188,10 @@ binds {
     Mod+Shift+Minus { set-window-height "-10%"; }
     Mod+Shift+Equal { set-window-height "+10%"; }
 
-    // Floating + tabbed display.
-    Mod+V       { toggle-window-floating; }
-    Mod+Shift+V { switch-focus-between-floating-and-tiling; }
+    // Floating + tabbed display. G, not niri's default V: Windows keeps Win+V for
+    // clipboard history, so komorebi uses G too and both OSes share one key.
+    Mod+G       { toggle-window-floating; }
+    Mod+Shift+G { switch-focus-between-floating-and-tiling; }
     Mod+W       { toggle-column-tabbed-display; }
 
     // Lets a remote-desktop/KVM app grab the keyboard; this toggles it back.

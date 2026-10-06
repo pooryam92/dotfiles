@@ -39,10 +39,12 @@ in the actual config in this repo:
 - [Claude Code](claude/README.md) — the AI agent: themed status line, synced settings
 - [Windows](docs/windows.md) — **native Windows setup**: scoop, PowerShell profile, paths
 
-Opt-in **extras**, outside the core install (see [Extras](#extras-linux-only-opt-in)):
+Opt-in **extras**, outside the core install (see [Extras](#extras-opt-in)):
 
 - [COSMIC on niri](extras/niri/README.md) — COSMIC's shell on a scrollable-tiling compositor
 - [keyd](extras/keyd/README.md) — system-wide key remaps: CapsLock = Esc/Ctrl, Right Alt = Super
+- [komorebi](extras/komorebi/README.md) — niri-style scrolling tiling on Windows, with niri's shortcuts
+- [dual-key-remap](extras/dual-key-remap/README.md) — keyd's CapsLock = Esc/Ctrl remap on Windows
 
 ## Quick start
 
@@ -78,7 +80,7 @@ backed up to `<file>.bak.<timestamp>` before linking.
 
 One command per OS installs the **whole core**: the terminal/CLI stack, the GUI
 editors, and every config in the table under [Layout](#layout). Nothing under
-`extras/` is touched — see [Extras](#extras-linux-only-opt-in).
+`extras/` is touched — see [Extras](#extras-opt-in).
 
 **`install.sh` (Linux)** installs these apt packages: `zsh`, `git`, `curl`,
 `unzip`, `ca-certificates`, `fontconfig`, `wl-clipboard`, `fzf`, `fd`,
@@ -126,21 +128,22 @@ do Zed (Linux) and VS Code (Windows); `update` moves Zed on Windows (scoop) and 
 Code on Linux (apt), and re-applies `vscode/extensions.txt` on both. Neovim's
 plugins update from inside nvim with `:lua vim.pack.update()`.
 
-## Extras (Linux-only, opt-in)
+## Extras (opt-in)
 
 Everything under **`extras/`** is outside the core: the root installers never
-install, update, or link it. Each extra has its own installer and README. Both
-current extras are Linux-only (no Windows counterpart exists), which is exactly
-why they're not in the cross-platform core.
+install, update, or link it. Each extra has its own installer and README. Each
+one only exists on one OS (niri and keyd on Linux, komorebi and dual-key-remap on
+Windows), which is exactly why they're not in the cross-platform core.
 
 | Extra | What | Install |
 | ----- | ---- | ------- |
 | [COSMIC on niri](extras/niri/README.md) | COSMIC's desktop parts on the niri scrollable-tiling compositor; builds niri from source | `./extras/niri/install-cosmic-niri.sh` |
 | [keyd](extras/keyd/README.md) | System-wide key remaps at the evdev layer: CapsLock = Esc (tap) / Ctrl (hold), Right Alt = Super | `./extras/keyd/install-keyd.sh` (the niri installer runs it too) |
+| [komorebi](extras/komorebi/README.md) | **Windows** tiling window manager in niri's scrolling layout with niri's shortcuts; one big center column with peeking neighbours on the ultrawide, 2 columns on the laptop | `.\extras\komorebi\install-komorebi.ps1` |
+| [dual-key-remap](extras/dual-key-remap/README.md) | **Windows** counterpart of keyd: CapsLock = Esc (tap) / Ctrl (hold), Esc = CapsLock | `sudo pwsh -File .\extras\dual-key-remap\install-dual-key-remap.ps1` |
 
-Their configs (`extras/niri/config.kdl` → `~/.config/niri/config.kdl`,
-`extras/keyd/default.conf` → `/etc/keyd/default.conf`) are placed by those
-scripts, not by `setup/links.tsv`.
+Their configs are placed by each extra's own installer (its README lists where),
+not by `setup/links.tsv`.
 
 ## Layout
 
@@ -153,7 +156,7 @@ The setup machinery lives in **`setup/`**: the link targets below are data in
 a tool is one `install_*` call in `install.sh` (Linux) and/or a `$SCOOP_APPS`
 entry in `setup/lib.ps1` (Windows). Only `install.sh` / `install.ps1` stay at
 the repo root as the entry points. Anything that can't be cross-platform goes
-under `extras/` with its own installer instead (see [Extras](#extras-linux-only-opt-in)).
+under `extras/` with its own installer instead (see [Extras](#extras-opt-in)).
 
 | Repo file                | Linux target                  | Windows target                          |
 | ------------------------ | ----------------------------- | --------------------------------------- |

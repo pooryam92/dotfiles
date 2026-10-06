@@ -8,7 +8,8 @@ session, which fits the repo's "one experience" goal.
 
 - Config (source of truth): [`extras/keyd/default.conf`](default.conf)
 - Installed by [`extras/keyd/install-keyd.sh`](install-keyd.sh) (also run by the niri installer) → copied to `/etc/keyd/default.conf`
-- Linux-only. The Windows counterpart would be PowerToys Keyboard Manager.
+- Linux-only. The Windows counterpart is [dual-key-remap](../dual-key-remap/README.md)
+  (CapsLock and Esc only; Right Alt stays AltGr there).
 
 ## What it remaps
 
