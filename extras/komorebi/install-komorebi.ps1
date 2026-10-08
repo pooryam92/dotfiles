@@ -4,7 +4,7 @@
 #
 #   .\extras\komorebi\install-komorebi.ps1              install, link, start (idempotent)
 #   .\extras\komorebi\install-komorebi.ps1 update       upgrade both, refresh app rules, restart
-#   .\extras\komorebi\install-komorebi.ps1 uninstall    stop, unlink, remove everything
+#   .\extras\komorebi\install-komorebi.ps1 uninstall    stop, remove autostart, unlink, remove everything
 param(
   [string] $Command = 'install'
 )
@@ -19,6 +19,14 @@ $LINKS = @(
 # Community rules for apps that misbehave when tiled; downloaded, not kept in the repo.
 $ASC = Join-Path $env:USERPROFILE 'applications.json'
 
+# Start at login from the HKCU Run key, not komorebic enable-autostart's shell:startup
+# shortcut: Explorer runs the Startup folder after every Run entry, which held komorebi
+# back ~3.5 min after login. Not a Windows service either: services run in session 0
+# with no desktop, so they couldn't see windows or hotkeys.
+$RUN_KEY  = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run'
+$RUN_NAME = 'komorebi'
+$OLD_LNK  = Join-Path ([Environment]::GetFolderPath('Startup')) 'komorebi.lnk'
+
 function Stop-Komorebi {
   # komorebic panics when there's no komorebi to talk to, so only stop a running one.
   if (Get-Process komorebi -ErrorAction SilentlyContinue) { komorebic stop --whkd }
@@ -28,7 +36,9 @@ function Stop-Komorebi {
 function Start-Komorebi {
   Info "Starting komorebi + whkd…"
   Stop-Komorebi
-  komorebic start --whkd
+  # stop dumps the layout to %TEMP%\komorebi.state.json and start re-applies it, which
+  # would override the workspaces in the (possibly just-updated) config.
+  komorebic start --whkd --clean-state
   if (-not (Get-Process komorebi -ErrorAction SilentlyContinue)) {
     throw "komorebi did not start — run 'komorebi.exe' directly to see the config error."
   }
@@ -44,10 +54,12 @@ function Invoke-Install {
   Info "Fetching applications.json…"
   komorebic fetch-app-specific-configuration
 
-  # A login shortcut, not a Windows service: services run in session 0 with no desktop,
-  # so they couldn't see windows or hotkeys. Idempotent: it rewrites komorebi.lnk.
-  Info "Enabling start at login (shell:startup\komorebi.lnk)…"
-  komorebic enable-autostart --whkd
+  # scoop's `current` junction keeps this path valid across updates. The no-console build
+  # flashes no window; --clean-state makes the config win over any saved layout.
+  Info "Enabling start at login (HKCU Run\$RUN_NAME)…"
+  $exe = Join-Path $env:USERPROFILE 'scoop\apps\komorebi\current\komorebic-no-console.exe'
+  Set-ItemProperty -Path $RUN_KEY -Name $RUN_NAME -Value "`"$exe`" start --whkd --clean-state"
+  Remove-Item -LiteralPath $OLD_LNK -Force -ErrorAction SilentlyContinue
 
   Start-Komorebi
 
@@ -80,7 +92,8 @@ function Invoke-Update {
 function Invoke-Uninstall {
   Info "Stopping komorebi + whkd…"
   Stop-Komorebi
-  if (Get-Command komorebic -ErrorAction SilentlyContinue) { komorebic disable-autostart }
+  Remove-ItemProperty -Path $RUN_KEY -Name $RUN_NAME -ErrorAction SilentlyContinue
+  Remove-Item -LiteralPath $OLD_LNK -Force -ErrorAction SilentlyContinue
 
   # Only remove our links; a real file at the path is the user's, so leave it.
   foreach ($l in $LINKS) {

@@ -25,10 +25,12 @@ column instead of shrinking the others, and the **same Super-key shortcuts** as
 .\extras\komorebi\install-komorebi.ps1 uninstall   # stop, remove autostart, unlink, scoop uninstall, wipe state
 ```
 
-komorebi + whkd start at every login from `shell:startup\komorebi.lnk`, which the
-installer creates with `komorebic enable-autostart --whkd`. It's a login shortcut,
-not a Windows service, because services run with no desktop and couldn't see
-windows or keys.
+komorebi + whkd start at every login from a `komorebi` value under
+`HKCU\Software\Microsoft\Windows\CurrentVersion\Run`, which the installer writes.
+It's a Run entry rather than `komorebic enable-autostart`'s `shell:startup`
+shortcut because Explorer only opens the Startup folder after every Run entry,
+which held komorebi back ~3.5 min after login. It isn't a Windows service because
+services run with no desktop and couldn't see windows or keys.
 
 The installer also downloads `~\applications.json`. These are community rules for
 apps that misbehave when tiled (tray popups, splash screens). It's downloaded,
@@ -36,48 +38,49 @@ not kept in the repo; `update` re-downloads it. The root `install.ps1 update`
 doesn't touch komorebi, so run this one too. It warns when the `$schema` version
 pinned in `komorebi.json` falls behind the installed komorebi.
 
-## Scrolling, per screen
+## Spotlight / two-up: Win+r switches
 
-Every workspace uses komorebi's `Scrolling` layout. Each physical screen is
-pinned to its own config by ID in `display_index_preferences`, so the laptop and
-the ultrawide each keep their own column count.
+Every workspace uses komorebi's `Scrolling` layout, with the same setup on every
+screen (no screen IDs). Each workspace is in one of two modes, switched instantly
+with no reload, and windows stay put:
 
-| Config index | Screen | Columns |
+| Keys | Mode | Columns |
 | --- | --- | --- |
-| 0 (`L1`–`L9`) | Laptop panel `LEN4146` (1920 logical) | **2** side by side |
-| 1 (`W1`–`W9`) | Samsung S34C65xU ultrawide (3440×1440) | **1** "spotlight" column in the center 2752px (80%, niri's default width) |
+| `Win+r` (default: every login and reload starts here) | **spotlight** | **1** centered column, neighbours peek in at the sides |
+| `Win+Shift+r` | **two-up** | **2** side by side, full width |
 
 ```
-ultrawide, 5 windows, focus on 3
+spotlight, 5 windows, focus on 3
        ┌──────┬────────────┬──────┐
   1 ◀  │  2 ▸ │    [3]     │ ◂ 4  │  ▶ 5
-       │ peek │   2752px   │ peek │
+       │ peek │   column   │ peek │
        └──────┴────────────┴──────┘
   Win+←/→ slides the strip; the focused window is always the big center one
 ```
 
-On the ultrawide, `work_area_offset` shrinks the tiling area to the center 2752px (80%, matching
-`default-column-width` in `extras/niri/config.kdl`),
-so the one visible column always sits in the middle of the curve. (komorebi's
-offset `right` shrinks the *width*, so centering with 344px on each side takes
-`left: 344, right: 688`.) The neighbouring
-columns lie just outside that area, so their inner ~340px shows in the side strips,
-like niri's peeking columns. At either end of the strip that side is empty.
+Spotlight comes from `work_area_offset`, which shrinks the tiling area by 344px on
+each side so the one visible column sits in the middle. (komorebi's offset `right`
+shrinks the *width*, so centering takes `left: 344, right: 688`.) The neighbouring
+columns lie just outside that area, so their inner ~340px shows in the side
+strips, like niri's peeking columns. The offset is in pixels, so the column width
+depends on the screen: 2752px on a 3440 ultrawide (80%, niri's
+`default-column-width`), 1872px on 2560, 1232px on a 1920 laptop. Use two-up
+where that's too narrow.
 
-The laptop's 2 columns come from `layout_defaults`, so its workspaces only name the
-layout; the ultrawide's workspaces override it with `columns: 1`.
+The `monitors` entry sets spotlight for the whole screen. `Win+Shift+r` overrides
+it on the focused workspace only, with a workspace offset of `0` and 2 columns;
+`Win+r` sets the 344/688 offset and 1 column back. A mode lasts until the next
+reload or login. If you change 344/688, change it in both `komorebi.json` and
+`whkdrc`.
+
+Without screen IDs komorebi assigns the `monitors` entries by position, so all
+three entries are identical (workspaces `N*`, `M*`, `O*`) and it doesn't matter
+which screen is first. A fourth screen would get komorebi's plain default (BSP,
+unnamed workspaces); add another copy of the entry if you ever have one.
 
 Gaps match niri's `gaps 8`: komorebi pads each tile on every side, so 4px of
 container padding makes an 8px gap between tiles, and 4px of workspace padding on
 top makes 8px at the screen edge.
-
-`Win+R` / `Win+Shift+R` switch the focused workspace to 1 / 2 columns until the
-next reload.
-
-A new screen (another office monitor) has no entry yet. To add one, run
-`komorebic monitor-information`, copy its `serial_number_id` into
-`display_index_preferences`, and add a matching `monitors` entry. The laptop panel
-reports no serial number, so its entry uses the `device_id` instead.
 
 ## Hotkeys (same as niri)
 
@@ -93,7 +96,7 @@ with both **h/j/k/l and the arrow keys**.
 | `Win+u/i`, `Win+PgDn/PgUp` | next / previous workspace (`+Ctrl`: take the window along) |
 | `Win+1…9` / `Win+Ctrl+1…9` | go to / send window to workspace |
 | `Win+[` / `Win+]` / `Win+.` | stack the window into the left / right column; unstack it |
-| `Win+r` / `Win+Shift+r` | 1 / 2 visible columns |
+| `Win+r` / `Win+Shift+r` | spotlight / two-up on this workspace (see [above](#spotlight--two-up-winr-switches)) |
 | `Win+f` / `Win+m` | maximize column (monocle) / maximize window |
 | `Win+g` / `Win+Shift+g` | float / unfloat the window; jump between floating and tiled windows |
 | `Win+o` | overview (Windows Task View) |
@@ -125,7 +128,9 @@ with both **h/j/k/l and the arrow keys**.
 - `komorebi.json`: press `Win+Ctrl+r` (`komorebic replace-configuration`). It rebuilds
   the workspaces, so windows can all land on the first one; send them back with
   `Win+Ctrl+N`. (`komorebic reload-configuration` does *not* re-read the JSON.)
-- `whkdrc`: run `komorebic stop --whkd; komorebic start --whkd`.
+- `whkdrc`: run `komorebic stop --whkd; komorebic start --whkd --clean-state`
+  (`--clean-state` skips the layout `stop` saved, which would override the config's
+  workspaces).
 
 ## Troubleshooting
 

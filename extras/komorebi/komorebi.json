@@ -21,38 +21,49 @@
     "tabs": { "background": "#202020", "focused_text": "#e0af68", "unfocused_text": "#a0a0a0" }
   },
   "layout_defaults": {
-    "Scrolling": { "layout_options": { "scrolling": { "columns": 2 } } }
-  },
-  "display_index_preferences": {
-    "0": "LEN4146-4&81e161&0&UID8388688",
-    "1": "HNTL500135"
+    "Scrolling": { "layout_options": { "scrolling": { "columns": 1 } } }
   },
   "monitors": [
     {
+      "work_area_offset": { "left": 344, "top": 0, "right": 688, "bottom": 0 },
       "workspaces": [
-        { "name": "L1", "layout": "Scrolling" },
-        { "name": "L2", "layout": "Scrolling" },
-        { "name": "L3", "layout": "Scrolling" },
-        { "name": "L4", "layout": "Scrolling" },
-        { "name": "L5", "layout": "Scrolling" },
-        { "name": "L6", "layout": "Scrolling" },
-        { "name": "L7", "layout": "Scrolling" },
-        { "name": "L8", "layout": "Scrolling" },
-        { "name": "L9", "layout": "Scrolling" }
+        { "name": "N1", "layout": "Scrolling" },
+        { "name": "N2", "layout": "Scrolling" },
+        { "name": "N3", "layout": "Scrolling" },
+        { "name": "N4", "layout": "Scrolling" },
+        { "name": "N5", "layout": "Scrolling" },
+        { "name": "N6", "layout": "Scrolling" },
+        { "name": "N7", "layout": "Scrolling" },
+        { "name": "N8", "layout": "Scrolling" },
+        { "name": "N9", "layout": "Scrolling" }
       ]
     },
     {
       "work_area_offset": { "left": 344, "top": 0, "right": 688, "bottom": 0 },
       "workspaces": [
-        { "name": "W1", "layout": "Scrolling", "layout_options": { "scrolling": { "columns": 1 } } },
-        { "name": "W2", "layout": "Scrolling", "layout_options": { "scrolling": { "columns": 1 } } },
-        { "name": "W3", "layout": "Scrolling", "layout_options": { "scrolling": { "columns": 1 } } },
-        { "name": "W4", "layout": "Scrolling", "layout_options": { "scrolling": { "columns": 1 } } },
-        { "name": "W5", "layout": "Scrolling", "layout_options": { "scrolling": { "columns": 1 } } },
-        { "name": "W6", "layout": "Scrolling", "layout_options": { "scrolling": { "columns": 1 } } },
-        { "name": "W7", "layout": "Scrolling", "layout_options": { "scrolling": { "columns": 1 } } },
-        { "name": "W8", "layout": "Scrolling", "layout_options": { "scrolling": { "columns": 1 } } },
-        { "name": "W9", "layout": "Scrolling", "layout_options": { "scrolling": { "columns": 1 } } }
+        { "name": "M1", "layout": "Scrolling" },
+        { "name": "M2", "layout": "Scrolling" },
+        { "name": "M3", "layout": "Scrolling" },
+        { "name": "M4", "layout": "Scrolling" },
+        { "name": "M5", "layout": "Scrolling" },
+        { "name": "M6", "layout": "Scrolling" },
+        { "name": "M7", "layout": "Scrolling" },
+        { "name": "M8", "layout": "Scrolling" },
+        { "name": "M9", "layout": "Scrolling" }
+      ]
+    },
+    {
+      "work_area_offset": { "left": 344, "top": 0, "right": 688, "bottom": 0 },
+      "workspaces": [
+        { "name": "O1", "layout": "Scrolling" },
+        { "name": "O2", "layout": "Scrolling" },
+        { "name": "O3", "layout": "Scrolling" },
+        { "name": "O4", "layout": "Scrolling" },
+        { "name": "O5", "layout": "Scrolling" },
+        { "name": "O6", "layout": "Scrolling" },
+        { "name": "O7", "layout": "Scrolling" },
+        { "name": "O8", "layout": "Scrolling" },
+        { "name": "O9", "layout": "Scrolling" }
       ]
     }
   ]

@@ -1,6 +1,6 @@
 # whkd hotkeys for komorebi — mirrors the niri binds in extras/niri/config.kdl
 # (Mod = Win), driving komorebi's Scrolling layout. Restart whkd to apply edits:
-#   komorebic stop --whkd; komorebic start --whkd
+#   komorebic stop --whkd; komorebic start --whkd --clean-state
 # Key names: https://docs.rs/win-hotkeys/latest/win_hotkeys/enum.VKey.html
 
 # cmd starts in milliseconds; pwsh would add its startup to every keypress.
@@ -88,10 +88,12 @@ win + oem_4                 : komorebic stack left
 win + oem_6                 : komorebic stack right
 win + oem_period            : komorebic unstack
 
-# Sizing. Scrolling columns share one width, so Win+R picks how many fit on screen
-# (niri's preset widths): one big column, or two side by side.
-win + r                     : komorebic scrolling-layout-columns 1
-win + shift + r             : komorebic scrolling-layout-columns 2
+# Sizing, per workspace and instant (no reload). Scrolling columns share one width, so
+# these stand in for niri's preset widths. Win+R: spotlight, one column centered by the
+# same 344/688 offset as komorebi.json. Win+Shift+R: two-up, 2 columns at full width (a
+# workspace offset of 0 overrides the monitor's). The offset needs the focused indices.
+win + r                     : for /f %m in ('komorebic query focused-monitor-index') do @for /f %w in ('komorebic query focused-workspace-index') do @(komorebic workspace-work-area-offset %m %w 344 0 688 0 & komorebic scrolling-layout-columns 1)
+win + shift + r             : for /f %m in ('komorebic query focused-monitor-index') do @for /f %w in ('komorebic query focused-workspace-index') do @(komorebic workspace-work-area-offset %m %w 0 0 0 0 & komorebic scrolling-layout-columns 2)
 win + f                     : komorebic toggle-monocle
 win + m                     : komorebic toggle-maximize
 
