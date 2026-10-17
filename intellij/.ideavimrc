@@ -7,7 +7,7 @@
 "   f  Files                     t  Tests / Terminal
 "   g  Goto / Git                s  Settings / Search / Symbols
 "   c  Code / Refactor           a  AI
-"   v  Vim Coach
+"   v  Vim Coach                 d  Debug (step / breakpoints)
 
 let mapleader=" "
 let maplocalleader="\\"
@@ -20,11 +20,9 @@ set nowrap
 set number
 set ignorecase
 set smartcase
-set shiftround
 set incsearch
 set hlsearch
-set backspace=indent,eol,start
-set timeoutlen=1000
+set timeoutlen=500
 set clipboard+=unnamedplus
 set clipboard+=ideaput
 
@@ -32,9 +30,12 @@ set clipboard+=ideaput
 " Emulated plugins
 " =========================================================
 set NERDTree
-set surround                 " cs"' , ds( , ysiw)
-set commentary               " gcc line, gc in visual
-set highlightedyank          " flash yanked text
+" surround: cs"' , ds( , ysiw)
+set surround
+" commentary: gcc line, gc in visual
+set commentary
+" highlightedyank: flash yanked text
+set highlightedyank
 " set easymotion             " <leader><leader> motions (needs AceJump plugin)
 " set multiple-cursors       " <A-n> select next occurrence
 " set functextobj            " af/if function textobject (needs the "functextobj"
@@ -106,12 +107,30 @@ nmap <leader>co <Action>(OptimizeImports)
 nmap <leader>mr <Action>(Run)
 nmap <leader>md <Action>(Debug)
 nmap <leader>ms <Action>(Stop)
-nmap <leader>mb <Action>(ToggleLineBreakpoint)
-nmap <leader>mc <Action>(ChooseRunConfiguration)
+
+" =========================================================
+" d — Debug (LazyVim layout)
+" =========================================================
+nmap <leader>db <Action>(ToggleLineBreakpoint)
+nmap <leader>dc <Action>(Resume)
+nmap <leader>dC <Action>(RunToCursor)
+nmap <leader>di <Action>(StepInto)
+nmap <leader>dO <Action>(StepOver)
+nmap <leader>do <Action>(StepOut)
+nmap <leader>dt <Action>(Stop)
+nmap <leader>de <Action>(EvaluateExpression)
+
+nmap <A-n> <Action>(StepOver)
+nmap <A-i> <Action>(StepInto)
+nmap <A-o> <Action>(StepOut)
+nmap <A-c> <Action>(Resume)
+
+
 
 " =========================================================
 " t — Tests + Terminal
 " =========================================================
+nmap <leader>t  <Action>(ActivateTerminalToolWindow)
 nmap <leader>tr <Action>(RunClass)
 nmap <leader>tf <Action>(RerunFailedTests)
 nmap <leader>tl <Action>(Rerun)
@@ -124,11 +143,14 @@ nmap <leader>so <Action>(ShowSettings)
 nmap <leader>sa <Action>(GotoAction)
 nmap <leader>ss <Action>(GotoSymbol)
 nmap <leader>sc <Action>(GotoClass)
-nmap <leader>sr <Action>(IdeaVim.ReloadVimRc.reload)
+nnoremap <leader>sr :source ~/.ideavimrc<CR>
 " Show tip (install the "Vim Coach" plugin from JetBrains Marketplace)
 nmap <leader>st <Action>(com.github.pooryam92.vimcoach.actions.ShowVimTipAction)
 
 " =========================================================
 " a — AI
 " =========================================================
-nmap <leader>a <Action>(AIAssistant.Editor.AskAiAssistantInEditor)
+ map <leader>a <Action>(AIAssistant.Editor.AskAiAssistantInEditor)
+
+" Enable ideajoin — added by Vim Coach
+set ideajoin
