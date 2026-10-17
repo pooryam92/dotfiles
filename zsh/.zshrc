@@ -104,4 +104,8 @@ if command -v fzf >/dev/null; then
   fi
 fi
 
+# Machine-local settings and secrets (API keys) live in ~/.zshrc.local, outside
+# this public repo.
+[ -r "$HOME/.zshrc.local" ] && source "$HOME/.zshrc.local"
+
 # Panes and tabs are WezTerm-native; nothing to start here.
