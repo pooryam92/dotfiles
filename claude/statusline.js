@@ -43,11 +43,13 @@ function fmtTokens(n) {
 // (truncate-to-repo style). Outside the project, collapse $HOME
 // to ~ and keep the last few segments.
 const norm = (p) => (p || '').replace(/\\/g, '/').replace(/\/+$/, '');
-function dirSegment(current, project, home) {
+// `label` replaces the project's basename as the head (a worktree shows its
+// main repo's name there, since its own folder name is in the wt segment).
+function dirSegment(current, project, home, label) {
   const cur = norm(current);
   const proj = norm(project);
   if (proj && (cur === proj || cur.startsWith(proj + '/'))) {
-    const base = proj.split('/').filter(Boolean).pop() || proj;
+    const base = label || proj.split('/').filter(Boolean).pop() || proj;
     const rel = cur.slice(proj.length).replace(/^\//, '');
     return rel ? `${base}/${rel}` : base;
   }
@@ -59,28 +61,61 @@ function dirSegment(current, project, home) {
 }
 
 // --- git -------------------------------------------------------------------
-// One cheap call gives branch + dirtiness. First line is "## branch...remote";
-// any remaining lines mean uncommitted changes. Returns null outside a repo.
-function gitInfo(cwd) {
+// --no-optional-locks so a bar refresh never fights a git command Claude is
+// running in the same repo for index.lock. Returns null on any failure.
+function runGit(cwd, args) {
   try {
-    const out = execFileSync('git', ['status', '--porcelain=v1', '--branch'], {
+    return execFileSync('git', ['--no-optional-locks', ...args], {
       cwd,
       encoding: 'utf8',
       stdio: ['ignore', 'pipe', 'ignore'],
       timeout: 1000, // keep the bar snappy on slow repos
     });
-    const lines = out.split('\n');
-    const head = lines[0] || '';
-    // Strip "## ", then the upstream ("...origin/x") and any "[ahead N]". A fresh
-    // repo reads "## No commits yet on <branch>", so pull the name out of that too.
-    let branch = head.replace(/^## /, '').replace(/^No commits yet on /, '');
-    branch = branch.split('...')[0].split(' ')[0];
-    if (head.includes('(no branch)') || branch === 'HEAD') branch = 'detached';
-    const dirty = lines.slice(1).some((l) => l.trim() !== '');
-    return { branch, dirty };
   } catch {
-    return null; // not a repo, or git unavailable — just omit the segment
+    return null;
   }
+}
+
+// One cheap call gives branch, dirtiness and distance from upstream. First line
+// is "## branch...remote [ahead N, behind M]"; any remaining lines mean
+// uncommitted changes. Returns null outside a repo.
+function gitInfo(cwd) {
+  const out = runGit(cwd, ['status', '--porcelain=v1', '--branch']);
+  if (out === null) return null; // not a repo, or git unavailable — omit the segment
+  const lines = out.split('\n');
+  const head = lines[0] || '';
+  // Strip "## ", then the upstream ("...origin/x") and any "[ahead N]". A fresh
+  // repo reads "## No commits yet on <branch>", so pull the name out of that too.
+  let branch = head.replace(/^## /, '').replace(/^No commits yet on /, '');
+  branch = branch.split('...')[0].split(' ')[0];
+  if (head.includes('(no branch)') || branch === 'HEAD') branch = 'detached';
+  const dirty = lines.slice(1).some((l) => l.trim() !== '');
+  const ahead = Number((head.match(/ahead (\d+)/) || [])[1] || 0);
+  const behind = Number((head.match(/behind (\d+)/) || [])[1] || 0);
+  return { branch, dirty, ahead, behind };
+}
+
+// The linked worktree cwd sits in, or null in the main checkout (or outside a
+// repo). A linked worktree's git dir lives under the main repo's
+// .git/worktrees/, so it differs from the shared common dir. `name` is the
+// worktree's folder, which is what `git worktree add` and Claude call it;
+// `repo` is the main checkout's folder, the parent of the common .git dir.
+function worktreeInfo(cwd) {
+  const out = runGit(cwd, ['rev-parse', '--path-format=absolute', '--show-toplevel', '--git-dir', '--git-common-dir']);
+  if (out === null) return null;
+  const [top, gitDir, commonDir] = out.trim().split('\n').map(norm);
+  if (!gitDir || gitDir === commonDir) return null;
+  const segs = commonDir.split('/');
+  return { top, name: top.split('/').pop(), repo: segs[segs.length - 1] === '.git' ? segs[segs.length - 2] : null };
+}
+
+// Time until an epoch-seconds instant, compactly: "35m", "1h20m", "2d3h".
+function fmtUntil(epochSec) {
+  const mins = Math.max(0, Math.round((epochSec * 1000 - Date.now()) / 60000));
+  if (mins < 60) return `${mins}m`;
+  const h = Math.floor(mins / 60);
+  if (h < 24) return `${h}h${String(mins % 60).padStart(2, '0')}m`;
+  return `${Math.floor(h / 24)}d${h % 24}h`;
 }
 
 // --- render ----------------------------------------------------------------
@@ -120,14 +155,28 @@ function render(input) {
   }
   segments.push(model);
 
-  // Directory — project-relative, cyan (matches the shell prompts).
-  segments.push(cyan(dirSegment(cwd, ws.project_dir, home)));
-
-  // Git — branch in purple, red * if dirty.
+  // Directory — project-relative, cyan (matches the shell prompts). Inside a
+  // linked worktree it's headed by the main repo's name instead of the
+  // worktree folder, so "which project" still reads and the wt segment says
+  // which worktree.
   const git = gitInfo(cwd);
+  const wt = git && worktreeInfo(cwd);
+  segments.push(cyan(wt && wt.repo ? dirSegment(cwd, wt.top, home, wt.repo) : dirSegment(cwd, ws.project_dir, home)));
+
+  // Git — branch in purple, red * if dirty, yellow ↑N/↓M against upstream.
   if (git) {
-    segments.push(purple(' ' + git.branch) + (git.dirty ? red(' *') : ''));
+    segments.push(purple(' ' + git.branch) + (git.dirty ? red(' *') : '') +
+      (git.ahead ? yellow(` ↑${git.ahead}`) : '') + (git.behind ? yellow(` ↓${git.behind}`) : ''));
   }
+
+  // Worktree — only inside a linked one, so the main checkout stays quiet.
+  if (wt) segments.push(grey('wt ') + cyan(wt.name));
+
+  // Lines changed this session — green +added, red −removed; hidden at 0/0.
+  const cost = input.cost || {};
+  const added = cost.total_lines_added || 0;
+  const removed = cost.total_lines_removed || 0;
+  if (added || removed) segments.push(green(`+${added}`) + ' ' + red(`−${removed}`));
 
   // Context window — tokens used (out of the window size when known), coloured
   // by how full it is (green→yellow→red). e.g. "ctx 84k/200k".
@@ -162,13 +211,23 @@ function render(input) {
   const rl = input.rate_limits;
   if (rl) {
     const usageTone = (p) => (p >= 80 ? red : p >= 50 ? yellow : green);
+    // Once a window is half spent, add when it resets ("62% ⧖ 1h20m") — the
+    // question at that point is whether there's room to keep going.
     const win = (w, label) => {
       const p = w && w.used_percentage;
       if (typeof p !== 'number') return;
-      segments.push(grey(label + ' ') + usageTone(p)(Math.round(p) + '%'));
+      const reset = p >= 50 && typeof w.resets_at === 'number' ? grey(' ⧖ ' + fmtUntil(w.resets_at)) : '';
+      segments.push(grey(label + ' ') + usageTone(p)(Math.round(p) + '%') + reset);
     };
     win(rl.five_hour, '5h');
     win(rl.seven_day, 'wk');
+  }
+
+  // Session cost — only without plan limits, i.e. on API billing. On Pro/Max
+  // it's a list-price estimate of money not actually spent; the 5h/wk usage
+  // above is what counts there.
+  if (!rl && typeof cost.total_cost_usd === 'number') {
+    segments.push(grey('$' + cost.total_cost_usd.toFixed(2)));
   }
 
   return segments.join(grey('  '));

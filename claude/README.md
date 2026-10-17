@@ -72,9 +72,17 @@ the whole prompt when the cursor is at the end.)
 Claude Code runs the command after each turn and pipes it a JSON blob on **stdin**
 — model, workspace dirs, git, cost, context-window usage, and more. Whatever the
 script prints to **stdout** becomes the bar. `statusline.js` reads that JSON and
-prints: model, directory, git branch (+ dirty `*`), context-window tokens used
+prints: model, directory, git branch (+ dirty `*`, `↑`/`↓` against upstream), context-window tokens used
 (out of the window size when Claude reports it), and — for Pro/Max accounts —
 the 5-hour and 7-day plan-usage percentages from `rate_limits`.
+
+Inside a linked git worktree a `wt <name>` segment follows the branch, naming
+the worktree's folder, and the directory is headed by the main repo's name
+instead; the main checkout shows no `wt`. After the git segments comes the
+lines changed this session (`+120 −34`, hidden at zero). Once a plan window is
+half spent, its percentage gains a reset countdown (`5h 62% ⧖ 1h20m`). Without
+plan limits (API billing) the session cost shows at the end (`$1.50`); on
+Pro/Max it's a list-price estimate, so it's left off.
 
 The two usage segments color by percent (a hard quota: green → yellow at 50% →
 red at 80%), whereas `ctx` colors by absolute tokens — the 1M window is flat-
