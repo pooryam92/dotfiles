@@ -189,7 +189,7 @@ binds {
     Mod+Shift+Equal { set-window-height "+10%"; }
 
     // Floating + tabbed display. G, not niri's default V: Windows keeps Win+V for
-    // clipboard history, so komorebi uses G too and both OSes share one key.
+    // clipboard history, so G is the habit that carries across both OSes.
     Mod+G       { toggle-window-floating; }
     Mod+Shift+G { switch-focus-between-floating-and-tiling; }
     Mod+W       { toggle-column-tabbed-display; }

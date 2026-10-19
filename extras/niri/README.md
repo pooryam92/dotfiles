@@ -10,8 +10,7 @@ window management.
 > builds niri from source and writes system files with `sudo`, so it has its own
 > script: [`extras/niri/install-cosmic-niri.sh`](install-cosmic-niri.sh). COSMIC
 > and niri are Linux-only, so this sits *outside* the cross-platform
-> `install.{sh,ps1}` pair on purpose. The Windows counterpart is
-> [komorebi](../komorebi/README.md): the same scrolling layout and the same keys.
+> `install.{sh,ps1}` pair on purpose.
 
 - niri docs: <https://yalter.github.io/niri/>
 - The glue project: <https://github.com/Drakulix/cosmic-ext-extra-sessions>

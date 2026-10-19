@@ -43,7 +43,6 @@ Opt-in **extras**, outside the core install (see [Extras](#extras-opt-in)):
 
 - [COSMIC on niri](extras/niri/README.md) — COSMIC's shell on a scrollable-tiling compositor
 - [keyd](extras/keyd/README.md) — system-wide key remaps: CapsLock = Esc/Ctrl, Right Alt = Super
-- [komorebi](extras/komorebi/README.md) — niri-style scrolling tiling on Windows, with niri's shortcuts
 - [dual-key-remap](extras/dual-key-remap/README.md) — keyd's CapsLock = Esc/Ctrl remap on Windows
 
 ## Quick start
@@ -132,14 +131,12 @@ plugins update from inside nvim with `:lua vim.pack.update()`.
 
 Everything under **`extras/`** is outside the core: the root installers never
 install, update, or link it. Each extra has its own installer and README. Each
-one only exists on one OS (niri and keyd on Linux, komorebi and dual-key-remap on
-Windows), which is exactly why they're not in the cross-platform core.
+one only exists on one OS (niri and keyd on Linux, dual-key-remap on Windows), which is exactly why they're not in the cross-platform core.
 
 | Extra | What | Install |
 | ----- | ---- | ------- |
 | [COSMIC on niri](extras/niri/README.md) | COSMIC's desktop parts on the niri scrollable-tiling compositor; builds niri from source | `./extras/niri/install-cosmic-niri.sh` |
 | [keyd](extras/keyd/README.md) | System-wide key remaps at the evdev layer: CapsLock = Esc (tap) / Ctrl (hold), Right Alt = Super | `./extras/keyd/install-keyd.sh` (the niri installer runs it too) |
-| [komorebi](extras/komorebi/README.md) | **Windows** tiling window manager in niri's scrolling layout with niri's shortcuts; one big center column with peeking neighbours (`Win+r`) or 2 side by side (`Win+Shift+r`), on any screen | `.\extras\komorebi\install-komorebi.ps1` |
 | [dual-key-remap](extras/dual-key-remap/README.md) | **Windows** counterpart of keyd: CapsLock = Esc (tap) / Ctrl (hold), Esc = CapsLock | `sudo pwsh -File .\extras\dual-key-remap\install-dual-key-remap.ps1` |
 
 Their configs are placed by each extra's own installer (its README lists where),
